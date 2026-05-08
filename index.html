@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>بوابة الجالية السودانية — جازان</title>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+
+:root {
+  --gd:#1a3d2b; --gm:#2e6b4f; --gl:#3a9e6f; --gp:#e8f5ee; --gpp:#c8e6d4;
+  --gold:#c9a84c; --gold-l:#f5e9c8; --gold-d:#8a6010;
+  --ink:#1c2a22; --muted:#6b7c74; --border:#d4e0d9; --surf:#f4f8f5; --white:#fff;
+  --red:#c0392b; --red-p:#fdf0ee; --blue:#1a5fa8; --blue-p:#e8f0fb;
+  --orange:#d35400; --orange-p:#fef5ec;
+  --r:12px; --r-sm:8px;
+  --shadow:0 2px 12px rgba(0,0,0,.08);
+  --shadow-md:0 4px 20px rgba(0,0,0,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Tajawal',sans-serif;background:var(--surf);color:var(--ink);min-height:100vh;font-size:15px;}
+button,input,select,textarea{font-family:'Tajawal',sans-serif;}
+input,select{font-size:16px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(30px);
+  padding:12px 24px;border-radius:30px;font-size:14px;font-weight:700;
+  opacity:0;transition:all .3s;z-index:9999;pointer-events:none;box-shadow:var(--shadow-md);white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.ok{background:var(--gm);color:#fff;}
+.toast.err{background:var(--red);color:#fff;}
+.toast.warn{background:var(--orange);color:#fff;}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:800;display:none;align-items:flex-end;justify-content:center;}
+.modal-bg.show{display:flex;}
+@media(min-width:600px){.modal-bg{align-items:center;padding:16px;}}
+.modal{background:var(--white);border-radius:20px 20px 0 0;padding:20px 18px 32px;width:100%;max-height:90vh;overflow-y:auto;}
+@media(min-width:600px){.modal{border-radius:20px;max-width:460px;}}
+.mhandle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+.modal h3{font-size:17px;font-weight:700;margin-bottom:16px;color:var(--gd);}
+.mactions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.mbtn{flex:1;min-width:90px;padding:12px;border-radius:var(--r-sm);border:1.5px solid;font-size:14px;font-weight:700;cursor:pointer;}
+.mbtn.save{background:var(--gm);color:#fff;border-color:var(--gm);}
+.mbtn.cancel{background:var(--white);color:var(--muted);border-color:var(--border);}
+.mbtn.danger{background:var(--red);color:#fff;border-color:var(--red);}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,#0a1f13,#1a3d2b,#0d2820);padding:20px;}
+.lbox{background:var(--white);border-radius:24px;padding:30px 22px 26px;width:100%;max-width:370px;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.llogo{text-align:center;margin-bottom:10px;}
+.llogo .flag{font-size:46px;}
+.llogo h1{font-size:17px;font-weight:800;color:var(--gd);margin-top:8px;line-height:1.4;}
+.llogo p{font-size:12px;color:var(--muted);margin-top:3px;}
+.ldiv{border:none;border-top:1px solid var(--border);margin:18px 0;}
+.fl{font-size:13px;color:var(--muted);font-weight:500;margin-bottom:6px;}
+.linput{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);
+  padding:13px 14px;font-size:16px;color:var(--ink);outline:none;margin-bottom:14px;
+  background:var(--surf);letter-spacing:2px;text-align:center;}
+.linput:focus{border-color:var(--gm);background:var(--white);}
+.linput::placeholder{letter-spacing:0;font-size:14px;}
+.lbtn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gm),var(--gd));
+  color:#fff;border:none;border-radius:var(--r-sm);font-size:17px;font-weight:800;cursor:pointer;
+  box-shadow:0 4px 15px rgba(46,107,79,.4);}
+.lerr{background:var(--red-p);color:var(--red);border:1px solid #e8c5c1;border-radius:var(--r-sm);
+  padding:9px 14px;font-size:13px;text-align:center;margin-bottom:12px;display:none;}
+.lerr.show{display:block;}
+.pw-wrap{position:relative;margin-bottom:14px;}
+.pw-wrap .linput{margin-bottom:0;}
+.pw-toggle{position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);}
+.user-select{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:13px 14px;font-size:15px;color:var(--ink);outline:none;margin-bottom:14px;background:var(--surf);appearance:none;}
+
+/* APP */
+#app-screen{display:none;min-height:100vh;flex-direction:column;}
+#app-screen.show{display:flex;}
+
+/* HEADER */
+.hdr{background:var(--gd);flex-shrink:0;box-shadow:0 2px 12px rgba(0,0,0,.3);}
+.hdr-inner{display:flex;align-items:center;gap:10px;padding:10px 14px;}
+.hlogo{width:38px;height:38px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.htext{flex:1;min-width:0;}
+.htext h1{color:#fff;font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.htext p{color:var(--gold);font-size:10px;}
+.hright{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.ubadge{background:rgba(255,255,255,.15);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+.lout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);color:#fff;padding:5px 10px;border-radius:var(--r-sm);font-size:12px;cursor:pointer;}
+
+/* SYNC */
+#sync-bar{background:rgba(0,0,0,.2);color:rgba(255,255,255,.8);font-size:11px;padding:4px 14px;display:flex;align-items:center;gap:6px;}
+.sdot{width:7px;height:7px;border-radius:50%;background:#4caf50;flex-shrink:0;animation:pulse 2s infinite;}
+.sdot.off{background:#f44336;animation:none;}.sdot.sync{background:var(--gold);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 10px rgba(0,0,0,.08);}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 4px 6px;cursor:pointer;border:none;background:transparent;color:var(--muted);font-size:10px;font-weight:500;gap:3px;transition:all .15s;}
+.bni.active{color:var(--gm);}
+.bni .ico{font-size:20px;line-height:1;}
+
+/* SCREENS */
+.screens{flex:1;overflow-y:auto;padding-bottom:72px;}
+.screen{display:none;padding:14px;max-width:580px;margin:0 auto;}
+.screen.active{display:block;}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:var(--shadow);}
+.ctitle{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.ctitle::before{content:'';display:inline-block;width:3px;height:14px;background:var(--gm);border-radius:2px;}
+
+/* FORM */
+.frow{margin-bottom:13px;}
+.fl2{font-size:13px;color:var(--muted);font-weight:500;margin-bottom:5px;}
+.finput,.fsel{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 13px;font-size:16px;color:var(--ink);background:var(--surf);outline:none;appearance:none;}
+.finput:focus,.fsel:focus{border-color:var(--gm);background:var(--white);}
+.finput.big{font-size:22px;font-weight:700;text-align:center;color:var(--gd);}
+
+/* AMOUNT BOX */
+.amtbox{text-align:center;font-size:38px;font-weight:800;color:var(--gd);
+  padding:14px;background:var(--gp);border-radius:var(--r);margin-bottom:12px;border:2px solid var(--gpp);}
+.amtu{font-size:16px;color:var(--gm);font-weight:600;}
+.qbtns{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px;}
+.qb{padding:11px 4px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--white);font-size:14px;font-weight:700;color:var(--gd);cursor:pointer;min-height:46px;}
+.qb:active{transform:scale(.96);}
+.qb.red{color:var(--red);border-color:#e8c5c1;background:var(--red-p);}
+.qb.blue{color:var(--blue);border-color:#c5d5e8;background:var(--blue-p);}
+.qb.gold{color:var(--gold-d);border-color:var(--gold);background:var(--gold-l);}
+
+/* SAVE BTN */
+.savebtn{width:100%;padding:15px;background:linear-gradient(135deg,var(--gm),var(--gd));
+  color:#fff;border:none;border-radius:var(--r);font-size:17px;font-weight:800;cursor:pointer;
+  box-shadow:0 4px 15px rgba(46,107,79,.35);}
+.savebtn:active{transform:scale(.98);}
+.savebtn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+/* METRICS */
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.mcard{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;box-shadow:var(--shadow);}
+.mval{font-size:26px;font-weight:800;line-height:1.2;}
+.mlbl{font-size:11px;color:var(--muted);margin-top:3px;font-weight:500;}
+
+/* TABLE */
+.twrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:480px;}
+.tbl th{padding:9px 10px;background:var(--surf);color:var(--muted);font-weight:600;text-align:right;border-bottom:1px solid var(--border);font-size:11px;}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:#f0faf5;}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;}
+.bg{background:var(--gp);color:var(--gd);}
+.bb{background:var(--blue-p);color:var(--blue);}
+.bo{background:var(--orange-p);color:var(--orange);}
+.br{background:var(--red-p);color:var(--red);}
+.ibtn{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;font-size:11px;cursor:pointer;margin:0 2px;min-height:28px;}
+.ibtn.p{color:var(--gm);border-color:var(--gpp);}
+.ibtn.e{color:var(--blue);border-color:#c5d5e8;}
+.empty{text-align:center;padding:28px;color:var(--muted);font-size:13px;}
+.tbl-foot{padding:8px 12px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);}
+
+/* FILTER */
+.fbar{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:7px;}
+.sbox{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;font-size:14px;outline:none;background:var(--surf);flex:1;min-width:120px;color:var(--ink);}
+.fsel2{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;font-size:13px;outline:none;background:var(--surf);color:var(--ink);appearance:none;}
+.datein{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;font-size:13px;outline:none;background:var(--surf);flex:1;}
+
+/* APPROVAL STEPS */
+.astep{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:var(--surf);margin-bottom:8px;}
+.astep.done{border-color:var(--gl);background:var(--gp);}
+.astep.cur{border-color:var(--gold);background:var(--gold-l);}
+.astep.wait{opacity:.6;}
+.astep-icon{font-size:20px;flex-shrink:0;}
+.astep-info{flex:1;}
+.astep-name{font-size:13px;font-weight:600;}
+.astep-sub{font-size:11px;color:var(--muted);}
+.astep-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:12px;}
+.astep-badge.done{background:var(--gl);color:#fff;}
+.astep-badge.cur{background:var(--gold);color:#1a1a1a;}
+.astep-badge.wait{background:var(--border);color:var(--muted);}
+
+/* EXPENSE LIST */
+.exp-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);}
+.exp-item:last-child{border-bottom:none;}
+.exp-ico{font-size:18px;flex-shrink:0;}
+.exp-info{flex:1;}
+.exp-name{font-size:13px;font-weight:600;}
+.exp-meta{font-size:11px;color:var(--muted);}
+.exp-amt{font-size:14px;font-weight:800;color:var(--red);}
+
+/* WELCOME */
+.welcome{background:linear-gradient(135deg,var(--gd),var(--gm));border-radius:var(--r);padding:18px;margin-bottom:12px;color:#fff;position:relative;overflow:hidden;}
+.welcome::before{content:'🇸🇩';position:absolute;left:-8px;top:-8px;font-size:70px;opacity:.1;}
+.wtitle{font-size:17px;font-weight:800;margin-bottom:3px;}
+.wsub{font-size:12px;opacity:.8;}
+.wrole{display:inline-block;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-top:8px;}
+
+/* ACTBTNS */
+.actbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.abtn{padding:12px 10px;border-radius:var(--r-sm);border:1.5px solid;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;justify-content:center;}
+.abtn.green{border-color:var(--gm);color:var(--gm);background:var(--gp);}
+.abtn.blue{border-color:var(--blue);color:var(--blue);background:var(--blue-p);}
+.abtn.gold{border-color:var(--gold);color:var(--gold-d);background:var(--gold-l);}
+.abtn.red{border-color:var(--red);color:var(--red);background:var(--red-p);}
+.abtn:active{transform:scale(.97);}
+
+/* MEMBER CARD */
+.member-card{background:linear-gradient(135deg,#1a3d2b,#2e6b4f);border-radius:14px;padding:18px;color:#fff;margin-bottom:12px;position:relative;overflow:hidden;}
+.member-card::after{content:'';position:absolute;left:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.05);}
+.mc-num{font-size:11px;opacity:.7;margin-bottom:4px;}
+.mc-name{font-size:20px;font-weight:800;margin-bottom:2px;}
+.mc-info{font-size:12px;opacity:.8;}
+.mc-status{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-top:8px;}
+.mc-status.active{background:#4caf50;color:#fff;}
+.mc-status.late{background:var(--orange);color:#fff;}
+.mc-status.stopped{background:var(--red);color:#fff;}
+
+/* PERF */
+.perfrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.perfrow:last-child{border-bottom:none;}
+.pavatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.barbg{height:6px;background:var(--surf);border-radius:3px;overflow:hidden;margin-top:3px;}
+.barfill{height:100%;border-radius:3px;}
+
+/* PRINT */
+@media print{body>*:not(#print-area){display:none!important;}#print-area{display:block!important;}}
+#print-area{display:none;font-family:'Tajawal',sans-serif;direction:rtl;}
+
+/* Receipt 80mm */
+.rp{width:72mm;margin:0 auto;padding:3mm 4mm;font-size:11px;color:#000;}
+.rph{text-align:center;border-bottom:1px dashed #333;padding-bottom:5px;margin-bottom:5px;}
+.rph h2{font-size:13px;font-weight:800;}
+.rph h3{font-size:11px;}
+.rph p{font-size:9px;color:#555;}
+.rtit{text-align:center;font-size:14px;font-weight:800;background:#000;color:#fff;padding:4px;margin:5px 0;border-radius:3px;}
+.rrow{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted #ccc;font-size:10px;}
+.rrow.tot{font-size:13px;font-weight:800;border-bottom:2px solid #000;}
+.rnum{text-align:center;font-size:10px;color:#555;margin-bottom:3px;}
+.rsig{margin-top:12px;display:flex;justify-content:space-between;}
+.sgl{border-top:1px solid #333;margin-top:18px;padding-top:2px;font-size:9px;text-align:center;width:90px;}
+.rfooter{text-align:center;margin-top:6px;font-size:9px;color:#777;border-top:1px dashed #ccc;padding-top:4px;}
+
+/* Payment Voucher */
+.pv{width:148mm;margin:0 auto;padding:8mm;font-size:12px;color:#000;}
+.pvh{text-align:center;border-bottom:3px double #1a3d2b;padding-bottom:8px;margin-bottom:8px;}
+.pvh h1{font-size:16px;color:#1a3d2b;font-weight:800;}
+.pvh h2{font-size:12px;color:#2e6b4f;}
+.pvtit{background:#1a3d2b;color:#fff;text-align:center;padding:7px;border-radius:4px;margin:7px 0;}
+.pvtit h3{font-size:16px;font-weight:800;}
+.pvtbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;}
+.pvtbl td{padding:5px 8px;border:1px solid #ddd;}
+.pvtbl td:first-child{color:#666;width:35%;}
+.pvtbl tr.hl td{font-weight:800;font-size:15px;background:#e8f5ee;}
+.pv-steps{border:1px solid #ccc;border-radius:4px;overflow:hidden;margin-bottom:8px;}
+.pv-steps-hdr{background:#1a3d2b;color:#fff;text-align:center;padding:5px;font-size:11px;font-weight:700;}
+.pv-steps-row{display:flex;}
+.pv-step{flex:1;text-align:center;border-left:1px solid #ccc;padding:5px 3px;}
+.pv-step:last-child{border-left:none;}
+.pv-step-lbl{font-size:9px;color:#666;}
+.pv-step-val{font-size:10px;font-weight:700;margin-top:2px;}
+.pv-step-date{font-size:8px;color:#888;}
+.pv-step-sig{border-top:1px solid #333;margin-top:16px;font-size:9px;}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+<div id="print-area"></div>
+
+<!-- ══ MODALS ══ -->
+
+<!-- New Member -->
+<div class="modal-bg" id="m-member">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3>👤 تسجيل عضو جديد</h3>
+    <div class="frow"><div class="fl2">الاسم الكامل *</div><input class="finput" id="nm-name" type="text" placeholder="محمد إبراهيم خليل" autocomplete="off"/></div>
+    <div class="frow"><div class="fl2">رقم الجواز *</div><input class="finput" id="nm-pass" type="text" placeholder="A12345678" dir="ltr" autocomplete="off"/></div>
+    <div class="frow"><div class="fl2">رقم الهاتف</div><input class="finput" id="nm-phone" type="tel" placeholder="05xxxxxxxx" inputmode="tel"/></div>
+    <div class="frow"><div class="fl2">المهنة</div><input class="finput" id="nm-job" type="text" placeholder="مهندس / معلم / ..."/></div>
+    <div class="frow"><div class="fl2">المنطقة / الفرعية</div>
+      <select class="fsel" id="nm-region">
+        <option value="جازان">جازان</option>
+        <option value="صبيا">صبيا</option>
+        <option value="أبو عريش">أبو عريش</option>
+        <option value="صامطة">صامطة</option>
+        <option value="الدرب">الدرب</option>
+        <option value="فيفا">فيفا</option>
+        <option value="العارضة">العارضة</option>
+        <option value="أخرى">أخرى</option>
+      </select>
+    </div>
+    <div class="frow"><div class="fl2">رسوم التسجيل (٥٠ ريال)</div>
+      <select class="fsel" id="nm-fee-paid">
+        <option value="1">مسدّدة</option>
+        <option value="0">لم تُسدَّد</option>
+      </select>
+    </div>
+    <div class="mactions">
+      <button class="mbtn save" onclick="saveMember()">💾 تسجيل</button>
+      <button class="mbtn cancel" onclick="closeModal('m-member')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Receipt -->
+<div class="modal-bg" id="m-receipt">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3>📋 سند قبض جديد</h3>
+    <div class="frow">
+      <div class="fl2">المراجع</div>
+      <input class="finput" id="rc-name" type="text" placeholder="اكتب الاسم أو ابحث عن عضو..." autocomplete="off" oninput="searchMember(this.value)"/>
+      <div id="member-suggestions" style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);margin-top:4px;display:none;max-height:150px;overflow-y:auto;"></div>
+    </div>
+    <div class="frow"><div class="fl2">رقم الجواز</div><input class="finput" id="rc-pass" type="text" placeholder="اختياري" dir="ltr"/></div>
+    <div class="frow">
+      <div class="fl2">وصف الخدمة *</div>
+      <input class="finput" id="rc-desc" type="text" placeholder="اكتب وصف الخدمة والمبلغ يدوياً..."/>
+    </div>
+    <div class="frow"><div class="fl2">المبلغ (ريال) *</div>
+      <div class="amtbox" style="margin-bottom:8px;font-size:30px;padding:10px;"><span id="rc-amt-display">0</span> <span class="amtu">ر.س</span></div>
+      <div class="qbtns">
+        <button class="qb" onclick="addRcAmt(50)">٥٠</button>
+        <button class="qb" onclick="addRcAmt(100)">١٠٠</button>
+        <button class="qb" onclick="addRcAmt(200)">٢٠٠</button>
+        <button class="qb" onclick="addRcAmt(300)">٣٠٠</button>
+        <button class="qb" onclick="addRcAmt(400)">٤٠٠</button>
+        <button class="qb" onclick="addRcAmt(500)">٥٠٠</button>
+        <button class="qb blue" onclick="customRcAmt()">✏️ يدوي</button>
+        <button class="qb red" onclick="clearRcAmt()">✕ مسح</button>
+      </div>
+    </div>
+    <div class="frow"><div class="fl2">ملاحظات</div><input class="finput" id="rc-notes" type="text" placeholder="اختياري..."/></div>
+    <div class="mactions">
+      <button class="mbtn save" id="rc-save-btn" onclick="saveReceipt()">💾 حفظ وطباعة</button>
+      <button class="mbtn cancel" onclick="closeModal('m-receipt')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Payment Order -->
+<div class="modal-bg" id="m-payment">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3>📄 سند صرف جديد</h3>
+    <div class="frow"><div class="fl2">المستفيد *</div><input class="finput" id="np-ben" type="text" placeholder="اسم الشخص أو الجهة"/></div>
+    <div class="frow"><div class="fl2">البيان / الغرض *</div><input class="finput" id="np-desc" type="text" placeholder="وصف مفصّل لسبب الصرف"/></div>
+    <div class="frow"><div class="fl2">المبلغ (ريال) *</div><input class="finput big" id="np-amt" type="number" inputmode="numeric" placeholder="0"/></div>
+    <div class="frow">
+      <div class="fl2">التصنيف</div>
+      <select class="fsel" id="np-cat">
+        <option>إيجار قاعة</option>
+        <option>سكن موظفين</option>
+        <option>مواصلات</option>
+        <option>قرطاسية</option>
+        <option>ضيافة</option>
+        <option>رواتب</option>
+        <option>طوارئ</option>
+        <option>أخرى</option>
+      </select>
+    </div>
+    <div class="frow"><div class="fl2">ملاحظات</div><input class="finput" id="np-notes" type="text" placeholder="اختياري..."/></div>
+    <div style="background:var(--blue-p);border:1px solid #c5d5e8;border-radius:var(--r-sm);padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--blue);">
+      ℹ️ سيمر بتسلسل موافقة: المالية ← الأمين العام ← الرئيس
+    </div>
+    <div class="mactions">
+      <button class="mbtn save" onclick="submitPayment()">📤 رفع الطلب</button>
+      <button class="mbtn cancel" onclick="closeModal('m-payment')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Detail/Approval -->
+<div class="modal-bg" id="m-pdetail">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3 id="pdet-title">سند صرف</h3>
+    <div id="pdet-body"></div>
+    <div class="mactions" id="pdet-actions"></div>
+  </div>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <div class="lbox">
+    <div class="llogo">
+      <div class="flag">🇸🇩</div>
+      <h1>الجالية السودانية بجازان</h1>
+      <p>بوابة الخدمات الرقمية</p>
+    </div>
+    <hr class="ldiv"/>
+    <div class="fl">المستخدم</div>
+    <select class="user-select" id="login-user" onchange="onUserSel(this.value)">
+      <option value="">— اختر —</option>
+    </select>
+    <div class="fl">كلمة المرور</div>
+    <div class="pw-wrap">
+      <input class="linput" id="lpw" type="password" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <button class="pw-toggle" onclick="togglePw()" type="button">👁</button>
+    </div>
+    <div class="lerr" id="lerr">❌ كلمة المرور غير صحيحة</div>
+    <button class="lbtn" onclick="doLogin()">دخول</button>
+    <div id="db-status" style="margin-top:14px;font-size:11px;color:var(--muted);text-align:center;"></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app-screen">
+  <div class="hdr">
+    <div id="sync-bar"><div class="sdot sync" id="sdot"></div><span id="stxt">جاري الاتصال...</span><span style="margin-right:auto;font-size:10px;opacity:.6;" id="scnt"></span></div>
+    <div class="hdr-inner">
+      <div class="hlogo">🇸🇩</div>
+      <div class="htext"><h1>الجالية السودانية بجازان</h1><p id="hsubt">—</p></div>
+      <div class="hright">
+        <span class="ubadge" id="ubadge">—</span>
+        <button class="lout" onclick="doLogout()">خروج</button>
+      </div>
+    </div>
+  </div>
+  <div class="screens" id="screens">
+    <!-- DASHBOARD -->
+    <div class="screen" id="screen-dash">
+      <div class="welcome" id="welcome-box">
+        <div class="wtitle" id="w-title">أهلاً</div>
+        <div class="wsub" id="w-sub"></div>
+        <div class="wrole" id="w-role"></div>
+      </div>
+      <div class="mgrid" id="dash-metrics"></div>
+      <div class="card" id="dash-perf"></div>
+    </div>
+    <!-- COLLECTOR -->
+    <div class="screen" id="screen-collect">
+      <div class="card" style="background:var(--gp);border-color:var(--gpp);padding:12px;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:700;color:var(--gd);" id="coll-bar">📋 —</div>
+      </div>
+      <div class="card">
+        <div class="ctitle">بيانات المراجع</div>
+        <div class="frow"><div class="fl2">الاسم *</div>
+          <input class="finput" id="fn" type="text" placeholder="محمد إبراهيم خليل" autocomplete="off" oninput="searchMemberInline(this.value)"/>
+          <div id="inline-suggestions" style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);margin-top:4px;display:none;max-height:130px;overflow-y:auto;"></div>
+        </div>
+        <div class="frow"><div class="fl2">رقم الجواز</div><input class="finput" id="fp" type="text" placeholder="A12345678" dir="ltr" autocomplete="off"/></div>
+        <div class="frow"><div class="fl2">وصف الخدمة *</div><input class="finput" id="fdesc" type="text" placeholder="اكتب وصف الخدمة..."/></div>
+        <div class="frow"><div class="fl2">ملاحظات</div><input class="finput" id="fnotes" type="text" placeholder="اختياري..."/></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">المبلغ المسدد</div>
+        <div class="amtbox"><span id="amtv">0</span> <span class="amtu">ر.س</span></div>
+        <div class="qbtns">
+          <button class="qb" onclick="addAmt(50)">٥٠</button>
+          <button class="qb" onclick="addAmt(100)">١٠٠</button>
+          <button class="qb" onclick="addAmt(150)">١٥٠</button>
+          <button class="qb" onclick="addAmt(200)">٢٠٠</button>
+          <button class="qb" onclick="addAmt(300)">٣٠٠</button>
+          <button class="qb" onclick="addAmt(500)">٥٠٠</button>
+          <button class="qb blue" onclick="customAmt()">✏️ يدوي</button>
+          <button class="qb red" onclick="clearAmt()">✕ مسح</button>
+        </div>
+      </div>
+      <button class="savebtn" id="savebtn" onclick="saveReceipt2()">💾 حفظ وطباعة السند</button>
+      <div style="height:16px;"></div>
+    </div>
+    <!-- RECORDS -->
+    <div class="screen" id="screen-records">
+      <div class="actbtns">
+        <button class="abtn green" onclick="printReport()">🖨️ تقرير</button>
+        <button class="abtn blue" onclick="exportCSV()">📥 CSV</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="fbar">
+          <input class="sbox" id="srch" type="search" placeholder="🔍 بحث..." oninput="renderRecordsTable()"/>
+          <input class="datein" id="fdate" type="date" onchange="renderRecordsTable()"/>
+          <button class="ibtn p" onclick="clearRecordFilters()">✕</button>
+        </div>
+        <div class="twrap"><table class="tbl">
+          <thead><tr><th>#</th><th>الاسم</th><th>الخدمة</th><th>المبلغ</th><th>المحصّل</th><th>الوقت</th><th></th></tr></thead>
+          <tbody id="rec-tbody"></tbody>
+        </table></div>
+        <div class="tbl-foot" id="rec-foot"></div>
+      </div>
+    </div>
+    <!-- PAYMENTS -->
+    <div class="screen" id="screen-payments">
+      <div id="my-approvals-wrap" style="display:none;">
+        <div class="card" style="border-color:var(--gold);background:var(--gold-l);padding:14px;">
+          <div class="ctitle" style="color:var(--gold-d);">⏳ تنتظر موافقتك</div>
+          <div id="my-approvals"></div>
+        </div>
+      </div>
+      <div class="actbtns">
+        <button class="abtn green" onclick="openModal('m-payment')">➕ سند صرف جديد</button>
+        <button class="abtn blue" onclick="printPaymentsReport()">🖨️ تقرير الصرف</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="fbar">
+          <select class="fsel2" id="pmt-status" onchange="renderPaymentsTable()" style="flex:1;">
+            <option value="">كل الحالات</option>
+            <option value="pending_finance">بانتظار المالية</option>
+            <option value="pending_secretary">بانتظار الأمين العام</option>
+            <option value="pending_president">بانتظار الرئيس</option>
+            <option value="approved">معتمدة</option>
+            <option value="paid">مصروفة</option>
+            <option value="rejected">مرفوضة</option>
+          </select>
+          <input class="datein" id="pmt-date" type="date" onchange="renderPaymentsTable()"/>
+          <button class="ibtn p" onclick="clearPaymentFilters()">✕</button>
+        </div>
+        <div id="pmts-list"></div>
+        <div class="tbl-foot" id="pmt-foot"></div>
+      </div>
+    </div>
+    <!-- MEMBERS -->
+    <div class="screen" id="screen-members">
+      <div class="actbtns">
+        <button class="abtn green" onclick="openModal('m-member')">➕ عضو جديد</button>
+        <button class="abtn blue" onclick="exportMembersCSV()">📥 تصدير</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="fbar">
+          <input class="sbox" id="msrch" type="search" placeholder="🔍 بحث بالاسم أو الجواز..." oninput="renderMembersTable()"/>
+          <select class="fsel2" id="mstat" onchange="renderMembersTable()">
+            <option value="">كل الحالات</option>
+            <option value="active">نشط</option>
+            <option value="late">متأخر</option>
+          </select>
+        </div>
+        <div class="twrap"><table class="tbl">
+          <thead><tr><th>#</th><th>الاسم</th><th>الجواز</th><th>المنطقة</th><th>الحالة</th><th></th></tr></thead>
+          <tbody id="mem-tbody"></tbody>
+        </table></div>
+        <div class="tbl-foot" id="mem-foot"></div>
+      </div>
+    </div>
+  </div>
+  <div class="bnav" id="bnav"></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════
+   🔧 SUPABASE CONFIG
+   استبدل القيم بمشروعك من supabase.com
+══════════════════════════════════════════════════ */
+const SB_URL = 'https://ynjulkvlqajmqsabujzp.supabase.co';
+const SB_KEY = 'sb_publishable_sxoxcY4fmz5cc0RqlngNEA_XXul-wMu';
+
+/* ══════════════════════════════════════════════════
+   👥 USERS — أضف أو عدّل هنا
+══════════════════════════════════════════════════ */
+const USERS = [
+  { id:'u1', username:'ahmed',     name:'أحمد محمد',      role:'collector',  pw:'1234'        },
+  { id:'u2', username:'mohammed',  name:'محمد عمر',       role:'collector',  pw:'1234'        },
+  { id:'u3', username:'finance',   name:'الأمانة المالية', role:'finance',    pw:'finance2026' },
+  { id:'u4', username:'secretary', name:'الأمين العام',   role:'secretary',  pw:'sec2026'     },
+  { id:'u5', username:'president', name:'الرئيس',         role:'president',  pw:'pres2026'    },
+  { id:'u6', username:'admin',     name:'مدير النظام',    role:'admin',      pw:'admin2026'   },
+];
+
+const ROLES = {
+  collector:  { label:'محصّل',        emoji:'👤', color:'#3a9e6f', perms:['collect'] },
+  finance:    { label:'المالية',      emoji:'💰', color:'#c9a84c', perms:['collect','records','payments','dash','void_s1'] },
+  secretary:  { label:'أمين عام',    emoji:'📋', color:'#1a5fa8', perms:['records','payments','members','dash','void_s2'] },
+  president:  { label:'الرئيس',      emoji:'👑', color:'#c0392b', perms:['records','payments','members','dash','void_s3'] },
+  admin:      { label:'مدير النظام', emoji:'🛡️', color:'#6c3483', perms:['*'] },
+};
+
+const PMT_STEPS = [
+  { key:'step1_finance',   label:'المالية',     perm:'void_s1', status:'pending_finance',   icon:'💰' },
+  { key:'step2_secretary', label:'الأمين العام', perm:'void_s2', status:'pending_secretary', icon:'📋' },
+  { key:'step3_president', label:'الرئيس',      perm:'void_s3', status:'pending_president',  icon:'👑' },
+];
+
+/* ══════════════════════════════════════════════════
+   DB STATE
+══════════════════════════════════════════════════ */
+let supabase = null;
+let useDB = false;
+let curUser = null;
+let cachedReceipts = [];
+let cachedPayments = [];
+let cachedMembers  = [];
+let rcAmt = 0, colAmt = 0;
+let currentPmt = null;
+let recCounter = parseInt(localStorage.getItem('sj_rctr')||'3000');
+let pmtCounter = parseInt(localStorage.getItem('sj_pctr')||'5000');
+let memCounter = parseInt(localStorage.getItem('sj_mctr')||'1000');
+
+/* ══ INIT ══ */
+function initDB(){
+  const el = document.getElementById('db-status');
+  try {
+    if(SB_URL === 'YOUR_SUPABASE_URL'){
+      el.textContent = '⚠️ Supabase غير مُهيَّأ — يعمل محلياً';
+      el.style.color = '#c9a84c';
+      useDB = false;
+      return;
+    }
+    supabase = window.supabase.createClient(SB_URL, SB_KEY);
+    useDB = true;
+    el.textContent = '✅ متصل بقاعدة البيانات السحابية';
+    el.style.color = '#2e6b4f';
+    setSyncStatus('on','متصل بقاعدة البيانات');
+  } catch(e){
+    el.textContent = '⚠️ خطأ في الاتصال — يعمل محلياً';
+    useDB = false;
+  }
+}
+
+/* ══ SYNC STATUS ══ */
+function setSyncStatus(st,txt){
+  const bar=document.getElementById('sync-bar');
+  const dot=document.getElementById('sdot');
+  if(bar) bar.style.display='flex';
+  if(dot) dot.className='sdot'+(st==='on'?'':st==='off'?' off':' sync');
+  const stxt=document.getElementById('stxt');
+  if(stxt) stxt.textContent=txt;
+}
+
+/* ══ LOCAL FALLBACK ══ */
+const LS = {
+  get:(k,d=[])=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d));}catch{return d;}},
+  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))
+};
+function nextId(key,def){ const v=(parseInt(localStorage.getItem(key)||def))+1; localStorage.setItem(key,v); return v; }
+
+/* ══ DB HELPERS ══ */
+async function dbInsert(table, row){
+  if(useDB){
+    const {data,error} = await supabase.from(table).insert(row).select().single();
+    if(error) throw error;
+    return data;
+  } else {
+    const arr = LS.get('sj_'+table); arr.push(row); LS.set('sj_'+table, arr);
+    return row;
+  }
+}
+async function dbUpdate(table, id, data){
+  if(useDB){
+    const {error} = await supabase.from(table).update(data).eq('id', id);
+    if(error) throw error;
+  } else {
+    const arr = LS.get('sj_'+table);
+    const i = arr.findIndex(x=>x.id===id);
+    if(i>=0){ Object.assign(arr[i],data); LS.set('sj_'+table,arr); }
+  }
+}
+async function dbFetch(table, filters={}){
+  if(useDB){
+    let q = supabase.from(table).select('*').order('created_at', {ascending:false});
+    Object.entries(filters).forEach(([k,v])=>{ q=q.eq(k,v); });
+    const {data,error} = await q;
+    if(error) throw error;
+    return data||[];
+  } else {
+    let arr = LS.get('sj_'+table);
+    Object.entries(filters).forEach(([k,v])=>{ arr=arr.filter(x=>x[k]===v); });
+    return arr.slice().reverse();
+  }
+}
+
+/* ══ LOAD ALL ══ */
+async function loadAll(){
+  setSyncStatus('sync','جاري تحميل البيانات...');
+  try{
+    cachedReceipts = await dbFetch('receipts');
+    cachedPayments = await dbFetch('payments');
+    cachedMembers  = await dbFetch('members');
+    document.getElementById('scnt').textContent =
+      cachedReceipts.length+' سند · '+cachedMembers.length+' عضو';
+    setSyncStatus('on','متصل — محدّث');
+  }catch(e){
+    setSyncStatus('off','خطأ في التحميل — بيانات محلية');
+    cachedReceipts = LS.get('sj_receipts');
+    cachedPayments = LS.get('sj_payments');
+    cachedMembers  = LS.get('sj_members');
+  }
+}
+
+/* ══ LOGIN ══ */
+function buildLoginUI(){
+  const sel = document.getElementById('login-user');
+  USERS.forEach(u=>{
+    const o = document.createElement('option');
+    o.value=u.id; o.textContent=u.name+' ('+ROLES[u.role].label+')';
+    sel.appendChild(o);
+  });
+}
+let loginUser=null;
+function onUserSel(id){ loginUser=USERS.find(u=>u.id===id)||null; document.getElementById('lerr').classList.remove('show'); }
+function togglePw(){ const i=document.getElementById('lpw'); i.type=i.type==='password'?'text':'password'; }
+async function doLogin(){
+  if(!loginUser){showToast('اختر المستخدم أولاً','warn');return;}
+  const pw=document.getElementById('lpw').value;
+  if(pw!==loginUser.pw){document.getElementById('lerr').classList.add('show');return;}
+  curUser=loginUser;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').classList.add('show');
+  document.getElementById('ubadge').textContent=ROLES[curUser.role].emoji+' '+curUser.name;
+  document.getElementById('hsubt').textContent=ROLES[curUser.role].label;
+  document.getElementById('w-title').textContent='أهلاً، '+curUser.name;
+  document.getElementById('w-sub').textContent=new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('w-role').textContent=ROLES[curUser.role].emoji+' '+ROLES[curUser.role].label;
+  document.getElementById('coll-bar').textContent='📋 المحصّل: '+curUser.name;
+  document.getElementById('lpw').value='';
+  buildNav();
+  await loadAll();
+}
+function doLogout(){
+  if(!confirm('هل تريد الخروج؟')) return;
+  curUser=null;
+  document.getElementById('app-screen').classList.remove('show');
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('sync-bar').style.display='none';
+}
+
+function hasPerm(p){ if(!curUser) return false; const ps=ROLES[curUser.role]?.perms||[]; return ps.includes('*')||ps.includes(p); }
+
+/* ══ NAV ══ */
+const NAV_ITEMS=[
+  {id:'dash',     ico:'📊', lbl:'الرئيسية', perm:'dash'},
+  {id:'collect',  ico:'📋', lbl:'تحصيل',   perm:'collect'},
+  {id:'records',  ico:'🗂️', lbl:'السندات', perm:'records'},
+  {id:'payments', ico:'📄', lbl:'الصرف',   perm:'void_s1'},
+  {id:'members',  ico:'👥', lbl:'الأعضاء', perm:'members'},
+];
+function buildNav(){
+  const vis=NAV_ITEMS.filter(n=>hasPerm(n.perm)||n.perm==='collect'&&hasPerm('collect'));
+  document.getElementById('bnav').innerHTML=vis.map(n=>`
+    <button class="bni" id="bni-${n.id}" onclick="switchTab('${n.id}')">
+      <span class="ico">${n.ico}</span>${n.lbl}
+    </button>`).join('');
+  if(vis.length) switchTab(vis[0].id);
+}
+function switchTab(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.bni').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+id)?.classList.add('active');
+  document.getElementById('bni-'+id)?.classList.add('active');
+  document.getElementById('screens').scrollTop=0;
+  if(id==='dash') renderDash();
+  if(id==='records') renderRecordsTable();
+  if(id==='payments'){ renderPaymentsTable(); renderMyApprovals(); }
+  if(id==='members') renderMembersTable();
+}
+
+/* ══ DASHBOARD ══ */
+function renderDash(){
+  const total=cachedReceipts.reduce((s,r)=>s+(r.amount||0),0);
+  const today=new Date().toDateString();
+  const tr=cachedReceipts.filter(r=>new Date(r.created_at||r.time||Date.now()).toDateString()===today);
+  const tt=tr.reduce((s,r)=>s+(r.amount||0),0);
+  const exp=cachedPayments.filter(p=>p.status==='paid').reduce((s,p)=>s+(p.amount||0),0);
+  const mems=cachedMembers.length;
+  document.getElementById('dash-metrics').innerHTML=`
+    <div class="mcard"><div class="mval" style="color:var(--gm)">${cachedReceipts.length}</div><div class="mlbl">إجمالي السندات</div></div>
+    <div class="mcard"><div class="mval" style="color:var(--gd)">${total.toLocaleString('ar-SA')}</div><div class="mlbl">إجمالي التحصيل ر.س</div></div>
+    <div class="mcard"><div class="mval" style="color:var(--blue)">${tr.length}<span style="font-size:12px;display:block;color:var(--muted)">${tt.toLocaleString('ar-SA')} ر.س</span></div><div class="mlbl">سندات اليوم</div></div>
+    <div class="mcard"><div class="mval" style="color:${total-exp>=0?'var(--gl)':'var(--red)'}">${(total-exp).toLocaleString('ar-SA')}</div><div class="mlbl">الصافي ر.س</div></div>
+    <div class="mcard"><div class="mval" style="color:var(--red)">${exp.toLocaleString('ar-SA')}</div><div class="mlbl">المصروفات ر.س</div></div>
+    <div class="mcard"><div class="mval" style="color:var(--purple,#6c3483)">${mems}</div><div class="mlbl">الأعضاء المسجلون</div></div>`;
+  // Perf
+  const cols=USERS.filter(u=>u.role==='collector');
+  const mx=Math.max(...cols.map(u=>cachedReceipts.filter(r=>r.collector_id===u.id).reduce((s,r)=>s+(r.amount||0),0)),1);
+  const pcs=['#1a5fa8','#2e6b4f','#c9a84c'];
+  document.getElementById('dash-perf').innerHTML=`<div class="ctitle">📈 أداء المحصّلين</div>`+
+    cols.map((u,i)=>{
+      const ur=cachedReceipts.filter(r=>r.collector_id===u.id);
+      const ut=ur.reduce((s,r)=>s+(r.amount||0),0);
+      return`<div class="perfrow">
+        <div class="pavatar" style="background:${pcs[i]}22;color:${pcs[i]}">${u.name.slice(0,2)}</div>
+        <div style="flex:1;"><div style="font-size:13px;font-weight:600;">${u.name}</div>
+          <div class="barbg"><div class="barfill" style="width:${(ut/mx*100).toFixed(0)}%;background:${pcs[i]};"></div></div></div>
+        <div style="text-align:left;min-width:80px;">
+          <div style="font-size:12px;font-weight:700;color:${pcs[i]}">${ut.toLocaleString('ar-SA')} ر.س</div>
+          <div style="font-size:10px;color:var(--muted)">${ur.length} سند</div>
+        </div></div>`;
+    }).join('');
+}
+
+/* ══ AMOUNT COLLECTOR SCREEN ══ */
+function addAmt(n){ colAmt+=n; document.getElementById('amtv').textContent=colAmt.toLocaleString('ar-SA'); }
+function clearAmt(){ colAmt=0; document.getElementById('amtv').textContent='0'; }
+function customAmt(){ const v=prompt('أدخل المبلغ:'); if(v&&!isNaN(v)&&+v>0){colAmt=+v;document.getElementById('amtv').textContent=colAmt.toLocaleString('ar-SA');} }
+
+/* ══ AMOUNT RECEIPT MODAL ══ */
+function addRcAmt(n){ rcAmt+=n; document.getElementById('rc-amt-display').textContent=rcAmt.toLocaleString('ar-SA'); }
+function clearRcAmt(){ rcAmt=0; document.getElementById('rc-amt-display').textContent='0'; }
+function customRcAmt(){ const v=prompt('أدخل المبلغ:'); if(v&&!isNaN(v)&&+v>0){rcAmt=+v;document.getElementById('rc-amt-display').textContent=rcAmt.toLocaleString('ar-SA');} }
+
+/* ══ MEMBER SEARCH ══ */
+function buildSuggestions(q, container, onSelect){
+  if(!q||q.length<2){ container.style.display='none'; return; }
+  const res=cachedMembers.filter(m=>(m.name||'').includes(q)||(m.passport||'').includes(q)).slice(0,5);
+  if(!res.length){ container.style.display='none'; return; }
+  container.style.display='block';
+  container.innerHTML=res.map(m=>`
+    <div style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onclick='${onSelect}(${JSON.stringify(m)})'>
+      ${m.name} <span style="color:var(--muted);font-size:11px;">— ${m.passport||''}</span>
+    </div>`).join('');
+}
+function searchMember(q){ buildSuggestions(q, document.getElementById('member-suggestions'), 'fillMember'); }
+function searchMemberInline(q){ buildSuggestions(q, document.getElementById('inline-suggestions'), 'fillMemberInline'); }
+function fillMember(m){
+  document.getElementById('rc-name').value=m.name;
+  document.getElementById('rc-pass').value=m.passport||'';
+  document.getElementById('member-suggestions').style.display='none';
+}
+function fillMemberInline(m){
+  document.getElementById('fn').value=m.name;
+  document.getElementById('fp').value=m.passport||'';
+  document.getElementById('inline-suggestions').style.display='none';
+}
+
+/* ══ SAVE RECEIPT (COLLECTOR SCREEN) ══ */
+async function saveReceipt2(){
+  const name=document.getElementById('fn').value.trim();
+  const pass=document.getElementById('fp').value.trim();
+  const desc=document.getElementById('fdesc').value.trim();
+  const notes=document.getElementById('fnotes').value.trim();
+  if(!name){showToast('أدخل اسم المراجع','err');return;}
+  if(!desc){showToast('أدخل وصف الخدمة','err');return;}
+  if(colAmt<=0){showToast('أدخل المبلغ','err');return;}
+  const btn=document.getElementById('savebtn');
+  btn.disabled=true; btn.textContent='⏳ جاري الحفظ...';
+  const id=nextId('sj_rctr',3000);
+  const rec={id, name, passport:pass, description:desc, notes, amount:colAmt,
+    collector:curUser.name, collector_id:curUser.id,
+    time:new Date().toISOString(), created_at:new Date().toISOString(), status:'active'};
+  try{
+    await dbInsert('receipts',rec);
+    cachedReceipts.unshift(rec);
+    document.getElementById('scnt').textContent=cachedReceipts.length+' سند · '+cachedMembers.length+' عضو';
+    ['fn','fp','fdesc','fnotes'].forEach(id=>document.getElementById(id).value='');
+    clearAmt();
+    beep();
+    showToast('✓ تم — سند رقم '+id,'ok');
+    printReceiptDoc(rec);
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+  finally{btn.disabled=false;btn.textContent='💾 حفظ وطباعة السند';}
+}
+
+/* ══ SAVE RECEIPT (MODAL) ══ */
+async function saveReceipt(){
+  const name=document.getElementById('rc-name').value.trim();
+  const pass=document.getElementById('rc-pass').value.trim();
+  const desc=document.getElementById('rc-desc').value.trim();
+  const notes=document.getElementById('rc-notes').value.trim();
+  if(!name){showToast('أدخل الاسم','err');return;}
+  if(!desc){showToast('أدخل وصف الخدمة','err');return;}
+  if(rcAmt<=0){showToast('أدخل المبلغ','err');return;}
+  const id=nextId('sj_rctr',3000);
+  const rec={id,name,passport:pass,description:desc,notes,amount:rcAmt,
+    collector:curUser.name,collector_id:curUser.id,
+    time:new Date().toISOString(),created_at:new Date().toISOString(),status:'active'};
+  try{
+    await dbInsert('receipts',rec);
+    cachedReceipts.unshift(rec);
+    closeModal('m-receipt');
+    clearRcAmt();
+    beep();
+    showToast('✓ سند رقم '+id,'ok');
+    printReceiptDoc(rec);
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+/* ══ SAVE MEMBER ══ */
+async function saveMember(){
+  const name=document.getElementById('nm-name').value.trim();
+  const pass=document.getElementById('nm-pass').value.trim();
+  const phone=document.getElementById('nm-phone').value.trim();
+  const job=document.getElementById('nm-job').value.trim();
+  const region=document.getElementById('nm-region').value;
+  const fee=document.getElementById('nm-fee-paid').value==='1';
+  if(!name){showToast('أدخل الاسم','err');return;}
+  if(!pass){showToast('أدخل رقم الجواز','err');return;}
+  const id='M'+nextId('sj_mctr',1000).toString().padStart(4,'0');
+  const mem={id,name,passport:pass,phone,job,region,fee_paid:fee,
+    status:'active',created_at:new Date().toISOString(),joined_at:new Date().toISOString()};
+  try{
+    await dbInsert('members',mem);
+    cachedMembers.unshift(mem);
+    closeModal('m-member');
+    showToast('✓ تم تسجيل '+name,'ok');
+    renderMembersTable();
+    // Auto receipt for fee
+    if(fee){
+      const rid=nextId('sj_rctr',3000);
+      const frec={id:rid,name,passport:pass,description:'رسوم تسجيل عضوية',notes:'',amount:50,
+        collector:curUser.name,collector_id:curUser.id,
+        time:new Date().toISOString(),created_at:new Date().toISOString(),status:'active'};
+      await dbInsert('receipts',frec);
+      cachedReceipts.unshift(frec);
+      printReceiptDoc(frec);
+    }
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+/* ══ RECORDS TABLE ══ */
+function renderRecordsTable(){
+  const q=(document.getElementById('srch')||{}).value||'';
+  const fd=(document.getElementById('fdate')||{}).value||'';
+  let recs=[...cachedReceipts].filter(r=>
+    ((r.name||'').includes(q)||(r.passport||'').includes(q)||(r.description||'').includes(q))&&
+    (!fd||new Date(r.created_at||r.time||Date.now()).toISOString().slice(0,10)===fd)
+  );
+  const tot=recs.reduce((s,r)=>s+(r.amount||0),0);
+  document.getElementById('rec-foot').textContent=recs.length+' سند — إجمالي: '+tot.toLocaleString('ar-SA')+' ر.س';
+  const tb=document.getElementById('rec-tbody');
+  if(!recs.length){tb.innerHTML='<tr><td colspan="7"><div class="empty">لا توجد سندات</div></td></tr>';return;}
+  tb.innerHTML=recs.map(r=>{
+    const d=new Date(r.created_at||r.time||Date.now());
+    return`<tr>
+      <td style="color:var(--muted);font-size:10px;">${r.id}</td>
+      <td style="font-weight:600;font-size:12px;">${r.name}</td>
+      <td style="font-size:11px;"><span class="badge bg">${(r.description||'').slice(0,12)}</span></td>
+      <td style="font-weight:700;color:var(--gd);font-size:13px;">${(r.amount||0).toLocaleString('ar-SA')}</td>
+      <td><span class="badge bb" style="font-size:10px;">${r.collector||'—'}</span></td>
+      <td style="font-size:10px;color:var(--muted);">${d.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'})}<br/>${d.toLocaleDateString('ar-SA',{month:'short',day:'numeric'})}</td>
+      <td><button class="ibtn p" onclick='printReceiptDoc(${JSON.stringify(r)})'>🖨️</button></td>
+    </tr>`;
+  }).join('');
+}
+function clearRecordFilters(){document.getElementById('srch').value='';document.getElementById('fdate').value='';renderRecordsTable();}
+
+/* ══ MEMBERS TABLE ══ */
+function renderMembersTable(){
+  const q=(document.getElementById('msrch')||{}).value||'';
+  const st=(document.getElementById('mstat')||{}).value||'';
+  let mems=[...cachedMembers].filter(m=>
+    ((m.name||'').includes(q)||(m.passport||'').includes(q))&&(!st||m.status===st)
+  );
+  document.getElementById('mem-foot').textContent=mems.length+' عضو';
+  const tb=document.getElementById('mem-tbody');
+  if(!mems.length){tb.innerHTML='<tr><td colspan="6"><div class="empty">لا يوجد أعضاء</div></td></tr>';return;}
+  const stLbl={active:'نشط',late:'متأخر',stopped:'موقوف'};
+  const stCls={active:'bg',late:'bo',stopped:'br'};
+  tb.innerHTML=mems.map(m=>`<tr>
+    <td style="color:var(--muted);font-size:10px;">${m.id}</td>
+    <td style="font-weight:600;font-size:12px;">${m.name}</td>
+    <td style="font-size:11px;color:var(--muted);">${m.passport||'—'}</td>
+    <td style="font-size:11px;">${m.region||'—'}</td>
+    <td><span class="badge ${stCls[m.status]||'bb'}">${stLbl[m.status]||m.status}</span></td>
+    <td><button class="ibtn p" onclick='printMemberCard(${JSON.stringify(m)})'>🪪</button></td>
+  </tr>`).join('');
+}
+
+/* ══ PAYMENTS ══ */
+async function submitPayment(){
+  const ben=document.getElementById('np-ben').value.trim();
+  const desc=document.getElementById('np-desc').value.trim();
+  const amt=parseFloat(document.getElementById('np-amt').value)||0;
+  const cat=document.getElementById('np-cat').value;
+  const notes=document.getElementById('np-notes').value.trim();
+  if(!ben){showToast('أدخل المستفيد','err');return;}
+  if(!desc){showToast('أدخل البيان','err');return;}
+  if(amt<=0){showToast('أدخل المبلغ','err');return;}
+  const id=nextId('sj_pctr',5000);
+  const pmt={id,beneficiary:ben,description:desc,amount:amt,category:cat,notes,
+    status:'pending_finance',requested_by:curUser.name,requested_by_id:curUser.id,
+    step1_finance:null,step2_secretary:null,step3_president:null,
+    rejected_by:null,rejected_reason:null,paid_by:null,
+    created_at:new Date().toISOString(),time:new Date().toISOString()};
+  try{
+    await dbInsert('payments',pmt);
+    cachedPayments.unshift(pmt);
+    closeModal('m-payment');
+    ['np-ben','np-desc','np-amt','np-notes'].forEach(i=>document.getElementById(i).value='');
+    showToast('✓ تم رفع طلب الصرف رقم '+id,'ok');
+    renderPaymentsTable(); renderMyApprovals();
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+function canActOnPmt(p){
+  if(['paid','rejected'].includes(p.status)) return false;
+  return PMT_STEPS.some((s,i)=>hasPerm(s.perm)&&!p[s.key]&&(i===0||!!p[PMT_STEPS[i-1].key])&&p.status===s.status);
+}
+
+function renderMyApprovals(){
+  const mine=cachedPayments.filter(p=>canActOnPmt(p));
+  const w=document.getElementById('my-approvals-wrap');
+  const l=document.getElementById('my-approvals');
+  if(!w||!l)return;
+  w.style.display=mine.length?'block':'none';
+  l.innerHTML=mine.map(p=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.08);">
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;">${p.beneficiary}</div>
+        <div style="font-size:11px;color:var(--gold-d);">${p.description} · ${(p.amount||0).toLocaleString('ar-SA')} ر.س</div></div>
+      <button class="ibtn e" onclick='openPmtDetail(${JSON.stringify(p)})'>موافقة</button>
+    </div>`).join('');
+}
+
+const PMT_STATUS_META={
+  pending_finance:  {lbl:'بانتظار المالية',     cls:'bo'},
+  pending_secretary:{lbl:'بانتظار الأمين العام', cls:'bb'},
+  pending_president:{lbl:'بانتظار الرئيس',      cls:'br'},
+  approved:         {lbl:'معتمد — ينتظر الصرف', cls:'bg'},
+  paid:             {lbl:'مصروف',               cls:'bg'},
+  rejected:         {lbl:'مرفوض',              cls:'br'},
+};
+
+function renderPaymentsTable(){
+  const sf=(document.getElementById('pmt-status')||{}).value||'';
+  const df=(document.getElementById('pmt-date')||{}).value||'';
+  let pmts=[...cachedPayments].filter(p=>
+    (!sf||p.status===sf)&&(!df||new Date(p.created_at||p.time).toISOString().slice(0,10)===df)
+  );
+  const tot=pmts.reduce((s,p)=>s+(p.amount||0),0);
+  document.getElementById('pmt-foot').textContent=pmts.length+' سند — إجمالي: '+tot.toLocaleString('ar-SA')+' ر.س';
+  const el=document.getElementById('pmts-list');
+  if(!el)return;
+  if(!pmts.length){el.innerHTML='<div class="empty">لا توجد سندات صرف</div>';return;}
+  el.innerHTML=pmts.map(p=>{
+    const sm=PMT_STATUS_META[p.status]||{lbl:p.status,cls:'bb'};
+    const canAct=canActOnPmt(p);
+    const d=new Date(p.created_at||p.time);
+    return`<div style="padding:13px 12px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;">${p.beneficiary}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${p.description}</div>
+          <div style="font-size:11px;color:var(--muted);">${p.category||''} · ${d.toLocaleDateString('ar-SA',{month:'short',day:'numeric'})} · ${p.requested_by}</div>
+        </div>
+        <div style="text-align:left;flex-shrink:0;">
+          <div style="font-size:17px;font-weight:800;color:var(--gd);">${(p.amount||0).toLocaleString('ar-SA')} <span style="font-size:11px;">ر.س</span></div>
+          <span class="badge ${sm.cls}">${sm.lbl}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
+        ${PMT_STEPS.map(s=>`<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:${p[s.key]?'var(--gp)':'var(--surf)'};color:${p[s.key]?'var(--gd)':'var(--muted)'};border:1px solid ${p[s.key]?'var(--gl)':'var(--border)'};">${s.icon} ${s.label}: ${p[s.key]?'✓':' ⏳'}</span>`).join('')}
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button class="ibtn p" onclick='openPmtDetail(${JSON.stringify(p)})'>تفاصيل</button>
+        ${canAct?`<button class="ibtn e" onclick='openPmtDetail(${JSON.stringify(p)})'>✓ موافقة / رفض</button>`:''}
+        ${p.status==='approved'&&hasPerm('void_s1')?`<button class="ibtn p" style="color:var(--gl);" onclick='markPaid(${JSON.stringify(p)})'>✅ تأكيد الصرف</button>`:''}
+        <button class="ibtn p" onclick='printPaymentVoucher(${JSON.stringify(p)})'>🖨️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function clearPaymentFilters(){document.getElementById('pmt-status').value='';document.getElementById('pmt-date').value='';renderPaymentsTable();}
+
+function openPmtDetail(p){
+  currentPmt=p;
+  document.getElementById('pdet-title').textContent='📄 سند صرف رقم '+(p.id||'');
+  const myStep=PMT_STEPS.find((s,i)=>hasPerm(s.perm)&&!p[s.key]&&(i===0||!!p[PMT_STEPS[i-1].key])&&p.status===s.status);
+  document.getElementById('pdet-body').innerHTML=buildPmtDetailHTML(p, !!myStep);
+  document.getElementById('pdet-actions').innerHTML=myStep?`
+    <button class="mbtn save" onclick="approvePmt()">✓ موافقة</button>
+    <button class="mbtn danger" onclick="rejectPmt()">✗ رفض</button>
+    <button class="mbtn cancel" onclick="closeModal('m-pdetail')">إغلاق</button>
+  `:`<button class="mbtn cancel" onclick="closeModal('m-pdetail')">إغلاق</button>
+     <button class="mbtn save" onclick='printPaymentVoucher(currentPmt)' style="background:var(--gm);border-color:var(--gm);">🖨️ طباعة</button>`;
+  openModal('m-pdetail');
+}
+
+function buildPmtDetailHTML(p, showFields){
+  const sm=PMT_STATUS_META[p.status]||{lbl:p.status};
+  return`
+    <div style="background:var(--surf);border-radius:var(--r-sm);padding:12px;margin-bottom:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
+        <div><span style="color:var(--muted);">المستفيد:</span><br/><strong>${p.beneficiary}</strong></div>
+        <div><span style="color:var(--muted);">المبلغ:</span><br/><strong style="color:var(--gd);font-size:18px;">${(p.amount||0).toLocaleString('ar-SA')} ر.س</strong></div>
+        <div><span style="color:var(--muted);">البيان:</span><br/>${p.description}</div>
+        <div><span style="color:var(--muted);">الحالة:</span><br/><strong>${sm.lbl}</strong></div>
+        ${p.notes?`<div style="grid-column:span 2"><span style="color:var(--muted);">ملاحظات:</span><br/>${p.notes}</div>`:''}
+      </div>
+    </div>
+    ${PMT_STEPS.map((s,i)=>{
+      const done=!!p[s.key];
+      const isNext=!done&&(i===0||!!p[PMT_STEPS[i-1].key]);
+      const cls=done?'done':isNext?'cur':'wait';
+      return`<div class="astep ${cls}">
+        <div class="astep-icon">${s.icon}</div>
+        <div class="astep-info">
+          <div class="astep-name">م${i+1}: ${s.label}</div>
+          <div class="astep-sub">${done?'✓ وافق: '+p[s.key].by+' — '+new Date(p[s.key].at).toLocaleString('ar-SA'):isNext?'بانتظار الموافقة':'ينتظر المرحلة السابقة'}</div>
+        </div>
+        <span class="astep-badge ${cls}">${done?'موافق':isNext?'معلقة':'انتظار'}</span>
+      </div>`;
+    }).join('')}
+    ${p.status==='paid'?`<div class="astep done"><div class="astep-icon">✅</div><div class="astep-info"><div class="astep-name">مصروف بواسطة: ${p.paid_by||'—'}</div></div><span class="astep-badge done">مصروف</span></div>`:''}
+    ${p.status==='rejected'?`<div class="astep" style="border-color:var(--red);background:var(--red-p);"><div class="astep-icon">✗</div><div class="astep-info"><div class="astep-name">مرفوض: ${p.rejected_by||'—'}</div><div class="astep-sub">${p.rejected_reason||''}</div></div></span></div>`:''}
+    ${showFields?`
+      <div class="frow" style="margin-top:12px;"><div class="fl2">كلمة مرورك *</div><input class="finput" id="pdet-pw" type="password" placeholder="••••••"/></div>
+      <div class="frow"><div class="fl2">ملاحظة</div><input class="finput" id="pdet-note" type="text" placeholder="اختياري..."/></div>`:''}`;
+}
+
+async function approvePmt(){
+  const p=currentPmt;
+  const pw=document.getElementById('pdet-pw')?.value||'';
+  if(pw!==curUser.pw){showToast('❌ كلمة المرور غير صحيحة','err');return;}
+  const note=(document.getElementById('pdet-note')||{}).value||'';
+  const myStep=PMT_STEPS.find((s,i)=>hasPerm(s.perm)&&!p[s.key]&&(i===0||!!p[PMT_STEPS[i-1].key])&&p.status===s.status);
+  if(!myStep){showToast('ليس دورك','warn');return;}
+  const idx=PMT_STEPS.indexOf(myStep);
+  const next=PMT_STEPS[idx+1];
+  const upd={[myStep.key]:{by:curUser.name,at:new Date().toISOString(),note},status:next?next.status:'approved'};
+  try{
+    await dbUpdate('payments',p.id,upd);
+    Object.assign(p,upd);
+    const ci=cachedPayments.findIndex(x=>x.id===p.id);
+    if(ci>=0) Object.assign(cachedPayments[ci],upd);
+    closeModal('m-pdetail');
+    showToast(next?'✓ موافق — ينتقل إلى '+next.label:'✓ اعتُمد السند — جاهز للصرف','ok');
+    renderPaymentsTable(); renderMyApprovals();
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+async function rejectPmt(){
+  const p=currentPmt;
+  const pw=document.getElementById('pdet-pw')?.value||'';
+  if(pw!==curUser.pw){showToast('❌ كلمة المرور غير صحيحة','err');return;}
+  const reason=prompt('سبب الرفض (إلزامي):');
+  if(!reason){showToast('أدخل سبب الرفض','warn');return;}
+  const upd={status:'rejected',rejected_by:curUser.name,rejected_reason:reason,rejected_at:new Date().toISOString()};
+  try{
+    await dbUpdate('payments',p.id,upd);
+    Object.assign(p,upd);
+    const ci=cachedPayments.findIndex(x=>x.id===p.id);
+    if(ci>=0) Object.assign(cachedPayments[ci],upd);
+    closeModal('m-pdetail');
+    showToast('تم رفض السند','warn');
+    renderPaymentsTable(); renderMyApprovals();
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+async function markPaid(p){
+  if(!confirm('تأكيد صرف '+p.amount.toLocaleString('ar-SA')+' ر.س لـ '+p.beneficiary+'؟')) return;
+  const upd={status:'paid',paid_by:curUser.name,paid_at:new Date().toISOString()};
+  try{
+    await dbUpdate('payments',p.id,upd);
+    const ci=cachedPayments.findIndex(x=>x.id===p.id);
+    if(ci>=0) Object.assign(cachedPayments[ci],upd);
+    showToast('✅ تم تسجيل الصرف','ok');
+    renderPaymentsTable();
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+/* ══ PRINT RECEIPT 80mm ══ */
+function printReceiptDoc(rec){
+  const d=new Date(rec.created_at||rec.time||Date.now());
+  document.getElementById('print-area').innerHTML=`
+    <div class="rp">
+      <div class="rph">
+        <div style="font-size:22px;margin-bottom:3px;">🇸🇩</div>
+        <h2>الجالية السودانية بجازان</h2>
+        <h3>مركز خدمات الجالية</h3>
+        <p>${d.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
+      </div>
+      <div class="rtit">سند قبض</div>
+      <div class="rnum">رقم: ${rec.id}</div>
+      <div class="rrow"><span>الاسم:</span><span>${rec.name}</span></div>
+      ${rec.passport?`<div class="rrow"><span>الجواز:</span><span>${rec.passport}</span></div>`:''}
+      <div class="rrow"><span>الخدمة:</span><span>${rec.description||''}</span></div>
+      ${rec.notes?`<div class="rrow"><span>ملاحظات:</span><span>${rec.notes}</span></div>`:''}
+      <div class="rrow"><span>الوقت:</span><span>${d.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'})}</span></div>
+      <div class="rrow tot"><span>المبلغ:</span><span>${(rec.amount||0).toLocaleString('ar-SA')} ر.س</span></div>
+      <div class="rrow" style="margin-top:3px;"><span style="font-size:9px;color:#666;">كتابةً:</span><span style="font-size:9px;">${amtWords(rec.amount||0)} ريال</span></div>
+      <div class="rsig">
+        <div><div class="sgl">المحصّل: ${rec.collector}</div></div>
+        <div><div class="sgl">توقيع المراجع</div></div>
+      </div>
+      <div class="rfooter">الجالية السودانية بجازان · ${new Date().getFullYear()}</div>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+
+/* ══ PRINT MEMBER CARD ══ */
+function printMemberCard(m){
+  document.getElementById('print-area').innerHTML=`
+    <div style="width:85mm;height:54mm;background:linear-gradient(135deg,#1a3d2b,#2e6b4f);border-radius:8mm;padding:6mm;color:#fff;font-family:'Tajawal',sans-serif;direction:rtl;position:relative;overflow:hidden;">
+      <div style="position:absolute;left:-10mm;top:-10mm;width:40mm;height:40mm;border-radius:50%;background:rgba(255,255,255,.05);"></div>
+      <div style="display:flex;align-items:center;gap:4mm;margin-bottom:4mm;">
+        <div style="font-size:16pt;">🇸🇩</div>
+        <div><div style="font-size:9pt;font-weight:800;">الجالية السودانية بجازان</div>
+          <div style="font-size:7pt;opacity:.8;">بطاقة عضوية</div></div>
+      </div>
+      <div style="font-size:14pt;font-weight:800;margin-bottom:2mm;">${m.name}</div>
+      <div style="font-size:8pt;opacity:.9;margin-bottom:1mm;">رقم العضوية: ${m.id}</div>
+      <div style="font-size:8pt;opacity:.9;margin-bottom:1mm;">الجواز: ${m.passport||'—'} · ${m.region||''}</div>
+      <div style="font-size:8pt;opacity:.9;">${m.job||''}</div>
+      <div style="position:absolute;left:5mm;bottom:4mm;background:rgba(255,255,255,.2);padding:2mm 4mm;border-radius:4mm;font-size:7pt;">● ${m.status==='active'?'عضو نشط':'متأخر'}</div>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+
+/* ══ PRINT PAYMENT VOUCHER ══ */
+function printPaymentVoucher(p){
+  const d=new Date(p.created_at||p.time||Date.now());
+  const stepsHTML=PMT_STEPS.map(s=>`
+    <div class="pv-step">
+      <div class="pv-step-lbl">${s.label}</div>
+      <div class="pv-step-val">${p[s.key]?p[s.key].by:'—'}</div>
+      <div class="pv-step-date">${p[s.key]?new Date(p[s.key].at).toLocaleDateString('ar-SA'):''}</div>
+      <div class="pv-step-sig">التوقيع: ________</div>
+    </div>`).join('');
+  document.getElementById('print-area').innerHTML=`
+    <div class="pv">
+      <div class="pvh">
+        <div style="font-size:28px;margin-bottom:4px;">🇸🇩</div>
+        <h1>الجالية السودانية بجازان</h1>
+        <h2>مركز خدمات الجالية</h2>
+      </div>
+      <div class="pvtit"><h3>سند صرف — رقم ${p.id}</h3><div style="font-size:11px;opacity:.8;">${d.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div></div>
+      <table class="pvtbl">
+        <tr><td>المستفيد</td><td><strong>${p.beneficiary}</strong></td></tr>
+        <tr><td>البيان</td><td>${p.description}</td></tr>
+        <tr><td>التصنيف</td><td>${p.category||'—'}</td></tr>
+        <tr class="hl"><td>المبلغ (ر.س)</td><td>${(p.amount||0).toLocaleString('ar-SA')} ريال سعودي</td></tr>
+        <tr><td>كتابةً</td><td style="font-size:10px;">${amtWords(p.amount||0)} ريال سعودي</td></tr>
+        ${p.notes?`<tr><td>ملاحظات</td><td>${p.notes}</td></tr>`:''}
+        <tr><td>الحالة</td><td><strong>${PMT_STATUS_META[p.status]?.lbl||p.status}</strong></td></tr>
+      </table>
+      <div class="pv-steps">
+        <div class="pv-steps-hdr">سلسلة الموافقات</div>
+        <div class="pv-steps-row">${stepsHTML}</div>
+      </div>
+      ${p.status==='paid'?`<div style="background:#e8f5ee;border:1px solid #3a9e6f;border-radius:4px;padding:7px;text-align:center;font-size:11px;font-weight:700;color:#1a3d2b;margin-top:6px;">✅ صُرف بواسطة: ${p.paid_by} — ${p.paid_at?new Date(p.paid_at).toLocaleDateString('ar-SA'):''}</div>`:''}
+      ${p.status==='rejected'?`<div style="background:#fdf0ee;border:1px solid #c0392b;border-radius:4px;padding:7px;text-align:center;font-size:11px;font-weight:700;color:#c0392b;margin-top:6px;">✗ مرفوض: ${p.rejected_by} — ${p.rejected_reason}</div>`:''}
+      <div style="text-align:center;margin-top:10px;font-size:9px;color:#777;border-top:1px dashed #ccc;padding-top:6px;">الجالية السودانية بجازان · ${new Date().getFullYear()}</div>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+
+/* ══ PRINT REPORT ══ */
+function printReport(){
+  const recs=cachedReceipts;
+  const total=recs.reduce((s,r)=>s+(r.amount||0),0);
+  const today=new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const rows=recs.map((r,i)=>{
+    const d=new Date(r.created_at||r.time||Date.now());
+    return`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.description||'—'}</td><td>${(r.amount||0).toLocaleString('ar-SA')} ر.س</td><td>${r.collector||'—'}</td><td>${d.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'})}</td></tr>`;
+  }).join('');
+  document.getElementById('print-area').innerHTML=`
+    <div style="width:210mm;margin:0 auto;padding:14mm;font-size:12px;font-family:'Tajawal',sans-serif;direction:rtl;color:#000;">
+      <div style="text-align:center;border-bottom:3px double #1a3d2b;padding-bottom:8px;margin-bottom:8px;">
+        <div style="font-size:28px;">🇸🇩</div>
+        <div style="font-size:18px;font-weight:800;color:#1a3d2b;">الجالية السودانية بجازان</div>
+        <div style="font-size:13px;color:#2e6b4f;">تقرير التحصيل اليومي</div>
+        <div style="font-size:11px;color:#555;">${today}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0;">
+        <div style="border:1px solid #ccc;border-radius:5px;padding:8px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#1a3d2b;">${recs.length}</div><div style="font-size:10px;color:#666;">إجمالي السندات</div></div>
+        <div style="border:1px solid #ccc;border-radius:5px;padding:8px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#1a3d2b;">${total.toLocaleString('ar-SA')}</div><div style="font-size:10px;color:#666;">إجمالي التحصيل ر.س</div></div>
+        <div style="border:1px solid #ccc;border-radius:5px;padding:8px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#1a3d2b;">${cachedMembers.length}</div><div style="font-size:10px;color:#666;">الأعضاء المسجلون</div></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead><tr style="background:#1a3d2b;color:#fff;"><th style="padding:6px 8px;text-align:right;">#</th><th style="padding:6px 8px;text-align:right;">الاسم</th><th style="padding:6px 8px;text-align:right;">الخدمة</th><th style="padding:6px 8px;text-align:right;">المبلغ</th><th style="padding:6px 8px;text-align:right;">المحصّل</th><th style="padding:6px 8px;text-align:right;">الوقت</th></tr></thead>
+        <tbody>${rows}<tr style="font-weight:800;background:#e8f5ee;"><td colspan="3" style="padding:6px 8px;text-align:center;">الإجمالي</td><td style="padding:6px 8px;">${total.toLocaleString('ar-SA')} ر.س</td><td colspan="2"></td></tr></tbody>
+      </table>
+      <div style="text-align:center;margin-top:12px;font-size:10px;color:#777;border-top:1px dashed #ccc;padding-top:6px;">أُعدّ هذا التقرير بتاريخ ${today} · الجالية السودانية بجازان</div>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+function printPaymentsReport(){ /* similar to above for payments */ showToast('سيتم إضافة تقرير الصرف قريباً','warn'); }
+
+/* ══ EXPORT CSV ══ */
+function exportCSV(){
+  if(!cachedReceipts.length){showToast('لا توجد بيانات','err');return;}
+  const h=['رقم السند','الاسم','الجواز','الخدمة','المبلغ','المحصّل','التاريخ','الحالة'];
+  const rows=cachedReceipts.map(r=>[r.id,r.name,r.passport||'',r.description||'',r.amount||0,r.collector,new Date(r.created_at||r.time).toLocaleString('ar-SA'),r.status].map(v=>`"${v}"`).join(','));
+  const csv='\uFEFF'+h.join(',')+'\n'+rows.join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download='سندات_القبض_'+new Date().toLocaleDateString('ar-SA').replace(/\//g,'-')+'.csv';
+  a.click();
+  showToast('✓ تم التصدير','ok');
+}
+function exportMembersCSV(){
+  if(!cachedMembers.length){showToast('لا توجد بيانات','err');return;}
+  const h=['رقم العضوية','الاسم','الجواز','الهاتف','المهنة','المنطقة','الحالة','تاريخ التسجيل'];
+  const rows=cachedMembers.map(m=>[m.id,m.name,m.passport||'',m.phone||'',m.job||'',m.region||'',m.status,new Date(m.created_at).toLocaleDateString('ar-SA')].map(v=>`"${v}"`).join(','));
+  const csv='\uFEFF'+h.join(',')+'\n'+rows.join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download='الأعضاء_'+new Date().toLocaleDateString('ar-SA').replace(/\//g,'-')+'.csv';
+  a.click();
+  showToast('✓ تم التصدير','ok');
+}
+
+/* ══ AMOUNT WORDS ══ */
+function amtWords(n){
+  if(!n)return'صفر';
+  const h=['','مائة','مئتان','ثلاثمائة','أربعمائة','خمسمائة','ستمائة','سبعمائة','ثمانمائة','تسعمائة'];
+  const t=['','عشرة','عشرون','ثلاثون','أربعون','خمسون','ستون','سبعون','ثمانون','تسعون'];
+  const o=['','واحد','اثنان','ثلاثة','أربعة','خمسة','ستة','سبعة','ثمانية','تسعة','عشرة','أحد عشر','اثنا عشر','ثلاثة عشر','أربعة عشر','خمسة عشر','ستة عشر','سبعة عشر','ثمانية عشر','تسعة عشر'];
+  let r='';
+  if(n>=1000){r+=o[Math.floor(n/1000)]+' ألف ';n%=1000;}
+  if(n>=100){r+=h[Math.floor(n/100)]+' ';n%=100;}
+  if(n>=20){r+=t[Math.floor(n/10)];if(n%10)r+=' و'+o[n%10];}
+  else if(n>0)r+=o[n];
+  return r.trim();
+}
+
+/* ══ TOAST ══ */
+function showToast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+type+' show';
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+/* ══ MODAL ══ */
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+document.querySelectorAll('.modal-bg').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('show');}));
+
+/* ══ BEEP ══ */
+function beep(){try{const ac=new AudioContext();const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.setValueAtTime(880,ac.currentTime);o.frequency.setValueAtTime(1100,ac.currentTime+0.1);g.gain.setValueAtTime(0.3,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.3);o.start();o.stop(ac.currentTime+0.3);}catch(e){}}
+
+/* ══ CLOCK ══ */
+function tick(){const n=new Date();['clock'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=n.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'});});}
+setInterval(tick,1000);
+
+/* ══ START ══ */
+initDB();
+buildLoginUI();
+</script>
+</body>
+</html>
