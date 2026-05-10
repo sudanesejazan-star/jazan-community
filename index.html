@@ -1,0 +1,2928 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="جالية جازان"/>
+<meta name="theme-color" content="#1a3d2b"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>بوابة الجالية السودانية — جازان</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{
+  --gd:#1a3d2b;--gm:#2e6b4f;--gl:#3a9e6f;--gp:#e8f5ee;--gpp:#c8e6d4;
+  --gold:#c9a84c;--gold-l:#f5e9c8;--gold-d:#8a6010;
+  --ink:#1c2a22;--muted:#6b7c74;--border:#d4e0d9;--surf:#f4f8f5;--white:#fff;
+  --red:#c0392b;--red-p:#fdf0ee;--blue:#1a5fa8;--blue-p:#e8f0fb;
+  --orange:#d35400;--orange-p:#fef5ec;--purple:#6c3483;--purple-p:#f5eef8;
+  --r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Arial',sans-serif;background:var(--surf);color:var(--ink);min-height:100vh;font-size:15px;}
+button,input,select,textarea{font-family:'Arial',sans-serif;}
+input,select{font-size:16px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(30px);padding:12px 24px;border-radius:30px;font-size:14px;font-weight:700;opacity:0;transition:all .3s;z-index:9999;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.2);white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.ok{background:var(--gm);color:#fff;}
+.toast.err{background:var(--red);color:#fff;}
+.toast.warn{background:var(--orange);color:#fff;}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:800;display:none;align-items:flex-end;justify-content:center;}
+.modal-bg.show{display:flex;}
+@media(min-width:600px){.modal-bg{align-items:center;padding:16px;}}
+.modal{background:var(--white);border-radius:20px 20px 0 0;padding:20px 18px 32px;width:100%;max-height:92vh;overflow-y:auto;}
+@media(min-width:600px){.modal{border-radius:20px;max-width:480px;}}
+.mhandle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px;}
+.modal h3{font-size:17px;font-weight:700;margin-bottom:16px;color:var(--gd);}
+.mactions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.mbtn{flex:1;min-width:90px;padding:12px;border-radius:var(--r-sm);border:1.5px solid;font-size:14px;font-weight:700;cursor:pointer;}
+.mbtn.save{background:var(--gm);color:#fff;border-color:var(--gm);}
+.mbtn.cancel{background:var(--white);color:var(--muted);border-color:var(--border);}
+.mbtn.danger{background:var(--red);color:#fff;border-color:var(--red);}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#0a1f13,#1a3d2b,#0d2820);padding:20px;}
+.lbox{background:var(--white);border-radius:24px;padding:30px 22px 26px;width:100%;max-width:370px;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.llogo{text-align:center;margin-bottom:10px;}
+.llogo .flag{font-size:44px;line-height:1;}
+.llogo h1{font-size:17px;font-weight:800;color:var(--gd);margin-top:8px;line-height:1.4;}
+.llogo p{font-size:12px;color:var(--muted);margin-top:3px;}
+.ldiv{border:none;border-top:1px solid var(--border);margin:16px 0;}
+.fl{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:5px;}
+.linput{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:13px 14px;font-size:16px;color:var(--ink);outline:none;margin-bottom:12px;background:var(--surf);letter-spacing:2px;text-align:center;}
+.linput:focus{border-color:var(--gm);background:var(--white);}
+.linput::placeholder{letter-spacing:0;font-size:14px;}
+.lbtn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gm),var(--gd));color:#fff;border:none;border-radius:var(--r-sm);font-size:17px;font-weight:800;cursor:pointer;}
+.lerr{background:var(--red-p);color:var(--red);border:1px solid #e8c5c1;border-radius:var(--r-sm);padding:9px 14px;font-size:13px;text-align:center;margin-bottom:12px;display:none;}
+.lerr.show{display:block;}
+.pw-wrap{position:relative;margin-bottom:12px;}
+.pw-wrap .linput{margin-bottom:0;}
+.pw-toggle{position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);}
+.usel{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:13px 14px;font-size:15px;color:var(--ink);outline:none;margin-bottom:12px;background:var(--surf);appearance:none;}
+
+/* APP */
+#app-screen{display:none;min-height:100vh;flex-direction:column;}
+#app-screen.show{display:flex;}
+.hdr{background:var(--gd);flex-shrink:0;}
+.hdr-inner{display:flex;align-items:center;gap:10px;padding:10px 14px;}
+.hlogo{width:38px;height:38px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:800;color:var(--gd);}
+.htext{flex:1;min-width:0;}
+.htext h1{color:#fff;font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.htext p{color:var(--gold);font-size:10px;}
+.hright{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.ubadge{background:rgba(255,255,255,.15);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+.lout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);color:#fff;padding:5px 10px;border-radius:var(--r-sm);font-size:12px;cursor:pointer;}
+#sync-bar{background:rgba(0,0,0,.25);color:rgba(255,255,255,.85);font-size:11px;padding:4px 14px;display:flex;align-items:center;gap:6px;}
+.sdot{width:7px;height:7px;border-radius:50%;background:#4caf50;flex-shrink:0;animation:pulse 2s infinite;}
+.sdot.off{background:#f44336;animation:none;}.sdot.sync{background:var(--gold);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 10px rgba(0,0,0,.08);}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;padding:7px 4px 5px;cursor:pointer;border:none;background:transparent;color:var(--muted);font-size:10px;font-weight:500;gap:3px;}
+.bni.active{color:var(--gm);}
+.bni .ico{font-size:20px;line-height:1;}
+
+/* SCREENS */
+.screens{flex:1;overflow-y:auto;padding-bottom:72px;}
+.screen{display:none;padding:14px;max-width:600px;margin:0 auto;}
+.screen.active{display:block;}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.ctitle{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.ctitle::before{content:'';display:inline-block;width:3px;height:14px;background:var(--gm);border-radius:2px;}
+
+/* FORM */
+.frow{margin-bottom:12px;}
+.fl2{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:5px;}
+.finput,.fsel{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 13px;font-size:16px;color:var(--ink);background:var(--surf);outline:none;appearance:none;}
+.finput:focus,.fsel:focus{border-color:var(--gm);background:var(--white);}
+.finput.big{font-size:22px;font-weight:700;text-align:center;color:var(--gd);}
+
+/* AMOUNT */
+.amtbox{text-align:center;font-size:36px;font-weight:800;color:var(--gd);padding:13px;background:var(--gp);border-radius:var(--r);margin-bottom:12px;border:2px solid var(--gpp);}
+.amtu{font-size:15px;color:var(--gm);font-weight:600;}
+.qbtns{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px;}
+.qb{padding:11px 4px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--white);font-size:14px;font-weight:700;color:var(--gd);cursor:pointer;min-height:46px;}
+.qb:active{transform:scale(.96);}
+.qb.red{color:var(--red);border-color:#e8c5c1;background:var(--red-p);}
+.qb.blue{color:var(--blue);border-color:#c5d5e8;background:var(--blue-p);}
+
+/* SAVEBTN */
+.savebtn{width:100%;padding:15px;background:linear-gradient(135deg,var(--gm),var(--gd));color:#fff;border:none;border-radius:var(--r);font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 4px 15px rgba(46,107,79,.35);}
+.savebtn:active{transform:scale(.98);}
+.savebtn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+/* METRICS */
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.mcard{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;}
+.mval{font-size:24px;font-weight:800;line-height:1.2;}
+.mlbl{font-size:11px;color:var(--muted);margin-top:3px;font-weight:500;}
+
+/* FINANCE OVERVIEW */
+.fin-overview{background:linear-gradient(135deg,var(--gd),var(--gm));border-radius:var(--r);padding:20px;margin-bottom:14px;color:#fff;}
+.fin-total{font-size:32px;font-weight:800;text-align:center;margin-bottom:4px;}
+.fin-lbl{font-size:13px;opacity:.8;text-align:center;margin-bottom:16px;}
+.fin-row{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid rgba(255,255,255,.2);}
+.fin-item{text-align:center;flex:1;}
+.fin-item-val{font-size:18px;font-weight:800;}
+.fin-item-lbl{font-size:11px;opacity:.8;margin-top:2px;}
+
+/* TABLE */
+.twrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:450px;}
+.tbl th{padding:9px 10px;background:var(--surf);color:var(--muted);font-weight:700;text-align:right;border-bottom:1px solid var(--border);font-size:11px;}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:#f0faf5;}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;}
+.bg{background:var(--gp);color:var(--gd);}
+.bb{background:var(--blue-p);color:var(--blue);}
+.bo{background:var(--orange-p);color:var(--orange);}
+.br{background:var(--red-p);color:var(--red);}
+.bp{background:var(--purple-p);color:var(--purple);}
+.ibtn{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;font-size:11px;cursor:pointer;margin:0 2px;min-height:28px;}
+.ibtn.p{color:var(--gm);border-color:var(--gpp);}
+.ibtn.e{color:var(--blue);border-color:#c5d5e8;}
+.ibtn.r{color:var(--red);border-color:#e8c5c1;}
+.empty{text-align:center;padding:28px;color:var(--muted);font-size:13px;}
+.tbl-foot{padding:8px 12px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);}
+.fbar{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:7px;}
+.sbox{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;font-size:14px;outline:none;background:var(--surf);flex:1;min-width:120px;color:var(--ink);}
+.fsel2{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;font-size:13px;outline:none;background:var(--surf);color:var(--ink);appearance:none;}
+.datein{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;font-size:13px;outline:none;background:var(--surf);flex:1;}
+
+/* APPROVAL */
+.astep{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:var(--surf);margin-bottom:8px;}
+.astep.done{border-color:var(--gl);background:var(--gp);}
+.astep.cur{border-color:var(--gold);background:var(--gold-l);}
+.astep.wait{opacity:.6;}
+.astep-icon{font-size:20px;flex-shrink:0;}
+.astep-info{flex:1;}
+.astep-name{font-size:13px;font-weight:600;}
+.astep-sub{font-size:11px;color:var(--muted);}
+.astep-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:12px;}
+.astep-badge.done{background:var(--gl);color:#fff;}
+.astep-badge.cur{background:var(--gold);color:#1a1a1a;}
+.astep-badge.wait{background:var(--border);color:var(--muted);}
+
+/* CONTROL PANEL */
+.user-item{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:13px;display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.user-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;}
+.user-info{flex:1;min-width:0;}
+.user-name{font-size:14px;font-weight:700;}
+.user-role{font-size:11px;color:var(--muted);margin-top:2px;}
+.add-user-btn{width:100%;padding:14px;border:2px dashed var(--border);border-radius:var(--r);background:transparent;font-size:14px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;}
+.add-user-btn:hover{border-color:var(--gm);color:var(--gm);background:var(--gp);}
+
+/* PERF */
+.perfrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.perfrow:last-child{border-bottom:none;}
+.pavatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.barbg{height:6px;background:var(--surf);border-radius:3px;overflow:hidden;margin-top:3px;}
+.barfill{height:100%;border-radius:3px;}
+
+/* WELCOME */
+.welcome{background:linear-gradient(135deg,var(--gd),var(--gm));border-radius:var(--r);padding:18px;margin-bottom:12px;color:#fff;}
+.wtitle{font-size:17px;font-weight:800;margin-bottom:3px;}
+.wsub{font-size:12px;opacity:.8;}
+.wrole{display:inline-block;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-top:8px;}
+
+/* ACTBTNS */
+.actbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.abtn{padding:11px 10px;border-radius:var(--r-sm);border:1.5px solid;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;justify-content:center;}
+.abtn:active{transform:scale(.97);}
+.abtn.green{border-color:var(--gm);color:var(--gm);background:var(--gp);}
+.abtn.blue{border-color:var(--blue);color:var(--blue);background:var(--blue-p);}
+.abtn.gold{border-color:var(--gold);color:var(--gold-d);background:var(--gold-l);}
+.abtn.red{border-color:var(--red);color:var(--red);background:var(--red-p);}
+
+
+
+/* REPORTS */
+.rp-btn{padding:10px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--white);font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .15s;}
+.rp-btn.active{background:var(--gm);color:#fff;border-color:var(--gm);}
+.rp-stat-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.rp-stat-row:last-child{border-bottom:none;}
+.rp-stat-label{color:var(--muted);}
+.rp-stat-value{font-weight:800;color:var(--ink);}
+.rp-stat-value.green{color:var(--gm);}
+.rp-stat-value.red{color:var(--red);}
+.rp-stat-value.gold{color:var(--gold-d);}
+
+
+.rp-btn{padding:10px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--white);font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);}
+.rp-btn.active{background:var(--gm);color:#fff;border-color:var(--gm);}
+.rp-stat-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.rp-stat-row:last-child{border-bottom:none;}
+.rp-stat-label{color:var(--muted);}
+.rp-stat-value{font-weight:800;}
+.rp-stat-value.green{color:var(--gm);}
+.rp-stat-value.red{color:var(--red);}
+.rp-stat-value.gold{color:var(--gold-d);}
+
+/* APPLICATIONS */
+.app-tab{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);white-space:nowrap;flex-shrink:0;}
+.app-tab.active{background:var(--gm);color:#fff;border-color:var(--gm);}
+.app-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.app-card-header{padding:13px 14px;display:flex;align-items:flex-start;gap:10px;}
+.app-avatar{width:42px;height:42px;border-radius:50%;background:var(--gp);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;font-weight:800;color:var(--gm);}
+.app-info{flex:1;min-width:0;}
+.app-name{font-size:14px;font-weight:800;color:var(--ink);}
+.app-meta{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.6;}
+.app-status{flex-shrink:0;}
+.app-actions{padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;background:var(--surf);}
+.app-action-btn{flex:1;min-width:80px;padding:9px;border-radius:var(--r-sm);border:1.5px solid;font-size:13px;font-weight:700;cursor:pointer;text-align:center;}
+.app-action-btn.approve{background:var(--gm);color:#fff;border-color:var(--gm);}
+.app-action-btn.reject{background:var(--white);color:var(--red);border-color:var(--red);}
+.app-action-btn.view{background:var(--white);color:var(--blue);border-color:var(--blue-p);}
+.app-action-btn.print{background:var(--white);color:var(--muted);border-color:var(--border);}
+
+/* APPLICATION DETAIL */
+.detail-section{background:var(--surf);border-radius:var(--r-sm);padding:12px;margin-bottom:12px;}
+.detail-section-title{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.detail-field{background:var(--white);border-radius:6px;padding:8px 10px;border:1px solid var(--border);}
+.detail-field .lbl{font-size:10px;color:var(--muted);margin-bottom:2px;}
+.detail-field .val{font-size:13px;font-weight:600;color:var(--ink);}
+.detail-field.full{grid-column:span 2;}
+.status-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.sp-pending{background:var(--gold-l);color:var(--gold-d);}
+.sp-approved{background:var(--gp);color:var(--gd);}
+.sp-rejected{background:var(--red-p);color:var(--red);}
+
+/* PRINT */
+@media print{body>*:not(#print-area){display:none!important;}#print-area{display:block!important;}}
+#print-area{display:none;font-family:'Arial',sans-serif;direction:rtl;}
+.rp{width:72mm;margin:0 auto;padding:3mm 4mm;font-size:11px;color:#000;}
+.rph{text-align:center;border-bottom:1px dashed #333;padding-bottom:5px;margin-bottom:5px;}
+.rph h2{font-size:13px;font-weight:800;}.rph h3{font-size:11px;}.rph p{font-size:9px;color:#555;}
+.rtit{text-align:center;font-size:14px;font-weight:800;background:#000;color:#fff;padding:4px;margin:5px 0;border-radius:3px;}
+.rrow{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted #ccc;font-size:10px;}
+.rrow.tot{font-size:13px;font-weight:800;border-bottom:2px solid #000;}
+.rnum{text-align:center;font-size:10px;color:#555;margin-bottom:3px;}
+.rsig{margin-top:12px;display:flex;justify-content:space-between;}
+.sgl{border-top:1px solid #333;margin-top:18px;padding-top:2px;font-size:9px;text-align:center;width:90px;}
+.rfooter{text-align:center;margin-top:6px;font-size:9px;color:#777;border-top:1px dashed #ccc;padding-top:4px;}
+.pv{width:148mm;margin:0 auto;padding:8mm;font-size:12px;color:#000;}
+.pvh{text-align:center;border-bottom:3px double #1a3d2b;padding-bottom:8px;margin-bottom:8px;}
+.pvh h1{font-size:16px;color:#1a3d2b;font-weight:800;}.pvh h2{font-size:12px;color:#2e6b4f;}
+.pvtit{background:#1a3d2b;color:#fff;text-align:center;padding:7px;border-radius:4px;margin:7px 0;}
+.pvtit h3{font-size:16px;font-weight:800;}
+.pvtbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;}
+.pvtbl td{padding:5px 8px;border:1px solid #ddd;}
+.pvtbl td:first-child{color:#666;width:35%;}
+.pvtbl tr.hl td{font-weight:800;font-size:15px;background:#e8f5ee;}
+.pv-steps{border:1px solid #ccc;border-radius:4px;overflow:hidden;margin-bottom:8px;}
+.pv-steps-hdr{background:#1a3d2b;color:#fff;text-align:center;padding:5px;font-size:11px;font-weight:700;}
+.pv-steps-row{display:flex;}
+.pv-step{flex:1;text-align:center;border-left:1px solid #ccc;padding:5px 3px;}
+.pv-step-lbl{font-size:9px;color:#666;}.pv-step-val{font-size:10px;font-weight:700;margin-top:2px;}
+.pv-step-date{font-size:8px;color:#888;}.pv-step-sig{border-top:1px solid #333;margin-top:16px;font-size:9px;}
+</style>
+</head>
+<body>
+
+
+<!-- UPDATE BANNER -->
+<div id="update-banner" style="display:none;position:fixed;bottom:72px;left:12px;right:12px;z-index:9000;background:linear-gradient(135deg,#1a3d2b,#2e6b4f);color:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 8px 24px rgba(0,0,0,.3);display:flex;align-items:center;gap:12px;animation:slideUp .3s ease;">
+  <div style="font-size:22px;flex-shrink:0;">🔄</div>
+  <div style="flex:1;">
+    <div style="font-size:13px;font-weight:800;">يوجد تحديث جديد</div>
+    <div style="font-size:11px;opacity:.8;margin-top:2px;">اضغط لتطبيق التحديث فوراً</div>
+  </div>
+  <button onclick="applyUpdate()" style="background:var(--gold);color:#1a1a1a;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:800;cursor:pointer;flex-shrink:0;">تحديث</button>
+  <button onclick="dismissUpdate()" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;flex-shrink:0;">✕</button>
+</div>
+<style>
+@keyframes slideUp{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+</style>
+
+<div class="toast" id="toast"></div>
+<div id="print-area"></div>
+
+<!-- ══ MODALS ══ -->
+
+<!-- Add User (Control Panel) -->
+<div class="modal-bg" id="m-adduser">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3>➕ إضافة مستخدم جديد</h3>
+    <div class="frow"><div class="fl2">الاسم الكامل *</div><input class="finput" id="nu-name" type="text" placeholder="محمد أحمد علي"/></div>
+    <div class="frow"><div class="fl2">اسم الدخول *</div><input class="finput" id="nu-user" type="text" placeholder="بالإنجليزي بدون مسافات" dir="ltr"/></div>
+    <div class="frow"><div class="fl2">كلمة المرور *</div><input class="finput" id="nu-pw" type="text" placeholder="اختر كلمة مرور قوية"/></div>
+    <div class="frow">
+      <div class="fl2">الدور الوظيفي *</div>
+      <select class="fsel" id="nu-role">
+        <option value="collector">محصّل — تحصيل وسندات قبض</option>
+        <option value="finance">مالية — منصرفات وإذن صرف</option>
+        <option value="secretary">أمانة عامة — الاطلاع على الميزانية</option>
+        <option value="president">رئيس — إذن صرف والاطلاع الكامل</option>
+        <option value="membership">أمانة عضوية — إدارة المستخدمين</option>
+        <option value="admin">مدير النظام — تحكم كامل</option>
+      </select>
+    </div>
+    <div id="nu-perm-info" style="background:var(--blue-p);border:1px solid #c5d5e8;border-radius:var(--r-sm);padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--blue);"></div>
+    <div class="mactions">
+      <button class="mbtn save" onclick="addUser()">➕ إضافة</button>
+      <button class="mbtn cancel" onclick="closeModal('m-adduser')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User -->
+<div class="modal-bg" id="m-edituser">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3>✏️ تعديل المستخدم</h3>
+    <input type="hidden" id="eu-id"/>
+    <div class="frow"><div class="fl2">الاسم الكامل</div><input class="finput" id="eu-name" type="text"/></div>
+    <div class="frow"><div class="fl2">كلمة المرور الجديدة</div><input class="finput" id="eu-pw" type="text" placeholder="اتركها فارغة لعدم التغيير"/></div>
+    <div class="frow">
+      <div class="fl2">الدور</div>
+      <select class="fsel" id="eu-role">
+        <option value="collector">محصّل</option>
+        <option value="finance">مالية</option>
+        <option value="secretary">أمانة عامة</option>
+        <option value="president">رئيس</option>
+        <option value="membership">أمانة عضوية</option>
+        <option value="admin">مدير النظام</option>
+      </select>
+    </div>
+    <div class="frow">
+      <div class="fl2">الحالة</div>
+      <select class="fsel" id="eu-status">
+        <option value="active">نشط</option>
+        <option value="inactive">موقوف</option>
+      </select>
+    </div>
+    <div class="mactions">
+      <button class="mbtn save" onclick="saveEditUser()">💾 حفظ</button>
+      <button class="mbtn cancel" onclick="closeModal('m-edituser')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Receipt -->
+<div class="modal-bg" id="m-receipt">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3>📋 سند قبض جديد</h3>
+    <div class="frow">
+      <div class="fl2">المراجع</div>
+      <input class="finput" id="rc-name" type="text" placeholder="اكتب الاسم..." autocomplete="off" oninput="searchMemberModal(this.value)"/>
+      <div id="rc-suggestions" style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);margin-top:4px;display:none;max-height:140px;overflow-y:auto;"></div>
+    </div>
+    <div class="frow"><div class="fl2">رقم الجواز</div><input class="finput" id="rc-pass" type="text" dir="ltr" placeholder="اختياري"/></div>
+    <div class="frow"><div class="fl2">وصف الخدمة *</div><input class="finput" id="rc-desc" type="text" placeholder="اكتب وصف الخدمة..."/></div>
+    <div class="frow">
+      <div class="fl2">المبلغ</div>
+      <div class="amtbox" style="font-size:28px;padding:10px;margin-bottom:8px;"><span id="rc-amt-d">0</span> <span class="amtu">ر.س</span></div>
+      <div class="qbtns">
+        <button class="qb" onclick="addRcAmt(50)">٥٠</button>
+        <button class="qb" onclick="addRcAmt(100)">١٠٠</button>
+        <button class="qb" onclick="addRcAmt(200)">٢٠٠</button>
+        <button class="qb" onclick="addRcAmt(500)">٥٠٠</button>
+        <button class="qb blue" onclick="customRcAmt()">✏️</button>
+        <button class="qb red" onclick="clearRcAmt()">✕</button>
+      </div>
+    </div>
+    <div class="mactions">
+      <button class="mbtn save" onclick="saveReceiptModal()">💾 حفظ وطباعة</button>
+      <button class="mbtn cancel" onclick="closeModal('m-receipt')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Payment -->
+<div class="modal-bg" id="m-payment">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3>📄 سند صرف جديد</h3>
+    <div class="frow"><div class="fl2">المستفيد *</div><input class="finput" id="np-ben" type="text" placeholder="اسم الشخص أو الجهة"/></div>
+    <div class="frow"><div class="fl2">البيان *</div><input class="finput" id="np-desc" type="text" placeholder="وصف مفصّل لسبب الصرف"/></div>
+    <div class="frow"><div class="fl2">المبلغ (ريال) *</div><input class="finput big" id="np-amt" type="number" inputmode="numeric" placeholder="0"/></div>
+    <div class="frow">
+      <div class="fl2">التصنيف</div>
+      <select class="fsel" id="np-cat">
+        <option>إيجار قاعة</option><option>سكن موظفين</option>
+        <option>مواصلات</option><option>قرطاسية</option>
+        <option>ضيافة</option><option>رواتب</option><option>طوارئ</option><option>أخرى</option>
+      </select>
+    </div>
+    <div class="frow"><div class="fl2">ملاحظات</div><input class="finput" id="np-notes" type="text" placeholder="اختياري..."/></div>
+    <div style="background:var(--blue-p);border:1px solid #c5d5e8;border-radius:var(--r-sm);padding:10px;font-size:12px;color:var(--blue);margin-bottom:12px;">
+      ℹ️ تسلسل الموافقة: المالية ← الرئيس
+    </div>
+    <div class="mactions">
+      <button class="mbtn save" onclick="submitPayment()">📤 رفع الطلب</button>
+      <button class="mbtn cancel" onclick="closeModal('m-payment')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Detail -->
+<div class="modal-bg" id="m-pdetail">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3 id="pdet-title">سند صرف</h3>
+    <div id="pdet-body"></div>
+    <div class="mactions" id="pdet-actions"></div>
+  </div>
+</div>
+
+<!-- Application Detail Modal -->
+<div class="modal-bg" id="m-app-detail">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3 id="appd-title">طلب تسجيل عضوية</h3>
+    <input type="hidden" id="appd-id"/>
+    <div id="appd-body"></div>
+    <div class="frow" style="margin-top:14px;">
+      <div class="fl2">ملاحظة القرار (اختياري)</div>
+      <input class="finput" id="appd-note" type="text" placeholder="سبب القبول أو الرفض..."/>
+    </div>
+    <div class="mactions">
+      <button class="mbtn save" onclick="approveApp()">✓ قبول وتسجيل</button>
+      <button class="mbtn danger" onclick="rejectApp()">✗ رفض</button>
+      <button class="mbtn cancel" onclick="printApplication(document.getElementById('appd-id').value)">🖨️ طباعة</button>
+      <button class="mbtn cancel" onclick="closeModal('m-app-detail')">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Member -->
+<div class="modal-bg" id="m-member">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3>👤 تسجيل عضو جديد</h3>
+    <div class="frow"><div class="fl2">الاسم الكامل *</div><input class="finput" id="nm-name" type="text" placeholder="محمد إبراهيم خليل"/></div>
+    <div class="frow"><div class="fl2">رقم الجواز *</div><input class="finput" id="nm-pass" type="text" dir="ltr" placeholder="A12345678"/></div>
+    <div class="frow"><div class="fl2">رقم الهاتف</div><input class="finput" id="nm-phone" type="tel" placeholder="05xxxxxxxx"/></div>
+    <div class="frow"><div class="fl2">المهنة</div><input class="finput" id="nm-job" type="text" placeholder="مهندس / معلم / ..."/></div>
+    <div class="frow">
+      <div class="fl2">المنطقة</div>
+      <select class="fsel" id="nm-region">
+        <option>جازان</option><option>صبيا</option><option>أبو عريش</option>
+        <option>صامطة</option><option>الدرب</option><option>فيفا</option><option>أخرى</option>
+      </select>
+    </div>
+    <div class="frow">
+      <div class="fl2">رسوم التسجيل (٥٠ ريال)</div>
+      <select class="fsel" id="nm-fee">
+        <option value="1">مسدّدة — طباعة سند قبض</option>
+        <option value="0">لم تُسدَّد</option>
+      </select>
+    </div>
+    <div class="mactions">
+      <button class="mbtn save" onclick="saveMember()">💾 تسجيل</button>
+      <button class="mbtn cancel" onclick="closeModal('m-member')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <div class="lbox">
+    <div class="llogo">
+      <div class="flag">🇸🇩</div>
+      <h1>الجالية السودانية بجازان</h1>
+      <p>بوابة الخدمات الرقمية</p>
+    </div>
+    <hr class="ldiv"/>
+    <div class="fl">المستخدم</div>
+    <select class="usel" id="login-user" onchange="onUserSel(this.value)">
+      <option value="">— اختر المستخدم —</option>
+    </select>
+    <div class="fl">كلمة المرور</div>
+    <div class="pw-wrap">
+      <input class="linput" id="lpw" type="password" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <button class="pw-toggle" onclick="togglePw()" type="button">👁</button>
+    </div>
+    <div class="lerr" id="lerr">❌ كلمة المرور غير صحيحة</div>
+    <button class="lbtn" onclick="doLogin()">دخول</button>
+    <div id="db-status" style="margin-top:12px;font-size:11px;color:var(--muted);text-align:center;padding:8px;border-radius:var(--r-sm);background:var(--surf);"></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app-screen">
+  <div class="hdr">
+    <div id="sync-bar" style="display:none;"><div class="sdot sync" id="sdot"></div><span id="stxt">جاري الاتصال...</span><span style="margin-right:auto;font-size:10px;opacity:.6;" id="scnt"></span></div>
+    <div class="hdr-inner">
+      <div class="hlogo">جا</div>
+      <div class="htext"><h1>الجالية السودانية بجازان</h1><p id="hsubt">—</p></div>
+      <div class="hright">
+        <span class="ubadge" id="ubadge">—</span>
+        <button class="lout" onclick="doLogout()">خروج</button>
+      </div>
+    </div>
+  </div>
+  <div class="screens">
+    <!-- DASH -->
+    <div class="screen" id="screen-dash">
+      <div class="welcome">
+        <div class="wtitle" id="w-title">أهلاً</div>
+        <div class="wsub" id="w-sub"></div>
+        <div class="wrole" id="w-role"></div>
+      </div>
+      <div class="mgrid" id="dash-metrics"></div>
+      <div class="card" id="dash-perf" style="display:none;"></div>
+    </div>
+    <!-- COLLECT -->
+    <div class="screen" id="screen-collect">
+
+      <!-- Collector Header Bar -->
+      <div style="background:linear-gradient(135deg,var(--gd),var(--gm));border-radius:var(--r);padding:14px 16px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="color:#fff;">
+            <div style="font-size:11px;opacity:.75;">المحصّل</div>
+            <div style="font-size:15px;font-weight:800;" id="coll-bar">—</div>
+          </div>
+          <div style="text-align:left;color:var(--gold);">
+            <div style="font-size:11px;opacity:.75;">السند التالي</div>
+            <div style="font-size:16px;font-weight:800;" id="coll-seq-disp">—</div>
+          </div>
+        </div>
+        <!-- Daily Summary -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <div style="background:rgba(255,255,255,.15);border-radius:var(--r-sm);padding:9px;text-align:center;">
+            <div style="font-size:18px;font-weight:800;color:#fff;" id="my-count">0</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:2px;">سنداتي اليوم</div>
+          </div>
+          <div style="background:rgba(255,255,255,.15);border-radius:var(--r-sm);padding:9px;text-align:center;">
+            <div style="font-size:18px;font-weight:800;color:var(--gold);" id="my-total">0</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:2px;">ر.س تحصيلي</div>
+          </div>
+          <div style="background:rgba(255,255,255,.15);border-radius:var(--r-sm);padding:9px;text-align:center;">
+            <div style="font-size:18px;font-weight:800;color:#fff;" id="all-today-count">0</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:2px;">إجمالي اليوم</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM CARD -->
+      <div class="card">
+        <div class="ctitle">بيانات المراجع</div>
+
+        <div class="frow">
+          <div class="fl2">الاسم الكامل <span style="color:var(--red);">*</span></div>
+          <input class="finput" id="fn" type="text" placeholder="محمد إبراهيم خليل" autocomplete="off" oninput="searchInline(this.value)"/>
+          <div id="inline-sugg" style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);margin-top:4px;display:none;max-height:130px;overflow-y:auto;"></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="frow">
+            <div class="fl2">رقم الهاتف</div>
+            <input class="finput ltr" id="fphone" type="tel" inputmode="numeric" placeholder="05xxxxxxxx" maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)"/>
+          </div>
+          <div class="frow">
+            <div class="fl2">الرقم الوطني</div>
+            <input class="finput ltr" id="fnid" type="text" inputmode="numeric" placeholder="مثال: 12345678901" maxlength="11" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,11)"/>
+          </div>
+        </div>
+
+        <div class="frow">
+          <div class="fl2">رقم الجواز</div>
+          <input class="finput ltr" id="fp" type="text" placeholder="A12345678" autocomplete="off"/>
+        </div>
+
+        <div class="frow">
+          <div class="fl2">الخدمة <span style="color:var(--red);">*</span></div>
+          <input class="finput" id="fdesc" type="text" placeholder="اكتب أو اختر من القائمة..." autocomplete="off" oninput="showSvcSugg(this.value)"/>
+          <div id="svc-sugg" style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);margin-top:4px;display:none;max-height:160px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.1);"></div>
+        </div>
+
+        <div class="frow">
+          <div class="fl2">ملاحظات</div>
+          <input class="finput" id="fnotes" type="text" placeholder="اختياري..."/>
+        </div>
+      </div>
+
+      <!-- AMOUNT CARD -->
+      <div class="card">
+        <div class="ctitle">المبلغ المسدد</div>
+
+        <!-- Big display -->
+        <div style="background:var(--gp);border:2px solid var(--gpp);border-radius:var(--r);padding:14px;text-align:center;margin-bottom:12px;">
+          <div style="font-size:44px;font-weight:800;color:var(--gd);line-height:1;" id="amtv">0</div>
+          <div style="font-size:14px;color:var(--gm);font-weight:600;margin-top:3px;">ريال سعودي</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:5px;min-height:16px;" id="amt-words">—</div>
+        </div>
+
+        <!-- Quick amounts -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:8px;">
+          <button class="qb" onclick="addAmt(50)">٥٠</button>
+          <button class="qb" onclick="addAmt(100)">١٠٠</button>
+          <button class="qb" onclick="addAmt(150)">١٥٠</button>
+          <button class="qb" onclick="addAmt(200)">٢٠٠</button>
+          <button class="qb" onclick="addAmt(300)">٣٠٠</button>
+          <button class="qb" onclick="addAmt(500)">٥٠٠</button>
+          <button class="qb" onclick="addAmt(1000)">١٠٠٠</button>
+          <button class="qb" onclick="addAmt(2500)">٢٥٠٠</button>
+        </div>
+
+        <!-- Controls -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;">
+          <button class="qb blue" onclick="customAmt()">✏️ كتابة</button>
+          <button class="qb gold" onclick="editAmt()">تعديل</button>
+          <button class="qb red" onclick="clearAmt()">✕ مسح</button>
+        </div>
+      </div>
+
+      <button class="savebtn" id="savebtn" onclick="saveReceipt()">💾 حفظ وطباعة السند</button>
+      <div style="height:16px;"></div>
+
+
+    <!-- RECORDS -->
+    <div class="screen" id="screen-records">
+      <div class="actbtns">
+        <button class="abtn green" onclick="printReport()">🖨️ تقرير</button>
+        <button class="abtn blue" onclick="exportCSV('receipts')">📥 تصدير</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="fbar">
+          <input class="sbox" id="srch" type="search" placeholder="🔍 بحث..." oninput="renderRecords()"/>
+          <input class="datein" id="fdate" type="date" onchange="renderRecords()"/>
+          <button class="ibtn p" onclick="document.getElementById('srch').value='';document.getElementById('fdate').value='';renderRecords()">✕</button>
+        </div>
+        <div class="twrap"><table class="tbl">
+          <thead><tr><th>#</th><th>الاسم</th><th>الخدمة</th><th>المبلغ</th><th>المحصّل</th><th>الوقت</th><th></th></tr></thead>
+          <tbody id="rec-tbody"></tbody>
+        </table></div>
+        <div class="tbl-foot" id="rec-foot"></div>
+      </div>
+    </div>
+
+    <!-- APPLICATIONS -->
+    <div class="screen" id="screen-apps">
+      <!-- Pending badge alert -->
+      <div id="apps-alert" style="display:none;background:linear-gradient(135deg,var(--gold-d),var(--gold));border-radius:var(--r);padding:14px 16px;margin-bottom:12px;color:#fff;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:24px;">🔔</span>
+        <div><div style="font-weight:800;font-size:14px;" id="apps-alert-txt">طلبات جديدة بانتظار المراجعة</div>
+        <div style="font-size:11px;opacity:.85;">اضغط لمراجعة الطلبات</div></div>
+      </div>
+
+      <!-- Filter tabs -->
+      <div style="display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;">
+        <button class="app-tab active" id="atab-pending"    onclick="setAppTab('pending')">⏳ معلقة</button>
+        <button class="app-tab"        id="atab-approved"   onclick="setAppTab('approved')">✓ مقبولة</button>
+        <button class="app-tab"        id="atab-rejected"   onclick="setAppTab('rejected')">✗ مرفوضة</button>
+        <button class="app-tab"        id="atab-all"        onclick="setAppTab('all')">الكل</button>
+      </div>
+
+      <div id="apps-list"></div>
+      <div class="tbl-foot" id="apps-foot"></div>
+    </div>
+
+    <!-- FINANCE -->
+    <div class="screen" id="screen-finance">
+      <!-- Secretary sees overview only -->
+      <div id="fin-secretary-view" style="display:none;">
+        <div class="fin-overview">
+          <div class="fin-lbl">الميزانية العامة — لوحة الأمانة العامة</div>
+          <div class="fin-total" id="fsec-net">0</div>
+          <div style="font-size:13px;opacity:.8;text-align:center;">صافي المتبقي (ريال)</div>
+          <div class="fin-row">
+            <div class="fin-item"><div class="fin-item-val" id="fsec-income">0</div><div class="fin-item-lbl">إجمالي الدخل ر.س</div></div>
+            <div class="fin-item"><div class="fin-item-val" id="fsec-exp">0</div><div class="fin-item-lbl">إجمالي المنصرفات ر.س</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ctitle">آخر العمليات المالية</div>
+          <div id="fsec-recent"></div>
+        </div>
+      </div>
+      <!-- Finance/President/Admin full view -->
+      <div id="fin-full-view" style="display:none;">
+        <div class="mgrid" id="fin-metrics"></div>
+        <div id="my-approvals-wrap" style="display:none;">
+          <div class="card" style="border-color:var(--gold);background:var(--gold-l);padding:14px;">
+            <div class="ctitle" style="color:var(--gold-d);">⏳ تنتظر موافقتك</div>
+            <div id="my-approvals"></div>
+          </div>
+        </div>
+        <div class="actbtns">
+          <button class="abtn green" id="btn-new-payment" onclick="openModal('m-payment')" style="display:none;">➕ سند صرف</button>
+          <button class="abtn blue" onclick="printPaymentReport()">🖨️ تقرير الصرف</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div class="fbar">
+            <select class="fsel2" id="pmt-status" onchange="renderPayments()" style="flex:1;">
+              <option value="">كل الحالات</option>
+              <option value="pending_finance">بانتظار المالية</option>
+              <option value="pending_president">بانتظار الرئيس</option>
+              <option value="approved">معتمدة</option>
+              <option value="paid">مصروفة</option>
+              <option value="rejected">مرفوضة</option>
+            </select>
+            <input class="datein" id="pmt-date" type="date" onchange="renderPayments()"/>
+          </div>
+          <div id="pmts-list"></div>
+          <div class="tbl-foot" id="pmt-foot"></div>
+        </div>
+      </div>
+    </div>
+    <!-- MEMBERS -->
+    <div class="screen" id="screen-members">
+      <div class="actbtns">
+        <button class="abtn green" onclick="openModal('m-member')">➕ عضو جديد</button>
+        <button class="abtn blue" onclick="exportCSV('members')">📥 تصدير</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="fbar">
+          <input class="sbox" id="msrch" type="search" placeholder="🔍 بحث..." oninput="renderMembers()"/>
+          <select class="fsel2" id="mstat" onchange="renderMembers()">
+            <option value="">كل الحالات</option>
+            <option value="active">نشط</option>
+            <option value="late">متأخر</option>
+          </select>
+        </div>
+        <div class="twrap"><table class="tbl">
+          <thead><tr><th>#</th><th>الاسم</th><th>الجواز</th><th>المنطقة</th><th>الحالة</th><th></th></tr></thead>
+          <tbody id="mem-tbody"></tbody>
+        </table></div>
+        <div class="tbl-foot" id="mem-foot"></div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="screen" id="screen-reports">
+      <div class="card" style="padding:14px;">
+        <div class="ctitle">نطاق التقرير</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          <button class="rp-btn active" id="rp-today"   onclick="setRpPeriod('today')">اليوم</button>
+          <button class="rp-btn"        id="rp-week"    onclick="setRpPeriod('week')">هذا الأسبوع</button>
+          <button class="rp-btn"        id="rp-month"   onclick="setRpPeriod('month')">هذا الشهر</button>
+          <button class="rp-btn"        id="rp-quarter" onclick="setRpPeriod('quarter')">ربع السنة</button>
+          <button class="rp-btn"        id="rp-year"    onclick="setRpPeriod('year')">هذه السنة</button>
+          <button class="rp-btn"        id="rp-custom"  onclick="setRpPeriod('custom')">تاريخ مخصص</button>
+        </div>
+        <div id="rp-custom-dates" style="display:none;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div><div class="fl2">من</div><input class="finput" id="rp-from" type="date" onchange="calcReports()"/></div>
+          <div><div class="fl2">إلى</div><input class="finput" id="rp-to" type="date" onchange="calcReports()"/></div>
+        </div>
+        <div id="rp-period-label" style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px;font-weight:600;"></div>
+      </div>
+      <div id="rp-summary" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;"></div>
+      <div class="card"><div class="ctitle">سندات القبض</div><div id="rp-receipts-stats"></div>
+        <div style="margin-top:10px;"><button class="abtn green" style="width:100%;" onclick="printRpReceipts()">طباعة تقرير القبض</button></div></div>
+      <div class="card"><div class="ctitle">سندات الصرف</div><div id="rp-payments-stats"></div>
+        <div style="margin-top:10px;"><button class="abtn blue" style="width:100%;" onclick="printRpPayments()">طباعة تقرير الصرف</button></div></div>
+      <div class="card"><div class="ctitle">العضوية</div><div id="rp-members-stats"></div>
+        <div style="margin-top:10px;"><button class="abtn gold" style="width:100%;" onclick="printRpMembers()">طباعة تقرير العضوية</button></div></div>
+      <button class="savebtn" onclick="printFullReport()" style="margin-bottom:16px;">طباعة التقرير الشامل الموحد</button>
+    </div>
+
+    <!-- CONTROL PANEL -->
+    <div class="screen" id="screen-control">
+      <div class="card">
+        <div class="ctitle">👥 إدارة المستخدمين</div>
+        <div id="users-list"></div>
+        <button class="add-user-btn" onclick="openAddUser()">➕ إضافة مستخدم جديد</button>
+      </div>
+      <div class="card">
+        <div class="ctitle">🔐 جدول الصلاحيات</div>
+        <div style="font-size:12px;line-height:2.2;color:var(--ink);">
+          <div>👤 <strong>محصّل</strong> — تحصيل المبالغ وإصدار سندات القبض فقط</div>
+          <div>💰 <strong>مالية</strong> — سندات الصرف + الموافقة الأولى + التقارير</div>
+          <div>📋 <strong>أمانة عامة</strong> — الاطلاع على الدخل والمنصرفات والمتبقي فقط</div>
+          <div>👑 <strong>رئيس</strong> — الموافقة النهائية على الصرف + الاطلاع الكامل</div>
+          <div>🪪 <strong>أمانة عضوية</strong> — إدارة المستخدمين والأعضاء</div>
+          <div>🛡️ <strong>مدير النظام</strong> — تحكم كامل بلا قيود</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bnav" id="bnav"></div>
+</div>
+
+<script>
+/* ══════════════════════════════════
+   SUPABASE CONFIG
+══════════════════════════════════ */
+const SB_URL = 'https://ynjulkvlqajmqsabujzp.supabase.co';
+var sb_ready = false;
+const SB_KEY = 'sb_publishable_sxoxcY4fmz5cc0RqlngNEA_XXul-wMu';
+
+/* ══════════════════════════════════
+   ROLES CONFIG
+══════════════════════════════════ */
+const ROLES = {
+  collector:  { label:'محصّل',        emoji:'👤', color:'#3a9e6f',
+    perms:['collect'],
+    desc:'تحصيل المبالغ وإصدار سندات القبض فقط' },
+  finance:    { label:'مالية',        emoji:'💰', color:'#c9a84c',
+    perms:['collect','records','finance_full','dash'],
+    desc:'سندات الصرف والموافقة الأولى والتقارير المالية' },
+  secretary:  { label:'أمانة عامة',  emoji:'📋', color:'#1a5fa8',
+    perms:['finance_overview','dash'],
+    desc:'الاطلاع على الدخل والمنصرفات والمتبقي فقط' },
+  president:  { label:'رئيس',        emoji:'👑', color:'#c0392b',
+    perms:['records','finance_full','dash','pmt_approve'],
+    desc:'الموافقة النهائية على الصرف والاطلاع الكامل' },
+  membership: { label:'أمانة عضوية', emoji:'🪪', color:'#6c3483',
+    perms:['members','control','dash','collect','records','applications'],
+    desc:'إدارة المستخدمين والأعضاء' },
+  admin:      { label:'مدير النظام', emoji:'🛡️', color:'#1a3d2b',
+    perms:['*'],
+    desc:'تحكم كامل بلا قيود' },
+};
+
+/* ══════════════════════════════════
+   PAYMENT STEPS — المالية ← الرئيس
+══════════════════════════════════ */
+const PMT_STEPS = [
+  { key:'step1_finance',   label:'المالية',  perm:'finance_full', status:'pending_finance',   icon:'💰' },
+  { key:'step2_president', label:'الرئيس',   perm:'pmt_approve',  status:'pending_president',  icon:'👑' },
+];
+
+/* ══════════════════════════════════
+   STATE
+══════════════════════════════════ */
+let sb = null, useDB = false, curUser = null;
+let cachedReceipts=[], cachedPayments=[], cachedMembers=[], cachedUsers=[];
+let colAmt=0, rcAmt=0, currentPmt=null;
+
+/* ══════════════════════════════════
+   LOCAL STORAGE
+══════════════════════════════════ */
+const LS={
+  get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+};
+const DEFAULT_USERS=[
+  {id:'u1',username:'admin',name:'مدير النظام',role:'admin',pw:'admin2026',status:'active',created_at:new Date().toISOString()},
+  {id:'u2',username:'membership',name:'أمانة العضوية',role:'membership',pw:'member2026',status:'active',created_at:new Date().toISOString()},
+];
+function getUsers(){ const u=LS.get('sj_users',null); if(!u){LS.set('sj_users',DEFAULT_USERS);return DEFAULT_USERS;} return u; }
+function saveUsers(u){ LS.set('sj_users',u); }
+function nextId(k,d){ const v=(parseInt(localStorage.getItem(k)||d))+1; localStorage.setItem(k,v); return v; }
+
+/* ══════════════════════════════════
+   SUPABASE INIT
+══════════════════════════════════ */
+function initDB(){
+  const el=document.getElementById('db-status');
+  try{
+    sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}});
+    useDB=true;
+    el.textContent='🟢 متصل بقاعدة البيانات السحابية';
+    el.style.color='#2e6b4f';
+  }catch(e){
+    el.textContent='🟡 يعمل محلياً على هذا الجهاز';
+    useDB=false;
+  }
+}
+
+/* ══════════════════════════════════
+   DB HELPERS
+══════════════════════════════════ */
+async function dbInsert(table,row){
+  if(useDB){const{data,error}=await sb.from(table).insert(row).select().single();if(error)throw error;return data;}
+  const arr=LS.get('sj_'+table,[]); arr.push(row); LS.set('sj_'+table,arr); return row;
+}
+async function dbUpdate(table,id,data){
+  if(useDB){const{error}=await sb.from(table).update(data).eq('id',id);if(error)throw error;}
+  else{const arr=LS.get('sj_'+table,[]); const i=arr.findIndex(x=>x.id===id); if(i>=0){Object.assign(arr[i],data);LS.set('sj_'+table,arr);}}
+}
+async function dbFetch(table){
+  if(useDB){const{data,error}=await sb.from(table).select('*').order('created_at',{ascending:false});if(error)throw error;return data||[];}
+  return LS.get('sj_'+table,[]);
+}
+function refreshSession(){
+  if(curUser) LS.set('sj_session',{id:curUser.id,ts:Date.now()});
+}
+async function loadAll(){
+  setSyncStatus('sync','جاري تحميل البيانات...');
+  try{
+    cachedReceipts=await dbFetch('receipts');
+    cachedPayments=await dbFetch('payments');
+    cachedMembers=await dbFetch('members');
+    setSyncStatus('on','متصل — محدّث');
+    updateCollectorStats();
+    document.getElementById('scnt').textContent=cachedReceipts.length+' سند · '+cachedMembers.length+' عضو';
+  }catch(e){
+    setSyncStatus('off','يعمل محلياً');
+    cachedReceipts=LS.get('sj_receipts',[]);
+    cachedPayments=LS.get('sj_payments',[]);
+    cachedMembers=LS.get('sj_members',[]);
+  }
+}
+
+/* ══════════════════════════════════
+   SYNC STATUS
+══════════════════════════════════ */
+function setSyncStatus(st,txt){
+  const bar=document.getElementById('sync-bar');
+  const dot=document.getElementById('sdot');
+  if(bar) bar.style.display='flex';
+  if(dot) dot.className='sdot'+(st==='on'?'':st==='off'?' off':' sync');
+  const el=document.getElementById('stxt');
+  if(el) el.textContent=txt;
+}
+
+/* ══════════════════════════════════
+   LOGIN
+══════════════════════════════════ */
+function buildLoginUI(){
+  const sel=document.getElementById('login-user');
+  if(!sel) return;
+  while(sel.options.length>1) sel.remove(1);
+  cachedUsers=getUsers().filter(u=>u.status==='active');
+  cachedUsers.forEach(u=>{
+    const o=document.createElement('option');
+    o.value=u.id;
+    o.textContent=u.name+' — '+( ROLES[u.role]?.label||u.role);
+    sel.appendChild(o);
+  });
+}
+let loginUser=null;
+function onUserSel(id){ loginUser=cachedUsers.find(u=>u.id===id)||null; document.getElementById('lerr').classList.remove('show'); }
+function togglePw(){ const i=document.getElementById('lpw'); i.type=i.type==='password'?'text':'password'; }
+async function doLogin(){
+  if(!loginUser){showToast('اختر المستخدم أولاً','warn');return;}
+  const pw=document.getElementById('lpw').value;
+  if(pw!==loginUser.pw){document.getElementById('lerr').classList.add('show');return;}
+  curUser={...loginUser};
+  LS.set('sj_session',{id:curUser.id,ts:Date.now()});
+  refreshSession();
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').classList.add('show');
+  document.getElementById('sync-bar').style.display='flex';
+  document.getElementById('ubadge').textContent=ROLES[curUser.role]?.emoji+' '+curUser.name;
+  document.getElementById('hsubt').textContent=ROLES[curUser.role]?.label||'';
+  document.getElementById('w-title').textContent='أهلاً، '+curUser.name;
+  document.getElementById('w-sub').textContent=new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('w-role').textContent=(ROLES[curUser.role]?.emoji||'')+' '+(ROLES[curUser.role]?.label||'');
+  document.getElementById('coll-bar').textContent='📋 المحصّل: '+curUser.name;
+  document.getElementById('lpw').value='';
+  buildNav();
+  await loadAll();
+}
+function doLogout(){
+  if(!confirm('هل تريد الخروج؟'))return;
+  curUser=null;
+  LS.set('sj_session',null);
+  document.getElementById('app-screen').classList.remove('show');
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('sync-bar').style.display='none';
+  buildLoginUI();
+}
+function hasPerm(p){ if(!curUser)return false; const ps=ROLES[curUser.role]?.perms||[]; return ps.includes('*')||ps.includes(p); }
+
+/* ══════════════════════════════════
+   NAV
+══════════════════════════════════ */
+const NAV=[
+  {id:'dash',    ico:'📊',lbl:'الرئيسية',perm:'dash'},
+  {id:'collect', ico:'📋',lbl:'تحصيل',   perm:'collect'},
+  {id:'records', ico:'🗂️',lbl:'السجلات', perm:'records'},
+  {id:'finance', ico:'💸',lbl:'المالية', perm_any:['finance_full','finance_overview','pmt_approve']},
+  {id:'applications', ico:'📥',lbl:'الطلبات',  perm:'applications'},
+  {id:'applications', ico:'&#x1F4E5;',lbl:'الطلبات', perm:'applications'},
+  {id:'members', ico:'&#x1F465;',lbl:'الأعضاء', perm:'members'},
+  {id:'reports', ico:'📊',lbl:'التقارير',perm_any:['records','finance_full','finance_overview']},
+  {id:'control', ico:'⚙️',lbl:'التحكم',  perm:'control'},
+];
+function buildNav(){
+  const vis=NAV.filter(n=>{
+    if(n.perm) return hasPerm(n.perm)||hasPerm('*');
+    if(n.perm_any) return n.perm_any.some(p=>hasPerm(p)||hasPerm('*'));
+    return false;
+  });
+  document.getElementById('bnav').innerHTML=vis.map(n=>`
+    <button class="bni" id="bni-${n.id}" onclick="switchTab('${n.id}')">
+      <span class="ico">${n.ico}</span>${n.lbl}
+    </button>`).join('');
+  if(vis.length) switchTab(vis[0].id);
+}
+function switchTab(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.bni').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+id)?.classList.add('active');
+  document.getElementById('bni-'+id)?.classList.add('active');
+  document.getElementById('screens').scrollTop=0;
+  if(id==='dash') renderDash();
+  if(id==='records') renderRecords();
+  if(id==='finance') renderFinanceScreen();
+  if(id==='members') renderMembers();
+  if(id==='control') renderControl();
+  if(id==='reports') calcReports();
+  if(id==='reports'){ calcReports(); }
+  if(id==='applications'){ loadApplications().then(function(){ renderApplications(); }); }
+}
+
+/* ══════════════════════════════════
+   DASHBOARD
+══════════════════════════════════ */
+function renderDash(){
+  const total=cachedReceipts.reduce((s,r)=>s+(r.amount||0),0);
+  const exp=cachedPayments.filter(p=>p.status==='paid').reduce((s,p)=>s+(p.amount||0),0);
+  const today=new Date().toDateString();
+  const tr=cachedReceipts.filter(r=>new Date(r.created_at||Date.now()).toDateString()===today);
+  const tt=tr.reduce((s,r)=>s+(r.amount||0),0);
+  let html='';
+  // Show metrics based on role
+  if(hasPerm('collect')||hasPerm('records')){
+    html+=`<div class="mcard"><div class="mval" style="color:var(--gm)">${cachedReceipts.length}</div><div class="mlbl">إجمالي السندات</div></div>
+    <div class="mcard"><div class="mval" style="color:var(--gd)">${total.toLocaleString('ar-SA')}</div><div class="mlbl">إجمالي التحصيل ر.س</div></div>`;
+  }
+  if(hasPerm('collect')||hasPerm('records')){
+    html+=`<div class="mcard"><div class="mval" style="color:var(--blue)">${tr.length}<span style="font-size:11px;display:block;color:var(--muted);">${tt.toLocaleString('ar-SA')} ر.س</span></div><div class="mlbl">سندات اليوم</div></div>`;
+  }
+  if(hasPerm('finance_full')||hasPerm('finance_overview')||hasPerm('pmt_approve')){
+    html+=`<div class="mcard"><div class="mval" style="color:${total-exp>=0?'var(--gl)':'var(--red)'}">${(total-exp).toLocaleString('ar-SA')}</div><div class="mlbl">الصافي المتبقي ر.س</div></div>
+    <div class="mcard"><div class="mval" style="color:var(--red)">${exp.toLocaleString('ar-SA')}</div><div class="mlbl">المنصرفات ر.س</div></div>`;
+  }
+  if(hasPerm('members')||hasPerm('control')){
+    html+=`<div class="mcard"><div class="mval" style="color:var(--purple,#6c3483)">${cachedMembers.length}</div><div class="mlbl">الأعضاء المسجلون</div></div>`;
+  }
+  document.getElementById('dash-metrics').innerHTML=html||'<div class="mcard"><div class="mval" style="color:var(--gm)">'+cachedReceipts.length+'</div><div class="mlbl">سنداتي اليوم</div></div>';
+  // Perf section — only for admin/finance/membership
+  const perfEl=document.getElementById('dash-perf');
+  if(hasPerm('records')||hasPerm('control')){
+    perfEl.style.display='block';
+    const allUsers=getUsers().filter(u=>u.role==='collector');
+    const mx=Math.max(...allUsers.map(u=>cachedReceipts.filter(r=>r.collector_id===u.id).reduce((s,r)=>s+(r.amount||0),0)),1);
+    const pcs=['#1a5fa8','#2e6b4f','#c9a84c','#c0392b'];
+    perfEl.innerHTML='<div class="ctitle">📈 أداء المحصّلين</div>'+(allUsers.length?allUsers.map((u,i)=>{
+      const ur=cachedReceipts.filter(r=>r.collector_id===u.id);
+      const ut=ur.reduce((s,r)=>s+(r.amount||0),0);
+      return`<div class="perfrow">
+        <div class="pavatar" style="background:${pcs[i%4]}22;color:${pcs[i%4]}">${u.name.slice(0,2)}</div>
+        <div style="flex:1;"><div style="font-size:13px;font-weight:600;">${u.name}</div>
+          <div class="barbg"><div class="barfill" style="width:${(ut/mx*100).toFixed(0)}%;background:${pcs[i%4]};"></div></div></div>
+        <div style="text-align:left;min-width:80px;">
+          <div style="font-size:12px;font-weight:700;color:${pcs[i%4]}">${ut.toLocaleString('ar-SA')} ر.س</div>
+          <div style="font-size:10px;color:var(--muted)">${ur.length} سند</div>
+        </div></div>`;
+    }).join(''):'<div class="empty">لا يوجد محصّلون</div>');
+  } else { perfEl.style.display='none'; }
+}
+
+/* ══════════════════════════════════
+   AMOUNT
+══════════════════════════════════ */
+function updAmt(){
+  var el=document.getElementById('amtv');
+  var wd=document.getElementById('amt-words');
+  if(el) el.textContent=colAmt.toLocaleString('ar-SA');
+  if(wd) wd.textContent=colAmt>0?amtWords(colAmt)+' ريال':'—';
+}
+function addAmt(n){ colAmt+=n; updAmt(); }
+function clearAmt(){ colAmt=0; updAmt(); }
+function customAmt(){
+  var v=prompt('أدخل المبلغ كاملاً:');
+  if(v&&!isNaN(v)&&+v>0){ colAmt=+v; updAmt(); }
+}
+function editAmt(){
+  var v=prompt('تعديل المبلغ ('+colAmt+'):');
+  if(v!==null&&!isNaN(v)&&+v>=0){ colAmt=+v; updAmt(); }
+}
+function addRcAmt(n){ rcAmt+=n; document.getElementById('rc-amt-d').textContent=rcAmt.toLocaleString('ar-SA'); }
+function clearRcAmt(){ rcAmt=0; document.getElementById('rc-amt-d').textContent='0'; }
+function customRcAmt(){ const v=prompt('أدخل المبلغ:'); if(v&&!isNaN(v)&&+v>0){rcAmt=+v;document.getElementById('rc-amt-d').textContent=rcAmt.toLocaleString('ar-SA');} }
+
+/* ══════════════════════════════════
+   MEMBER SEARCH
+══════════════════════════════════ */
+function buildSugg(q,el,fn){
+  if(!q||q.length<2){el.style.display='none';return;}
+  const res=cachedMembers.filter(m=>(m.name||'').includes(q)||(m.passport||'').includes(q)).slice(0,5);
+  if(!res.length){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML=res.map(m=>`<div style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onclick="${fn}('${m.name.replace(/'/g,"\\'")}','${(m.passport||'').replace(/'/g,"\\'")}')">
+    ${m.name} <span style="color:var(--muted);font-size:11px;">— ${m.passport||''}</span>
+  </div>`).join('');
+}
+function searchInline(q){ buildSugg(q,document.getElementById('inline-sugg'),'fillInline'); }
+function fillInline(name,pass){ document.getElementById('fn').value=name; document.getElementById('fp').value=pass; document.getElementById('inline-sugg').style.display='none'; }
+function searchMemberModal(q){ buildSugg(q,document.getElementById('rc-suggestions'),'fillModal'); }
+function fillModal(name,pass){ document.getElementById('rc-name').value=name; document.getElementById('rc-pass').value=pass; document.getElementById('rc-suggestions').style.display='none'; }
+
+/* ══════════════════════════════════
+   SAVE RECEIPT (COLLECT SCREEN)
+══════════════════════════════════ */
+async function saveReceipt(){
+  const name=document.getElementById('fn').value.trim();
+  const phone=(document.getElementById('fphone')||{}).value||'';
+  const nid=(document.getElementById('fnid')||{}).value||'';
+  const pass=document.getElementById('fp').value.trim();
+  const desc=document.getElementById('fdesc').value.trim();
+  const notes=document.getElementById('fnotes').value.trim();
+  if(!name){showToast('أدخل اسم المراجع','err');return;}
+  if(!desc){showToast('أدخل وصف الخدمة','err');return;}
+  if(colAmt<=0){showToast('أدخل المبلغ','err');return;}
+  const btn=document.getElementById('savebtn');
+  btn.disabled=true; btn.textContent='⏳ جاري الحفظ...';
+  const id='R'+nextId('sj_rctr',3000).toString().padStart(5,'0');
+  const rec={id,name,phone:phone.trim(),national_id:nid.trim(),passport:pass,description:desc,notes,amount:colAmt,
+    collector:curUser.name,collector_id:curUser.id,
+    status:'active',created_at:new Date().toISOString()};
+  try{
+    await dbInsert('receipts',rec);
+    cachedReceipts.unshift(rec);
+    document.getElementById('scnt').textContent=cachedReceipts.length+' سند · '+cachedMembers.length+' عضو';
+    ['fn','fp','fdesc','fnotes'].forEach(i=>document.getElementById(i).value='');
+    clearAmt();
+    beep();
+    showToast('✓ تم — سند رقم '+id,'ok');
+    updateCollectorStats();
+    printReceiptDoc(rec);
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+  finally{btn.disabled=false;btn.textContent='💾 حفظ وطباعة السند';}
+}
+
+/* ══════════════════════════════════
+   SAVE RECEIPT (MODAL)
+══════════════════════════════════ */
+async function saveReceiptModal(){
+  const name=document.getElementById('rc-name').value.trim();
+  const pass=document.getElementById('rc-pass').value.trim();
+  const desc=document.getElementById('rc-desc').value.trim();
+  if(!name||!desc||rcAmt<=0){showToast('أكمل البيانات والمبلغ','err');return;}
+  const id='R'+nextId('sj_rctr',3000).toString().padStart(5,'0');
+  const rec={id,name,passport:pass,description:desc,notes:'',amount:rcAmt,
+    collector:curUser.name,collector_id:curUser.id,
+    status:'active',created_at:new Date().toISOString()};
+  try{
+    await dbInsert('receipts',rec);
+    cachedReceipts.unshift(rec);
+    closeModal('m-receipt');
+    clearRcAmt();
+    beep();
+    showToast('✓ سند رقم '+id,'ok');
+    printReceiptDoc(rec);
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+/* ══════════════════════════════════
+   RECORDS TABLE
+══════════════════════════════════ */
+function renderRecords(){
+  const q=(document.getElementById('srch')||{}).value||'';
+  const fd=(document.getElementById('fdate')||{}).value||'';
+  let recs=[...cachedReceipts].filter(r=>
+    ((r.name||'').includes(q)||(r.description||'').includes(q))&&
+    (!fd||new Date(r.created_at||Date.now()).toISOString().slice(0,10)===fd)
+  );
+  const tot=recs.reduce((s,r)=>s+(r.amount||0),0);
+  document.getElementById('rec-foot').textContent=recs.length+' سند — إجمالي: '+tot.toLocaleString('ar-SA')+' ر.س';
+  const tb=document.getElementById('rec-tbody');
+  if(!recs.length){tb.innerHTML='<tr><td colspan="7"><div class="empty">لا توجد سندات</div></td></tr>';return;}
+  tb.innerHTML=recs.map(r=>{
+    const d=new Date(r.created_at||Date.now());
+    return`<tr>
+      <td style="color:var(--muted);font-size:10px;">${r.id}</td>
+      <td style="font-weight:600;font-size:12px;">${r.name}</td>
+      <td><span class="badge bg" style="font-size:10px;">${(r.description||'').slice(0,10)}</span></td>
+      <td style="font-weight:700;color:var(--gd);">${(r.amount||0).toLocaleString('ar-SA')}</td>
+      <td><span class="badge bb" style="font-size:10px;">${r.collector||'—'}</span></td>
+      <td style="font-size:10px;color:var(--muted);">${d.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'})}<br/>${d.toLocaleDateString('ar-SA',{month:'short',day:'numeric'})}</td>
+      <td><button class="ibtn p" onclick='printReceiptDoc(${JSON.stringify(r)})'>🖨️</button></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════
+   FINANCE SCREEN
+══════════════════════════════════ */
+function renderFinanceScreen(){
+  const secView=document.getElementById('fin-secretary-view');
+  const fullView=document.getElementById('fin-full-view');
+  const total=cachedReceipts.reduce((s,r)=>s+(r.amount||0),0);
+  const exp=cachedPayments.filter(p=>p.status==='paid').reduce((s,p)=>s+(p.amount||0),0);
+  const net=total-exp;
+  if(hasPerm('finance_overview')&&!hasPerm('finance_full')&&!hasPerm('pmt_approve')){
+    // Secretary — overview only
+    secView.style.display='block';
+    fullView.style.display='none';
+    document.getElementById('fsec-net').textContent=net.toLocaleString('ar-SA');
+    document.getElementById('fsec-income').textContent=total.toLocaleString('ar-SA');
+    document.getElementById('fsec-exp').textContent=exp.toLocaleString('ar-SA');
+    // Show last 5 operations
+    const recent=[...cachedReceipts.slice(0,3).map(r=>({type:'قبض',name:r.name,amt:r.amount,date:r.created_at,sign:'+'})),
+      ...cachedPayments.filter(p=>p.status==='paid').slice(0,3).map(p=>({type:'صرف',name:p.beneficiary,amt:p.amount,date:p.created_at,sign:'-'}))
+    ].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+    document.getElementById('fsec-recent').innerHTML=recent.length?recent.map(r=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <span class="badge ${r.sign==='+'?'bg':'br'}">${r.type}</span>
+        <span style="flex:1;font-size:13px;">${r.name}</span>
+        <span style="font-weight:700;color:${r.sign==='+'?'var(--gm)':'var(--red)'};">${r.sign}${(r.amt||0).toLocaleString('ar-SA')} ر.س</span>
+      </div>`).join(''):'<div class="empty">لا توجد عمليات</div>';
+  } else {
+    // Finance / President / Admin — full view
+    secView.style.display='none';
+    fullView.style.display='block';
+    // Metrics
+    document.getElementById('fin-metrics').innerHTML=`
+      <div class="mcard"><div class="mval" style="color:var(--gm)">${total.toLocaleString('ar-SA')}</div><div class="mlbl">إجمالي الدخل ر.س</div></div>
+      <div class="mcard"><div class="mval" style="color:var(--red)">${exp.toLocaleString('ar-SA')}</div><div class="mlbl">المنصرفات ر.س</div></div>
+      <div class="mcard"><div class="mval" style="color:${net>=0?'var(--gl)':'var(--red)'}">${net.toLocaleString('ar-SA')}</div><div class="mlbl">الصافي المتبقي ر.س</div></div>
+      <div class="mcard"><div class="mval" style="color:var(--orange)">${cachedPayments.filter(p=>!['paid','rejected'].includes(p.status)).length}</div><div class="mlbl">طلبات معلقة</div></div>`;
+    // Show new payment btn only for finance
+    document.getElementById('btn-new-payment').style.display=hasPerm('finance_full')?'flex':'none';
+    renderMyApprovals();
+    renderPayments();
+  }
+}
+
+function renderMyApprovals(){
+  const mine=cachedPayments.filter(p=>canActOnPmt(p));
+  const w=document.getElementById('my-approvals-wrap');
+  const l=document.getElementById('my-approvals');
+  if(!w||!l)return;
+  w.style.display=mine.length?'block':'none';
+  l.innerHTML=mine.map(p=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.08);">
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;">${p.beneficiary}</div>
+        <div style="font-size:11px;color:var(--gold-d);">${p.description} · ${(p.amount||0).toLocaleString('ar-SA')} ر.س</div></div>
+      <button class="ibtn e" onclick='openPmtDetail(${JSON.stringify(p)})'>موافقة</button>
+    </div>`).join('');
+}
+
+function canActOnPmt(p){
+  if(['paid','rejected'].includes(p.status)) return false;
+  return PMT_STEPS.some((s,i)=>hasPerm(s.perm)&&!p[s.key]&&(i===0||!!p[PMT_STEPS[i-1].key])&&p.status===s.status);
+}
+
+const PMT_STA={
+  pending_finance:  {lbl:'بانتظار المالية',  cls:'bo'},
+  pending_president:{lbl:'بانتظار الرئيس',   cls:'br'},
+  approved:         {lbl:'معتمد',            cls:'bg'},
+  paid:             {lbl:'مصروف',            cls:'bg'},
+  rejected:         {lbl:'مرفوض',           cls:'br'},
+};
+
+function renderPayments(){
+  const sf=(document.getElementById('pmt-status')||{}).value||'';
+  const df=(document.getElementById('pmt-date')||{}).value||'';
+  let pmts=[...cachedPayments].filter(p=>(!sf||p.status===sf)&&(!df||new Date(p.created_at||Date.now()).toISOString().slice(0,10)===df));
+  const tot=pmts.reduce((s,p)=>s+(p.amount||0),0);
+  const foot=document.getElementById('pmt-foot');
+  if(foot) foot.textContent=pmts.length+' سند — إجمالي: '+tot.toLocaleString('ar-SA')+' ر.س';
+  const el=document.getElementById('pmts-list');
+  if(!el)return;
+  if(!pmts.length){el.innerHTML='<div class="empty">لا توجد سندات صرف</div>';return;}
+  el.innerHTML=pmts.map(p=>{
+    const sm=PMT_STA[p.status]||{lbl:p.status,cls:'bb'};
+    const d=new Date(p.created_at||Date.now());
+    const canAct=canActOnPmt(p);
+    return`<div style="padding:12px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;">${p.beneficiary}</div>
+          <div style="font-size:11px;color:var(--muted);">${p.description} · ${p.category||''}</div>
+          <div style="font-size:11px;color:var(--muted);">${d.toLocaleDateString('ar-SA',{month:'short',day:'numeric'})} · ${p.requested_by}</div>
+        </div>
+        <div style="text-align:left;">
+          <div style="font-size:17px;font-weight:800;color:var(--gd);">${(p.amount||0).toLocaleString('ar-SA')} <span style="font-size:11px;">ر.س</span></div>
+          <span class="badge ${sm.cls}">${sm.lbl}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
+        ${PMT_STEPS.map(s=>`<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:${p[s.key]?'var(--gp)':'var(--surf)'};color:${p[s.key]?'var(--gd)':'var(--muted)'};border:1px solid ${p[s.key]?'var(--gl)':'var(--border)'};">${s.icon} ${s.label}: ${p[s.key]?'✓ '+p[s.key].by:'⏳'}</span>`).join('')}
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button class="ibtn p" onclick='openPmtDetail(${JSON.stringify(p)})'>تفاصيل</button>
+        ${canAct?`<button class="ibtn e" onclick='openPmtDetail(${JSON.stringify(p)})'>✓ موافقة / رفض</button>`:''}
+        ${p.status==='approved'&&hasPerm('finance_full')?`<button class="ibtn p" style="color:var(--gl);" onclick='markPaid(${JSON.stringify(p)})'>✅ تأكيد الصرف</button>`:''}
+        <button class="ibtn p" onclick='printPaymentVoucher(${JSON.stringify(p)})'>🖨️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════
+   PAYMENT SUBMIT
+══════════════════════════════════ */
+async function submitPayment(){
+  const ben=document.getElementById('np-ben').value.trim();
+  const desc=document.getElementById('np-desc').value.trim();
+  const amt=parseFloat(document.getElementById('np-amt').value)||0;
+  const cat=document.getElementById('np-cat').value;
+  const notes=document.getElementById('np-notes').value.trim();
+  if(!ben||!desc||amt<=0){showToast('أكمل جميع الحقول الإلزامية','err');return;}
+  const id='P'+nextId('sj_pctr',5000).toString().padStart(5,'0');
+  const pmt={id,beneficiary:ben,description:desc,amount:amt,category:cat,notes,
+    status:'pending_finance',requested_by:curUser.name,requested_by_id:curUser.id,
+    step1_finance:null,step2_president:null,
+    rejected_by:null,rejected_reason:null,paid_by:null,paid_at:null,
+    created_at:new Date().toISOString()};
+  try{
+    await dbInsert('payments',pmt);
+    cachedPayments.unshift(pmt);
+    closeModal('m-payment');
+    ['np-ben','np-desc','np-amt','np-notes'].forEach(i=>document.getElementById(i).value='');
+    showToast('✓ تم رفع سند الصرف رقم '+id,'ok');
+    renderPayments(); renderMyApprovals();
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+/* ══════════════════════════════════
+   PAYMENT APPROVAL
+══════════════════════════════════ */
+function openPmtDetail(p){
+  currentPmt=p;
+  document.getElementById('pdet-title').textContent='📄 سند صرف رقم '+(p.id||'');
+  const myStep=PMT_STEPS.find((s,i)=>hasPerm(s.perm)&&!p[s.key]&&(i===0||!!p[PMT_STEPS[i-1]?.key])&&p.status===s.status);
+  document.getElementById('pdet-body').innerHTML=buildPmtHTML(p,!!myStep);
+  document.getElementById('pdet-actions').innerHTML=myStep?`
+    <button class="mbtn save" onclick="approvePmt()">✓ موافقة</button>
+    <button class="mbtn danger" onclick="rejectPmt()">✗ رفض</button>
+    <button class="mbtn cancel" onclick="closeModal('m-pdetail')">إغلاق</button>`:
+    `<button class="mbtn cancel" onclick="closeModal('m-pdetail')">إغلاق</button>
+     <button class="mbtn save" onclick='printPaymentVoucher(currentPmt)'>🖨️ طباعة</button>`;
+  openModal('m-pdetail');
+}
+
+function buildPmtHTML(p,showFields){
+  const sm=PMT_STA[p.status]||{lbl:p.status};
+  return`<div style="background:var(--surf);border-radius:var(--r-sm);padding:12px;margin-bottom:12px;font-size:13px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div><span style="color:var(--muted);">المستفيد:</span><br/><strong>${p.beneficiary}</strong></div>
+      <div><span style="color:var(--muted);">المبلغ:</span><br/><strong style="font-size:18px;color:var(--gd);">${(p.amount||0).toLocaleString('ar-SA')} ر.س</strong></div>
+      <div><span style="color:var(--muted);">البيان:</span><br/>${p.description}</div>
+      <div><span style="color:var(--muted);">الحالة:</span><br/><strong>${sm.lbl}</strong></div>
+      ${p.notes?`<div style="grid-column:span 2"><span style="color:var(--muted);">ملاحظات:</span><br/>${p.notes}</div>`:''}
+    </div></div>
+    ${PMT_STEPS.map((s,i)=>{
+      const done=!!p[s.key];
+      const isNext=!done&&(i===0||!!p[PMT_STEPS[i-1]?.key]);
+      return`<div class="astep ${done?'done':isNext?'cur':'wait'}">
+        <div class="astep-icon">${s.icon}</div>
+        <div class="astep-info">
+          <div class="astep-name">م${i+1}: ${s.label}</div>
+          <div class="astep-sub">${done?'✓ وافق: '+p[s.key].by+' — '+new Date(p[s.key].at).toLocaleString('ar-SA'):isNext?'بانتظار الموافقة':'ينتظر المرحلة السابقة'}</div>
+        </div>
+        <span class="astep-badge ${done?'done':isNext?'cur':'wait'}">${done?'موافق':isNext?'معلقة':'انتظار'}</span>
+      </div>`;
+    }).join('')}
+    ${p.status==='paid'?`<div class="astep done"><div class="astep-icon">✅</div><div class="astep-info"><div class="astep-name">مصروف: ${p.paid_by||'—'}</div></div><span class="astep-badge done">مصروف</span></div>`:''}
+    ${p.status==='rejected'?`<div class="astep" style="border-color:var(--red);background:var(--red-p);"><div class="astep-icon">✗</div><div class="astep-info"><div class="astep-name">مرفوض: ${p.rejected_by||'—'}</div><div class="astep-sub">${p.rejected_reason||''}</div></div></div>`:''}
+    ${showFields?`<div class="frow" style="margin-top:12px;"><div class="fl2">كلمة مرورك *</div><input class="finput" id="pdet-pw" type="password" placeholder="••••••"/></div>
+    <div class="frow"><div class="fl2">ملاحظة</div><input class="finput" id="pdet-note" type="text" placeholder="اختياري..."/></div>`:''}`;
+}
+
+async function approvePmt(){
+  const p=currentPmt;
+  const pw=(document.getElementById('pdet-pw')||{}).value||'';
+  if(pw!==curUser.pw){showToast('❌ كلمة المرور غير صحيحة','err');return;}
+  const note=(document.getElementById('pdet-note')||{}).value||'';
+  const myStep=PMT_STEPS.find((s,i)=>hasPerm(s.perm)&&!p[s.key]&&(i===0||!!p[PMT_STEPS[i-1]?.key])&&p.status===s.status);
+  if(!myStep){showToast('ليس دورك','warn');return;}
+  const idx=PMT_STEPS.indexOf(myStep);
+  const next=PMT_STEPS[idx+1];
+  const upd={[myStep.key]:{by:curUser.name,at:new Date().toISOString(),note},status:next?next.status:'approved'};
+  try{
+    await dbUpdate('payments',p.id,upd);
+    Object.assign(p,upd);
+    const ci=cachedPayments.findIndex(x=>x.id===p.id);
+    if(ci>=0) Object.assign(cachedPayments[ci],upd);
+    closeModal('m-pdetail');
+    showToast(next?'✓ موافق — ينتقل إلى '+next.label:'✓ اعتُمد السند','ok');
+    renderPayments(); renderMyApprovals();
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+async function rejectPmt(){
+  const p=currentPmt;
+  const pw=(document.getElementById('pdet-pw')||{}).value||'';
+  if(pw!==curUser.pw){showToast('❌ كلمة المرور غير صحيحة','err');return;}
+  const reason=prompt('سبب الرفض (إلزامي):');
+  if(!reason){showToast('أدخل سبب الرفض','warn');return;}
+  const upd={status:'rejected',rejected_by:curUser.name,rejected_reason:reason,rejected_at:new Date().toISOString()};
+  try{
+    await dbUpdate('payments',p.id,upd);
+    Object.assign(p,upd);
+    const ci=cachedPayments.findIndex(x=>x.id===p.id);
+    if(ci>=0) Object.assign(cachedPayments[ci],upd);
+    closeModal('m-pdetail');
+    showToast('تم رفض السند','warn');
+    renderPayments(); renderMyApprovals();
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+async function markPaid(p){
+  if(!confirm('تأكيد صرف '+p.amount.toLocaleString('ar-SA')+' ر.س لـ '+p.beneficiary+'؟'))return;
+  const upd={status:'paid',paid_by:curUser.name,paid_at:new Date().toISOString()};
+  try{
+    await dbUpdate('payments',p.id,upd);
+    const ci=cachedPayments.findIndex(x=>x.id===p.id);
+    if(ci>=0) Object.assign(cachedPayments[ci],upd);
+    showToast('✅ تم تسجيل الصرف','ok');
+    renderPayments();
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+/* ══════════════════════════════════
+   MEMBERS
+══════════════════════════════════ */
+async function saveMember(){
+  const name=document.getElementById('nm-name').value.trim();
+  const pass=document.getElementById('nm-pass').value.trim();
+  if(!name||!pass){showToast('أدخل الاسم ورقم الجواز','err');return;}
+  const id='M'+nextId('sj_mctr',1000).toString().padStart(4,'0');
+  const mem={id,name,passport:pass,
+    phone:document.getElementById('nm-phone').value.trim(),
+    job:document.getElementById('nm-job').value.trim(),
+    region:document.getElementById('nm-region').value,
+    fee_paid:document.getElementById('nm-fee').value==='1',
+    status:'active',created_at:new Date().toISOString()};
+  try{
+    await dbInsert('members',mem);
+    cachedMembers.unshift(mem);
+    closeModal('m-member');
+    showToast('✓ تم تسجيل '+name,'ok');
+    if(mem.fee_paid){
+      const rid='R'+nextId('sj_rctr',3000).toString().padStart(5,'0');
+      const frec={id:rid,name,passport:pass,description:'رسوم تسجيل عضوية',notes:'',amount:50,
+        collector:curUser.name,collector_id:curUser.id,status:'active',created_at:new Date().toISOString()};
+      await dbInsert('receipts',frec);
+      cachedReceipts.unshift(frec);
+      printReceiptDoc(frec);
+    }
+    renderMembers();
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+function renderMembers(){
+  const q=(document.getElementById('msrch')||{}).value||'';
+  const st=(document.getElementById('mstat')||{}).value||'';
+  let mems=[...cachedMembers].filter(m=>((m.name||'').includes(q)||(m.passport||'').includes(q))&&(!st||m.status===st));
+  document.getElementById('mem-foot').textContent=mems.length+' عضو';
+  const tb=document.getElementById('mem-tbody');
+  const stL={active:'نشط',late:'متأخر',stopped:'موقوف'};
+  const stC={active:'bg',late:'bo',stopped:'br'};
+  if(!mems.length){tb.innerHTML='<tr><td colspan="6"><div class="empty">لا يوجد أعضاء</div></td></tr>';return;}
+  tb.innerHTML=mems.map(m=>`<tr>
+    <td style="color:var(--muted);font-size:10px;">${m.id}</td>
+    <td style="font-weight:600;font-size:12px;">${m.name}</td>
+    <td style="font-size:11px;color:var(--muted);">${m.passport||'—'}</td>
+    <td style="font-size:11px;">${m.region||'—'}</td>
+    <td><span class="badge ${stC[m.status]||'bb'}">${stL[m.status]||m.status}</span></td>
+    <td><button class="ibtn p" onclick='printMemberCard(${JSON.stringify(m)})'>🪪</button></td>
+  </tr>`).join('');
+}
+
+/* ══════════════════════════════════
+   CONTROL PANEL — USER MANAGEMENT
+══════════════════════════════════ */
+function renderControl(){
+  const users=getUsers();
+  const roleColors={collector:'#3a9e6f',finance:'#c9a84c',secretary:'#1a5fa8',president:'#c0392b',membership:'#6c3483',admin:'#1a3d2b'};
+  document.getElementById('users-list').innerHTML=users.map(u=>`
+    <div class="user-item">
+      <div class="user-avatar" style="background:${roleColors[u.role]||'#888'}22;color:${roleColors[u.role]||'#888'}">${u.name.slice(0,2)}</div>
+      <div class="user-info">
+        <div class="user-name">${u.name} ${u.status==='inactive'?'<span class="badge br">موقوف</span>':''}</div>
+        <div class="user-role">${ROLES[u.role]?.emoji||''} ${ROLES[u.role]?.label||u.role} · @${u.username}</div>
+      </div>
+      <div style="display:flex;gap:5px;">
+        <button class="ibtn e" onclick="openEditUser('${u.id}')">✏️</button>
+        ${u.id!==curUser.id?`<button class="ibtn ${u.status==='active'?'r':'p'}" onclick="toggleUser('${u.id}')">${u.status==='active'?'🚫':'✓'}</button>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function openAddUser(){
+  ['nu-name','nu-user','nu-pw'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('nu-role').value='collector';
+  updatePermInfo('collector');
+  openModal('m-adduser');
+}
+
+document.addEventListener('change',e=>{
+  if(e.target.id==='nu-role') updatePermInfo(e.target.value);
+});
+
+function updatePermInfo(role){
+  const el=document.getElementById('nu-perm-info');
+  if(el) el.textContent='ℹ️ '+( ROLES[role]?.desc||'');
+}
+
+function addUser(){
+  const name=document.getElementById('nu-name').value.trim();
+  const username=document.getElementById('nu-user').value.trim().toLowerCase().replace(/\s/g,'');
+  const pw=document.getElementById('nu-pw').value.trim();
+  const role=document.getElementById('nu-role').value;
+  if(!name||!username||!pw){showToast('أكمل جميع الحقول','err');return;}
+  const users=getUsers();
+  if(users.find(u=>u.username===username)){showToast('اسم الدخول موجود مسبقاً','err');return;}
+  const newU={id:'u'+Date.now(),username,name,role,pw,status:'active',created_at:new Date().toISOString()};
+  users.push(newU);
+  saveUsers(users);
+  closeModal('m-adduser');
+  showToast('✓ تم إضافة '+name,'ok');
+  renderControl();
+  buildLoginUI();
+}
+
+function openEditUser(id){
+  const u=getUsers().find(x=>x.id===id);
+  if(!u)return;
+  document.getElementById('eu-id').value=id;
+  document.getElementById('eu-name').value=u.name;
+  document.getElementById('eu-pw').value='';
+  document.getElementById('eu-role').value=u.role;
+  document.getElementById('eu-status').value=u.status;
+  openModal('m-edituser');
+}
+
+function saveEditUser(){
+  const id=document.getElementById('eu-id').value;
+  const users=getUsers();
+  const i=users.findIndex(u=>u.id===id);
+  if(i<0)return;
+  users[i].name=document.getElementById('eu-name').value.trim()||users[i].name;
+  const newPw=document.getElementById('eu-pw').value.trim();
+  if(newPw) users[i].pw=newPw;
+  users[i].role=document.getElementById('eu-role').value;
+  users[i].status=document.getElementById('eu-status').value;
+  saveUsers(users);
+  closeModal('m-edituser');
+  showToast('✓ تم حفظ التعديل','ok');
+  renderControl();
+  buildLoginUI();
+}
+
+function toggleUser(id){
+  const users=getUsers();
+  const u=users.find(x=>x.id===id);
+  if(!u)return;
+  if(u.id===curUser.id){showToast('لا يمكنك تعطيل حسابك الحالي','warn');return;}
+  u.status=u.status==='active'?'inactive':'active';
+  saveUsers(users);
+  renderControl();
+  buildLoginUI();
+  showToast((u.status==='active'?'✓ تم تفعيل ':'⚠️ تم تعطيل ')+u.name,'ok');
+}
+
+/* ══════════════════════════════════
+   PRINT RECEIPT 80mm
+══════════════════════════════════ */
+function printReceiptDoc(rec){
+  const d=new Date(rec.created_at||Date.now());
+  document.getElementById('print-area').innerHTML=`
+    <div class="rp">
+      <div class="rph">
+        <div style="font-size:22px;margin-bottom:3px;">🇸🇩</div>
+        <h2>الجالية السودانية بجازان</h2>
+        <h3>مركز خدمات الجالية</h3>
+        <p>${d.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
+      </div>
+      <div class="rtit">سند قبض</div>
+      <div class="rnum">رقم: ${rec.id}</div>
+      <div class="rrow"><span>الاسم:</span><span>${rec.name}</span></div>
+      ${rec.phone?`<div class="rrow"><span>الهاتف:</span><span>${rec.phone}</span></div>`:''}
+      ${rec.national_id?`<div class="rrow"><span>الرقم الوطني:</span><span>${rec.national_id}</span></div>`:''}
+      ${rec.passport?`<div class="rrow"><span>الجواز:</span><span>${rec.passport}</span></div>`:''}
+      <div class="rrow"><span>الخدمة:</span><span>${rec.description||''}</span></div>
+      <div class="rrow"><span>الوقت:</span><span>${d.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'})}</span></div>
+      <div class="rrow tot"><span>المبلغ:</span><span>${(rec.amount||0).toLocaleString('ar-SA')} ر.س</span></div>
+      <div class="rrow"><span style="font-size:9px;color:#666;">كتابةً:</span><span style="font-size:9px;">${amtWords(rec.amount||0)} ريال</span></div>
+      <div class="rsig">
+        <div><div class="sgl">المحصّل: ${rec.collector}</div></div>
+        <div><div class="sgl">توقيع المراجع</div></div>
+      </div>
+      <div class="rfooter">الجالية السودانية بجازان · ${new Date().getFullYear()}</div>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+
+/* ══════════════════════════════════
+   PRINT MEMBER CARD
+══════════════════════════════════ */
+function printMemberCard(m){
+  document.getElementById('print-area').innerHTML=`
+    <div style="width:85mm;height:54mm;background:linear-gradient(135deg,#1a3d2b,#2e6b4f);border-radius:8mm;padding:6mm;color:#fff;font-family:Arial;direction:rtl;position:relative;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:4mm;margin-bottom:4mm;">
+        <div style="font-size:14pt;font-weight:800;background:rgba(255,255,255,.2);padding:2mm 4mm;border-radius:3mm;">🇸🇩 جازان</div>
+        <div style="font-size:7pt;opacity:.8;">الجالية السودانية · بطاقة عضوية</div>
+      </div>
+      <div style="font-size:15pt;font-weight:800;margin-bottom:2mm;">${m.name}</div>
+      <div style="font-size:8pt;opacity:.9;margin-bottom:1mm;">رقم العضوية: ${m.id} · ${m.region||''}</div>
+      <div style="font-size:8pt;opacity:.9;">${m.job||''} · جواز: ${m.passport||'—'}</div>
+      <div style="position:absolute;left:5mm;bottom:4mm;background:rgba(255,255,255,.2);padding:2mm 4mm;border-radius:4mm;font-size:7pt;">● ${m.status==='active'?'عضو نشط':'متأخر'}</div>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+
+/* ══════════════════════════════════
+   PRINT PAYMENT VOUCHER
+══════════════════════════════════ */
+function printPaymentVoucher(p){
+  const d=new Date(p.created_at||Date.now());
+  document.getElementById('print-area').innerHTML=`
+    <div class="pv">
+      <div class="pvh">
+        <div style="font-size:26px;margin-bottom:3px;">🇸🇩</div>
+        <h1>الجالية السودانية بجازان</h1>
+        <h2>مركز خدمات الجالية</h2>
+      </div>
+      <div class="pvtit"><h3>سند صرف — رقم ${p.id}</h3><div style="font-size:11px;opacity:.8;">${d.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div></div>
+      <table class="pvtbl">
+        <tr><td>المستفيد</td><td><strong>${p.beneficiary}</strong></td></tr>
+        <tr><td>البيان</td><td>${p.description}</td></tr>
+        <tr><td>التصنيف</td><td>${p.category||'—'}</td></tr>
+        <tr class="hl"><td>المبلغ (ر.س)</td><td>${(p.amount||0).toLocaleString('ar-SA')} ريال سعودي</td></tr>
+        <tr><td>كتابةً</td><td style="font-size:10px;">${amtWords(p.amount||0)} ريال سعودي</td></tr>
+        ${p.notes?`<tr><td>ملاحظات</td><td>${p.notes}</td></tr>`:''}
+        <tr><td>الحالة</td><td><strong>${PMT_STA[p.status]?.lbl||p.status}</strong></td></tr>
+      </table>
+      <div class="pv-steps">
+        <div class="pv-steps-hdr">سلسلة الموافقات</div>
+        <div class="pv-steps-row">
+          ${PMT_STEPS.map(s=>`<div class="pv-step">
+            <div class="pv-step-lbl">${s.label}</div>
+            <div class="pv-step-val">${p[s.key]?p[s.key].by:'—'}</div>
+            <div class="pv-step-date">${p[s.key]?new Date(p[s.key].at).toLocaleDateString('ar-SA'):''}</div>
+            <div class="pv-step-sig">التوقيع: ________</div>
+          </div>`).join('')}
+        </div>
+      </div>
+      ${p.status==='paid'?`<div style="background:#e8f5ee;border:1px solid #3a9e6f;border-radius:4px;padding:7px;text-align:center;font-size:11px;font-weight:700;color:#1a3d2b;">✅ صُرف بواسطة: ${p.paid_by} — ${p.paid_at?new Date(p.paid_at).toLocaleDateString('ar-SA'):''}</div>`:''}
+      ${p.status==='rejected'?`<div style="background:#fdf0ee;border:1px solid #c0392b;border-radius:4px;padding:7px;text-align:center;font-size:11px;font-weight:700;color:#c0392b;">✗ مرفوض: ${p.rejected_by} — ${p.rejected_reason}</div>`:''}
+      <div style="text-align:center;margin-top:10px;font-size:9px;color:#777;border-top:1px dashed #ccc;padding-top:6px;">الجالية السودانية بجازان · ${new Date().getFullYear()}</div>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+
+/* ══════════════════════════════════
+   PRINT REPORT
+══════════════════════════════════ */
+function printReport(){
+  const recs=cachedReceipts;
+  const total=recs.reduce((s,r)=>s+(r.amount||0),0);
+  const today=new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('print-area').innerHTML=`
+    <div style="width:210mm;margin:0 auto;padding:14mm;font-size:12px;font-family:Arial;direction:rtl;color:#000;">
+      <div style="text-align:center;border-bottom:3px double #1a3d2b;padding-bottom:8px;margin-bottom:8px;">
+        <div style="font-size:26px;">🇸🇩</div>
+        <div style="font-size:18px;font-weight:800;color:#1a3d2b;">الجالية السودانية بجازان</div>
+        <div style="font-size:12px;color:#2e6b4f;">تقرير التحصيل اليومي · ${today}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0;">
+        <div style="border:1px solid #ccc;border-radius:5px;padding:8px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#1a3d2b;">${recs.length}</div><div style="font-size:10px;color:#666;">إجمالي السندات</div></div>
+        <div style="border:1px solid #ccc;border-radius:5px;padding:8px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#1a3d2b;">${total.toLocaleString('ar-SA')}</div><div style="font-size:10px;color:#666;">إجمالي التحصيل ر.س</div></div>
+        <div style="border:1px solid #ccc;border-radius:5px;padding:8px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#1a3d2b;">${cachedMembers.length}</div><div style="font-size:10px;color:#666;">الأعضاء المسجلون</div></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead><tr style="background:#1a3d2b;color:#fff;">
+          <th style="padding:6px 8px;text-align:right;">#</th>
+          <th style="padding:6px 8px;text-align:right;">الاسم</th>
+          <th style="padding:6px 8px;text-align:right;">الخدمة</th>
+          <th style="padding:6px 8px;text-align:right;">المبلغ</th>
+          <th style="padding:6px 8px;text-align:right;">المحصّل</th>
+          <th style="padding:6px 8px;text-align:right;">الوقت</th>
+        </tr></thead>
+        <tbody>
+          ${recs.map((r,i)=>{const d=new Date(r.created_at||Date.now());return`
+            <tr style="${i%2===0?'':'background:#f5f5f5'}">
+              <td style="padding:5px 8px;">${i+1}</td>
+              <td style="padding:5px 8px;">${r.name}</td>
+              <td style="padding:5px 8px;">${r.description||'—'}</td>
+              <td style="padding:5px 8px;font-weight:700;">${(r.amount||0).toLocaleString('ar-SA')} ر.س</td>
+              <td style="padding:5px 8px;">${r.collector||'—'}</td>
+              <td style="padding:5px 8px;">${d.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'})}</td>
+            </tr>`;}).join('')}
+          <tr style="background:#e8f5ee;font-weight:800;">
+            <td colspan="3" style="padding:6px 8px;text-align:center;">الإجمالي</td>
+            <td style="padding:6px 8px;">${total.toLocaleString('ar-SA')} ر.س</td>
+            <td colspan="2"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+
+function printPaymentReport(){
+  const pmts=cachedPayments;
+  const total=pmts.reduce((s,p)=>s+(p.amount||0),0);
+  const paid=pmts.filter(p=>p.status==='paid').reduce((s,p)=>s+(p.amount||0),0);
+  const today=new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('print-area').innerHTML=`
+    <div style="width:210mm;margin:0 auto;padding:14mm;font-size:12px;font-family:Arial;direction:rtl;color:#000;">
+      <div style="text-align:center;border-bottom:3px double #1a3d2b;padding-bottom:8px;margin-bottom:8px;">
+        <div style="font-size:26px;">🇸🇩</div>
+        <div style="font-size:18px;font-weight:800;color:#1a3d2b;">الجالية السودانية بجازان</div>
+        <div style="font-size:12px;color:#2e6b4f;">تقرير سندات الصرف · ${today}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0;">
+        <div style="border:1px solid #ccc;border-radius:5px;padding:8px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#1a3d2b;">${pmts.length}</div><div style="font-size:10px;">إجمالي الطلبات</div></div>
+        <div style="border:1px solid #ccc;border-radius:5px;padding:8px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#c0392b;">${paid.toLocaleString('ar-SA')}</div><div style="font-size:10px;">المصروف فعلياً ر.س</div></div>
+        <div style="border:1px solid #ccc;border-radius:5px;padding:8px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#c9a84c;">${(total-paid).toLocaleString('ar-SA')}</div><div style="font-size:10px;">قيد المعالجة ر.س</div></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead><tr style="background:#1a3d2b;color:#fff;">
+          <th style="padding:6px 8px;text-align:right;">#</th><th style="padding:6px 8px;text-align:right;">المستفيد</th>
+          <th style="padding:6px 8px;text-align:right;">البيان</th><th style="padding:6px 8px;text-align:right;">المبلغ</th>
+          <th style="padding:6px 8px;text-align:right;">الحالة</th><th style="padding:6px 8px;text-align:right;">التاريخ</th>
+        </tr></thead>
+        <tbody>
+          ${pmts.map((p,i)=>`<tr style="${i%2===0?'':'background:#f5f5f5'}">
+            <td style="padding:5px 8px;">${i+1}</td><td style="padding:5px 8px;">${p.beneficiary}</td>
+            <td style="padding:5px 8px;">${p.description}</td>
+            <td style="padding:5px 8px;font-weight:700;">${(p.amount||0).toLocaleString('ar-SA')} ر.س</td>
+            <td style="padding:5px 8px;">${PMT_STA[p.status]?.lbl||p.status}</td>
+            <td style="padding:5px 8px;">${new Date(p.created_at||Date.now()).toLocaleDateString('ar-SA')}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+
+/* ══════════════════════════════════
+   EXPORT CSV
+══════════════════════════════════ */
+function exportCSV(type){
+  let data,headers,filename;
+  if(type==='receipts'){
+    data=cachedReceipts; filename='سندات_القبض';
+    headers=['رقم السند','الاسم','الجواز','الخدمة','المبلغ','المحصّل','التاريخ'];
+    data=data.map(r=>[r.id,r.name,r.passport||'',r.description||'',r.amount||0,r.collector,new Date(r.created_at||Date.now()).toLocaleDateString('ar-SA')]);
+  } else {
+    data=cachedMembers; filename='الأعضاء';
+    headers=['رقم العضوية','الاسم','الجواز','الهاتف','المهنة','المنطقة','الحالة','التاريخ'];
+    data=data.map(m=>[m.id,m.name,m.passport||'',m.phone||'',m.job||'',m.region||'',m.status,new Date(m.created_at||Date.now()).toLocaleDateString('ar-SA')]);
+  }
+  if(!data.length){showToast('لا توجد بيانات','err');return;}
+  const csv='\uFEFF'+headers.join(',')+'\n'+data.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=filename+'_'+new Date().toLocaleDateString('ar-SA').replace(/\//g,'-')+'.csv';
+  a.click();
+  showToast('✓ تم التصدير','ok');
+}
+
+/* ══════════════════════════════════
+   AMOUNT WORDS
+══════════════════════════════════ */
+function amtWords(n){
+  if(!n)return'صفر';
+  const h=['','مائة','مئتان','ثلاثمائة','أربعمائة','خمسمائة','ستمائة','سبعمائة','ثمانمائة','تسعمائة'];
+  const t=['','عشرة','عشرون','ثلاثون','أربعون','خمسون','ستون','سبعون','ثمانون','تسعون'];
+  const o=['','واحد','اثنان','ثلاثة','أربعة','خمسة','ستة','سبعة','ثمانية','تسعة','عشرة','أحد عشر','اثنا عشر','ثلاثة عشر','أربعة عشر','خمسة عشر','ستة عشر','سبعة عشر','ثمانية عشر','تسعة عشر'];
+  let r='';if(n>=1000){r+=o[Math.floor(n/1000)]+' ألف ';n%=1000;}
+  if(n>=100){r+=h[Math.floor(n/100)]+' ';n%=100;}
+  if(n>=20){r+=t[Math.floor(n/10)];if(n%10)r+=' و'+o[n%10];}else if(n>0)r+=o[n];
+  return r.trim();
+}
+
+/* ══════════════════════════════════
+   TOAST / MODAL / BEEP
+══════════════════════════════════ */
+function showToast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';setTimeout(()=>t.classList.remove('show'),3000);}
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+document.querySelectorAll('.modal-bg').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('show');}));
+function beep(){try{const ac=new AudioContext(),o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.setValueAtTime(880,ac.currentTime);o.frequency.setValueAtTime(1100,ac.currentTime+0.1);g.gain.setValueAtTime(0.3,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.3);o.start();o.stop(ac.currentTime+0.3);}catch(e){}}
+
+/* ══════════════════════════════════
+   START
+══════════════════════════════════ */
+
+/* ══════════════════════════════════
+   📥 MEMBERSHIP APPLICATIONS
+   طلبات التسجيل من البوابة الإلكترونية
+══════════════════════════════════ */
+
+var cachedApps = [];
+var currentApp = null;
+
+async function loadApplications(){
+  try{
+    if(useDB){
+      var res = await sb.from('membership_applications').select('*').order('created_at',{ascending:false});
+      if(!res.error) cachedApps = res.data||[];
+    } else {
+      cachedApps = LS.get('sj_reg_apps',[]).slice().reverse();
+    }
+  }catch(e){ cachedApps=[]; }
+}
+
+async function renderApplications(){
+  if(!cachedApps.length) await loadApplications();
+
+  var q  = (document.getElementById('app-srch')||{}).value||'';
+  var st = (document.getElementById('app-status-filter')||{}).value||'';
+  var src= (document.getElementById('app-src-filter')||{}).value||'';
+
+  var apps = cachedApps.filter(function(a){
+    return (!q  || (a.name||'').includes(q)||(a.passport||'').includes(q)||(a.national_id||'').includes(q))
+        && (!st  || a.status===st)
+        && (!src || a.source===src);
+  });
+
+  // Metrics
+  var total   = cachedApps.length;
+  var pending = cachedApps.filter(function(a){ return a.status==='pending'; }).length;
+  var approved= cachedApps.filter(function(a){ return a.status==='approved'; }).length;
+  var rejected= cachedApps.filter(function(a){ return a.status==='rejected'; }).length;
+  var mEl = document.getElementById('app-metrics');
+  if(mEl) mEl.innerHTML =
+    '<div class="mcard"><div class="mval" style="color:var(--blue)">'+total+'</div><div class="mlbl">إجمالي الطلبات</div></div>'
+   +'<div class="mcard"><div class="mval" style="color:var(--gold-d)">'+pending+'</div><div class="mlbl">بانتظار المراجعة</div></div>'
+   +'<div class="mcard"><div class="mval" style="color:var(--gl)">'+approved+'</div><div class="mlbl">مقبول</div></div>'
+   +'<div class="mcard"><div class="mval" style="color:var(--red)">'+rejected+'</div><div class="mlbl">مرفوض</div></div>';
+
+  var foot = document.getElementById('app-foot');
+  if(foot) foot.textContent = apps.length+' طلب ظاهر';
+
+  var el = document.getElementById('applications-list');
+  if(!el) return;
+  if(!apps.length){
+    el.innerHTML='<div class="empty">لا توجد طلبات مطابقة</div>';
+    return;
+  }
+
+  var ST = {
+    pending:  {lbl:'بانتظار المراجعة', cls:'bo'},
+    approved: {lbl:'مقبول — عضو نشط',  cls:'bg'},
+    rejected: {lbl:'مرفوض',            cls:'br'},
+  };
+
+  el.innerHTML = apps.map(function(a){
+    var sm  = ST[a.status]||{lbl:a.status,cls:'bb'};
+    var d   = new Date(a.created_at||Date.now());
+    var ds  = d.toLocaleDateString('ar-SA',{month:'short',day:'numeric',year:'numeric'});
+    var src = a.source==='online_form'?'🌐 إلكتروني':'🏢 مكتب';
+    return '<div style="padding:13px 14px;border-bottom:1px solid var(--border);">'
+      +'<div style="display:flex;align-items:flex-start;gap:10px;">'
+      +'<div style="flex:1;">'
+      +'<div style="font-size:14px;font-weight:800;">'+a.name+'</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-top:3px;">'
+      +'جواز: '+(a.passport||'—')+' · هاتف: '+(a.phone||'—')
+      +'</div>'
+      +'<div style="font-size:11px;color:var(--muted);">'
+      +src+' · '+ds+' · '+(a.region||'—')
+      +'</div>'
+      +'</div>'
+      +'<div style="text-align:left;flex-shrink:0;">'
+      +'<span class="badge '+sm.cls+'">'+sm.lbl+'</span>'
+      +'</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">'
+      +'<button class="ibtn e" data-id="'+a.id+'" onclick="vApp(this)">تفاصيل</button>'
+      +(a.status==='pending'?'<button class="ibtn g" data-id="'+a.id+'" onclick="qaApp(this)">&#10003; قبول</button><button class="ibtn r" data-id="'+a.id+'" onclick="qrApp(this)">&#10007; رفض</button>':'')
+      +(a.status==='approved'?'<button class="ibtn p" data-id="'+a.id+'" onclick="pApp(this)">&#128203; بطاقة</button>':'')
+      +'</div>'
+      +'</div>';
+      +'</div>';
+  }).join('');
+}
+
+function openAppDetail(id){
+  currentApp = cachedApps.find(function(a){ return a.id===id; });
+  if(!currentApp) return;
+  var a = currentApp;
+  document.getElementById('appd-id').value = id;
+  document.getElementById('appd-title').textContent = 'طلب تسجيل: '+a.name;
+  document.getElementById('appd-note').value = '';
+
+  var ST = {pending:'بانتظار المراجعة',approved:'مقبول',rejected:'مرفوض'};
+  var STC= {pending:'bo',approved:'bg',rejected:'br'};
+
+  var html = '<div style="background:var(--surf);border-radius:var(--r-sm);padding:12px;margin-bottom:14px;">'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;">';
+
+  var fields = [
+    ['الاسم الكامل',a.name],
+    ['رقم جواز السفر',a.passport],
+    ['الرقم الوطني',a.national_id||'—'],
+    ['رقم الجوال',a.phone],
+    ['البريد الإلكتروني',a.email||'—'],
+    ['تاريخ الميلاد',a.date_of_birth||'—'],
+    ['الجنس',a.gender||'—'],
+    ['المهنة',a.job||'—'],
+    ['جهة العمل',a.employer||'—'],
+    ['نوع وثيقة الإقامة',a.id_type||'—'],
+    ['رقم الوثيقة',a.id_number||'—'],
+    ['المنطقة',a.region||'—'],
+    ['الولاية في السودان',a.sudan_state||'—'],
+    ['عدد أفراد الأسرة',a.family_count||'0'],
+    ['عضوية سابقة',a.prev_member||'لا'],
+    ['الحالة','<span class="badge '+(STC[a.status]||'bb')+'">'+( ST[a.status]||a.status)+'</span>'],
+  ];
+
+  fields.forEach(function(f){
+    html += '<div><span style="color:var(--muted);font-size:11px;">'+f[0]+':</span><br/><strong>'+f[1]+'</strong></div>';
+  });
+  html += '</div>';
+
+  if(a.address) html += '<div style="margin-top:8px;"><span style="color:var(--muted);font-size:11px;">العنوان:</span><br/>'+a.address+'</div>';
+  if(a.skills)  html += '<div style="margin-top:6px;"><span style="color:var(--muted);font-size:11px;">المهارات:</span><br/>'+a.skills+'</div>';
+  if(a.notes)   html += '<div style="margin-top:6px;"><span style="color:var(--muted);font-size:11px;">ملاحظات:</span><br/>'+a.notes+'</div>';
+  if(a.review_note) html += '<div style="margin-top:8px;background:var(--gold-l);padding:8px;border-radius:6px;font-size:12px;"><strong>ملاحظة القرار:</strong> '+a.review_note+'</div>';
+  html += '</div>';
+
+  // Hide approve/reject buttons if already decided
+  var actionsEl = document.getElementById('m-app-detail').querySelector('.mactions');
+  actionsEl.querySelector('.mbtn.save').style.display  = a.status==='pending'?'flex':'none';
+  actionsEl.querySelector('.mbtn.danger').style.display= a.status==='pending'?'flex':'none';
+
+  document.getElementById('appd-body').innerHTML = html;
+  openModal('m-app-detail');
+}
+
+async function approveApp(){
+  var id   = document.getElementById('appd-id').value;
+  var note = document.getElementById('appd-note').value.trim();
+  var a    = cachedApps.find(function(x){ return x.id===id; });
+  if(!a) return;
+
+  try{
+    var upd = {status:'approved', reviewed_by:curUser.name, reviewed_at:new Date().toISOString(), review_note:note};
+    if(useDB){
+      var res = await sb.from('membership_applications').update(upd).eq('id',id);
+      if(res.error) throw res.error;
+    } else {
+      var arr = LS.get('sj_reg_apps',[]);
+      var i = arr.findIndex(function(x){ return x.id===id; });
+      if(i>=0){ Object.assign(arr[i],upd); LS.set('sj_reg_apps',arr); }
+    }
+    Object.assign(a,upd);
+
+    // Also register as member in members table
+    var memberId = 'M'+String(Date.now()).slice(-5);
+    var mem = {
+      id:memberId, name:a.name, passport:a.passport, phone:a.phone,
+      job:a.job||'', region:a.region||'', status:'active',
+      fee_paid:true, created_at:new Date().toISOString(),
+      national_id:a.national_id, id_number:a.id_number,
+    };
+    if(useDB){
+      await sb.from('members').insert(mem);
+    } else {
+      var mArr = LS.get('sj_members',[]); mArr.push(mem); LS.set('sj_members',mArr);
+      cachedMembers.unshift(mem);
+    }
+
+    closeModal('m-app-detail');
+    showToast('✓ تم قبول '+a.name+' وتسجيله عضواً','ok');
+    renderApplications();
+    // Print member card
+    printMemberCardFromData(mem);
+  }catch(e){ showToast('خطأ: '+e.message,'err'); }
+}
+
+async function rejectApp(){
+  var id   = document.getElementById('appd-id').value;
+  var note = document.getElementById('appd-note').value.trim()||'لم يستوفِ شروط العضوية';
+  var a    = cachedApps.find(function(x){ return x.id===id; });
+  if(!a) return;
+  if(!confirm('هل تريد رفض طلب '+a.name+'؟')) return;
+  try{
+    var upd={status:'rejected',reviewed_by:curUser.name,reviewed_at:new Date().toISOString(),review_note:note};
+    if(useDB){
+      var res = await sb.from('membership_applications').update(upd).eq('id',id);
+      if(res.error) throw res.error;
+    } else {
+      var arr=LS.get('sj_reg_apps',[]);
+      var i=arr.findIndex(function(x){ return x.id===id; });
+      if(i>=0){ Object.assign(arr[i],upd); LS.set('sj_reg_apps',arr); }
+    }
+    Object.assign(a,upd);
+    closeModal('m-app-detail');
+    showToast('تم رفض الطلب','warn');
+    renderApplications();
+  }catch(e){ showToast('خطأ: '+e.message,'err'); }
+}
+
+async function quickApprove(id){
+  var a = cachedApps.find(function(x){ return x.id===id; });
+  if(!a||!confirm('قبول طلب '+a.name+'؟')) return;
+  document.getElementById('appd-id').value = id;
+  document.getElementById('appd-note').value = 'تمت المراجعة والقبول';
+  await approveApp();
+}
+async function quickReject(id){
+  var a = cachedApps.find(function(x){ return x.id===id; });
+  if(!a||!confirm('رفض طلب '+a.name+'؟')) return;
+  document.getElementById('appd-id').value = id;
+  document.getElementById('appd-note').value = 'لم يستوفِ شروط العضوية';
+  await rejectApp();
+}
+
+function printMemberFromApp(id){
+  var a = cachedApps.find(function(x){ return x.id===id; });
+  if(!a) return;
+  printMemberCardFromData({id:a.id,name:a.name,passport:a.passport,region:a.region,job:a.job,status:'active'});
+}
+
+function printMemberCardFromData(m){
+  document.getElementById('print-area').innerHTML =
+    '<div style="width:85mm;height:54mm;background:linear-gradient(135deg,#1a3d2b,#2e6b4f);border-radius:8mm;padding:6mm;color:#fff;font-family:Arial;direction:rtl;position:relative;overflow:hidden;">'
+   +'<div style="display:flex;align-items:center;gap:3mm;margin-bottom:3mm;">'
+   +'<div style="font-size:13pt;font-weight:800;background:rgba(255,255,255,.2);padding:1mm 3mm;border-radius:3mm;">🇸🇩 جازان</div>'
+   +'<div style="font-size:7pt;opacity:.8;">الجالية السودانية · بطاقة عضوية</div>'
+   +'</div>'
+   +'<div style="font-size:14pt;font-weight:800;margin-bottom:2mm;">'+m.name+'</div>'
+   +'<div style="font-size:8pt;opacity:.9;margin-bottom:1mm;">رقم العضوية: '+m.id+' · '+(m.region||'—')+'</div>'
+   +'<div style="font-size:8pt;opacity:.9;">جواز: '+(m.passport||'—')+(m.job?' · '+m.job:'')+'</div>'
+   +'<div style="position:absolute;left:5mm;bottom:4mm;background:rgba(255,255,255,.2);padding:1mm 3mm;border-radius:4mm;font-size:7pt;">● عضو نشط</div>'
+   +'</div>';
+  setTimeout(function(){ window.print(); },300);
+}
+
+/* Also add SQL hint for reviewed_by fields in Supabase */
+
+/* ══ PRINT FULL APPLICATION ══ */
+function printApplication(id){
+  var a = cachedApps.find(function(x){ return x.id===id; });
+  if(!a) return;
+  var d = new Date(a.created_at||Date.now());
+  var ST = {pending:'بانتظار المراجعة',approved:'مقبول',rejected:'مرفوض'};
+
+  document.getElementById('print-area').innerHTML =
+    '<div style="width:210mm;margin:0 auto;padding:14mm;font-size:12px;font-family:Arial;direction:rtl;color:#000;">'
+   +'<div style="display:flex;align-items:center;gap:14px;border-bottom:3px double #1a3d2b;padding-bottom:10px;margin-bottom:10px;">'
+   +'<div style="font-size:36px;">🇸🇩</div>'
+   +'<div><div style="font-size:18px;font-weight:800;color:#1a3d2b;">الجالية السودانية بجازان</div>'
+   +'<div style="font-size:13px;color:#2e6b4f;">أمانة العضوية — طلب تسجيل عضوية</div></div>'
+   +'</div>'
+   +'<div style="background:#1a3d2b;color:#fff;text-align:center;padding:8px;border-radius:4px;margin:8px 0;">'
+   +'<div style="font-size:15px;font-weight:800;">استمارة طلب عضوية</div>'
+   +'<div style="font-size:11px;opacity:.8;">'+d.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'</div>'
+   +'</div>'
+   +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;">'
+   +[['الاسم الكامل',a.name],['رقم جواز السفر',a.passport],
+     ['الرقم الوطني',a.national_id||'—'],['رقم الجوال',a.phone],
+     ['تاريخ الميلاد',a.date_of_birth||'—'],['الجنس',a.gender||'—'],
+     ['المهنة',a.job||'—'],['جهة العمل',a.employer||'—'],
+     ['نوع الإقامة',a.id_type||'—'],['رقم الإقامة',a.id_number||'—'],
+     ['المنطقة في جازان',a.region||'—'],['الولاية في السودان',a.sudan_state||'—'],
+     ['عدد أفراد الأسرة',a.family_count||'0'],['عضوية سابقة',a.prev_member||'لا'],
+     ['البريد الإلكتروني',a.email||'—'],['الحالة',ST[a.status]||a.status],
+   ].map(function(f){
+     return '<div style="border:1px solid #ddd;border-radius:4px;padding:6px 10px;">'
+       +'<div style="font-size:10px;color:#888;">'+f[0]+'</div>'
+       +'<div style="font-size:12px;font-weight:700;margin-top:2px;">'+f[1]+'</div></div>';
+   }).join('')
+   +'</div>'
+   +(a.address?'<div style="border:1px solid #ddd;border-radius:4px;padding:6px 10px;margin-bottom:8px;"><div style="font-size:10px;color:#888;">العنوان التفصيلي</div><div style="font-size:12px;font-weight:700;">'+a.address+'</div></div>':'')
+   +(a.skills?'<div style="border:1px solid #ddd;border-radius:4px;padding:6px 10px;margin-bottom:8px;"><div style="font-size:10px;color:#888;">المهارات والخبرات</div><div style="font-size:12px;">'+a.skills+'</div></div>':'')
+   +(a.notes?'<div style="border:1px solid #ddd;border-radius:4px;padding:6px 10px;margin-bottom:8px;"><div style="font-size:10px;color:#888;">ملاحظات</div><div style="font-size:12px;">'+a.notes+'</div></div>':'')
+   +(a.review_note?'<div style="background:#e8f5ee;border:1px solid #3a9e6f;border-radius:4px;padding:8px;margin-bottom:8px;font-size:12px;"><strong>قرار أمانة العضوية:</strong> '+a.review_note+'<br/><span style="font-size:10px;color:#666;">بواسطة: '+( a.reviewed_by||'—')+' — '+(a.reviewed_at?new Date(a.reviewed_at).toLocaleDateString('ar-SA'):'')+'</span></div>':'')
+   +'<div style="display:flex;justify-content:space-between;margin-top:20px;">'
+   +'<div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:28px;padding-top:4px;font-size:10px;width:160px;">توقيع مقدم الطلب<br/>'+a.name+'</div></div>'
+   +'<div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:28px;padding-top:4px;font-size:10px;width:160px;">أمين العضوية<br/>التوقيع: ___________</div></div>'
+   +'<div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:28px;padding-top:4px;font-size:10px;width:160px;">ختم الجالية</div></div>'
+   +'</div>'
+   +'<div style="text-align:center;margin-top:14px;font-size:10px;color:#777;border-top:1px dashed #ccc;padding-top:6px;">'
+   +'الجالية السودانية بجازان · أمانة العضوية والتحول الرقمي · '+new Date().getFullYear()
+   +'</div>'
+   +'</div>';
+  setTimeout(function(){ window.print(); },300);
+}
+
+
+/* ══ APPLICATIONS — طلبات التسجيل ══ */
+var cachedApps = [];
+var currentApp = null;
+var currentAppTab = 'pending';
+
+var APP_FIELDS = {
+  name:'الاسم الرباعي', date_of_birth:'تاريخ الميلاد', gender:'الجنس',
+  marital_status:'الحالة الاجتماعية', job:'المهنة', employer:'جهة العمل',
+  national_id:'الرقم الوطني', passport:'رقم الجواز', passport_expiry:'انتهاء الجواز',
+  id_type:'نوع وثيقة الإقامة', id_number:'رقم الوثيقة', id_expiry:'انتهاء الوثيقة',
+  phone:'رقم الجوال', whatsapp:'واتساب', email:'البريد الإلكتروني',
+  region:'المنطقة', address:'عنوان السكن', family_count:'عدد أفراد الأسرة',
+  emergency_contact:'جهة الطوارئ', sudan_state:'الولاية في السودان',
+  prev_member:'عضو سابق', skills:'المهارات', notes:'ملاحظات',
+};
+
+async function loadApps() {
+  try {
+    if(useDB) {
+      var res = await sb.from('membership_applications').select('*').order('created_at', {ascending:false});
+      if(!res.error) cachedApps = res.data||[];
+    } else {
+      cachedApps = LS.get('sj_reg_apps',[]).reverse();
+    }
+  } catch(e) { cachedApps = LS.get('sj_reg_apps',[]).reverse(); }
+  updateAppsBadge();
+}
+
+function updateAppsBadge() {
+  var pending = cachedApps.filter(function(a){ return a.status==='pending'; }).length;
+  var alertEl = document.getElementById('apps-alert');
+  var alertTxt = document.getElementById('apps-alert-txt');
+  if(alertEl) { alertEl.style.display = pending>0 ? 'flex' : 'none'; }
+  if(alertTxt && pending>0) alertTxt.textContent = pending+' طلب جديد بانتظار المراجعة';
+  // Update nav badge
+  var navBtn = document.getElementById('bni-apps');
+  if(navBtn && pending>0) {
+    navBtn.innerHTML = '<span class="ico">📥</span>الطلبات<span style="background:var(--red);color:#fff;border-radius:10px;font-size:9px;padding:1px 5px;margin-right:2px;">'+pending+'</span>';
+  }
+}
+
+function setAppTab(tab) {
+  currentAppTab = tab;
+  document.querySelectorAll('.app-tab').forEach(function(t){ t.classList.remove('active'); });
+  var el = document.getElementById('atab-'+tab);
+  if(el) el.classList.add('active');
+  renderApps();
+}
+
+function renderApps() {
+  var apps = cachedApps.filter(function(a){
+    if(currentAppTab==='all') return true;
+    return a.status === currentAppTab;
+  });
+
+  var foot = document.getElementById('apps-foot');
+  if(foot) foot.textContent = apps.length + ' طلب';
+
+  var el = document.getElementById('apps-list');
+  if(!el) return;
+
+  if(!apps.length) {
+    el.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);">لا توجد طلبات في هذه الفئة</div>';
+    return;
+  }
+
+  el.innerHTML = apps.map(function(a) {
+    var d = new Date(a.created_at||Date.now());
+    var ds = d.toLocaleDateString('ar-SA',{year:'numeric',month:'short',day:'numeric'});
+    var initials = (a.name||'?').slice(0,2);
+    var statusCls = a.status==='approved'?'sp-approved':a.status==='rejected'?'sp-rejected':'sp-pending';
+    var statusLbl = a.status==='approved'?'مقبول':a.status==='rejected'?'مرفوض':'قيد المراجعة';
+    var isPending = a.status==='pending';
+
+    return '<div class="app-card">'
+      +'<div class="app-card-header">'
+      +'<div class="app-avatar">'+initials+'</div>'
+      +'<div class="app-info">'
+      +'<div class="app-name">'+(a.name||'—')+'</div>'
+      +'<div class="app-meta">'
+      +'جواز: '+(a.passport||'—')+' · جوال: '+(a.phone||'—')+'<br/>'
+      +(a.region?'المنطقة: '+a.region+' · ':'')+ds
+      +'</div>'
+      +'</div>'
+      +'<div class="app-status"><span class="status-pill '+statusCls+'">'+statusLbl+'</span></div>'
+      +'</div>'
+      +'<div class="app-actions">'
+      +'<button class="app-action-btn view" onclick="viewApp(this.dataset.id)" data-id="'+a.id+'">تفاصيل</button>'
+      +(isPending ? '<button class="app-action-btn approve" onclick="quickApprove(this.dataset.id)" data-id="'+a.id+'">&#x2713; قبول</button>' : '')
+      +(isPending ? '<button class="app-action-btn reject" onclick="quickRejectBtn(this.dataset.id)" data-id="'+a.id+'">&#x2717; رفض</button>' : '')
+      +'<button class="app-action-btn print" onclick="printAppBtn(this.dataset.id)" data-id="'+a.id+'">&#x1F5A8;</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function viewApp(id) {
+  currentApp = cachedApps.find(function(a){ return a.id===id; });
+  if(!currentApp) return;
+  var a = currentApp;
+  var statusCls = a.status==='approved'?'sp-approved':a.status==='rejected'?'sp-rejected':'sp-pending';
+  var statusLbl = a.status==='approved'?'مقبول':a.status==='rejected'?'مرفوض':'قيد المراجعة';
+  var d = new Date(a.created_at||Date.now());
+
+  document.getElementById('apd-title').textContent = 'طلب تسجيل — '+a.name;
+
+  // Build detail HTML
+  var personal = ['name','date_of_birth','gender','marital_status','job','employer'];
+  var docs     = ['national_id','passport','passport_expiry','id_type','id_number','id_expiry'];
+  var contact  = ['phone','whatsapp','email','region','address','family_count'];
+  var extra    = ['sudan_state','prev_member','skills','emergency_contact','notes'];
+
+  function buildSection(title, fields) {
+    var html = '<div class="detail-section"><div class="detail-section-title">'+title+'</div><div class="detail-grid">';
+    fields.forEach(function(f) {
+      var val = a[f]||'—';
+      var full = f==='address'||f==='skills'||f==='notes';
+      html += '<div class="detail-field'+(full?' full':'')+'"><div class="lbl">'+(APP_FIELDS[f]||f)+'</div><div class="val">'+val+'</div></div>';
+    });
+    html += '</div></div>';
+    return html;
+  }
+
+  document.getElementById('apd-body').innerHTML =
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px;background:var(--surf);border-radius:var(--r-sm);">'
+    +'<span class="status-pill '+statusCls+'">'+statusLbl+'</span>'
+    +'<span style="font-size:11px;color:var(--muted);">رقم الطلب: '+a.id+'</span>'
+    +'<span style="font-size:11px;color:var(--muted);margin-right:auto;">'+d.toLocaleString('ar-SA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})+'</span>'
+    +'</div>'
+    + buildSection('البيانات الشخصية', personal)
+    + buildSection('الوثائق والأرقام الرسمية', docs)
+    + buildSection('بيانات الاتصال والسكن', contact)
+    + buildSection('معلومات إضافية', extra);
+
+  // Actions
+  var isPending = a.status==='pending';
+  var isPending = a.status==='pending';
+  var actHtml = isPending
+    ? '<button class="mbtn save" onclick="approveApp()">&#10003; قبول وتسجيل</button>'
+      +'<button class="mbtn danger" onclick="rejectApp()">&#10007; رفض</button>'
+      +'<button class="mbtn cancel" onclick="closeModal(\'m-appdetail\')" >&#x274C; إغلاق</button>'
+    : '<button class="mbtn cancel" onclick="closeModal(\'m-appdetail\')">إغلاق</button>'
+      +'<button class="mbtn save" style="background:var(--gm);" onclick="pApp({dataset:{id:a.id}})">&#128203; طباعة</button>';
+  document.getElementById('apd-actions').innerHTML = actHtml;
+
+  openModal('m-appdetail');
+}
+
+async function updateAppStatus(id, status, note) {
+  var update = {status:status, reviewed_by:curUser.name, reviewed_at:new Date().toISOString(), review_note:note||''};
+  try {
+    if(useDB) {
+      await sb.from('membership_applications').update(update).eq('id',id);
+    } else {
+      var arr = LS.get('sj_reg_apps',[]);
+      var i = arr.findIndex(function(a){ return a.id===id; });
+      if(i>=0) Object.assign(arr[i], update);
+      LS.set('sj_reg_apps', arr);
+    }
+    var i2 = cachedApps.findIndex(function(a){ return a.id===id; });
+    if(i2>=0) Object.assign(cachedApps[i2], update);
+  } catch(e) { throw e; }
+}
+
+async function approveApp() {
+  var a = currentApp;
+  if(!a) return;
+  if(!confirm('هل تريد قبول طلب '+a.name+' وإضافته للأعضاء؟')) return;
+  try {
+    await updateAppStatus(a.id, 'approved', '');
+    // Auto-add to members
+    var memId = 'M'+Date.now().toString().slice(-6);
+    var member = {id:memId, name:a.name, passport:a.passport, phone:a.phone,
+      job:a.job||'', region:a.region||'', status:'active',
+      national_id:a.national_id||'', fee_paid:false,
+      created_at:new Date().toISOString()};
+    if(useDB) {
+      await sb.from('members').insert(member);
+    } else {
+      var mems = LS.get('sj_members',[]);
+      mems.unshift(member);
+      LS.set('sj_members', mems);
+      cachedMembers.unshift(member);
+    }
+    closeModal('m-appdetail');
+    showToast('✓ تم قبول '+a.name+' وإضافته للأعضاء','ok');
+    renderApps();
+    updateAppsBadge();
+  } catch(e) { showToast('خطأ: '+e.message,'err'); }
+}
+
+async function rejectApp() {
+  var a = currentApp;
+  if(!a) return;
+  var reason = prompt('سبب الرفض (إلزامي):');
+  if(!reason) return;
+  try {
+    await updateAppStatus(a.id, 'rejected', reason);
+    closeModal('m-appdetail');
+    showToast('تم رفض الطلب','warn');
+    renderApps();
+    updateAppsBadge();
+  } catch(e) { showToast('خطأ: '+e.message,'err'); }
+}
+
+
+function quickApprove(id){ currentApp=cachedApps.find(function(a){return a.id===id;}); approveApp(); }
+function quickRejectBtn(id){ currentApp=cachedApps.find(function(a){return a.id===id;}); var reason=prompt('سبب الرفض:'); if(!reason)return; updateAppStatus(id,'rejected',reason).then(function(){ showToast('تم رفض الطلب','warn'); renderApps(); updateAppsBadge(); }).catch(function(e){ showToast('خطأ: '+e.message,'err'); }); }
+function printAppBtn(id){ printApp(id); }
+
+async function _quickApproveOld(id) {
+  currentApp = cachedApps.find(function(a){ return a.id===id; });
+  await approveApp();
+}
+
+async function quickReject(id) {
+  currentApp = cachedApps.find(function(a){ return a.id===id; });
+  var reason = prompt('سبب الرفض:');
+  if(!reason) return;
+  try {
+    await updateAppStatus(id, 'rejected', reason);
+    showToast('تم رفض الطلب','warn');
+    renderApps(); updateAppsBadge();
+  } catch(e) { showToast('خطأ: '+e.message,'err'); }
+}
+
+function printApp(id) {
+  var a = cachedApps.find(function(x){ return x.id===id; });
+  if(!a) return;
+  var d = new Date(a.created_at||Date.now());
+  var statusLbl = a.status==='approved'?'مقبول':a.status==='rejected'?'مرفوض':'قيد المراجعة';
+
+  function row(label, val) {
+    if(!val||val==='—') return '';
+    return '<tr><td style="padding:5px 8px;color:#666;width:35%;border:1px solid #ddd;">'+label+'</td>'
+      +'<td style="padding:5px 8px;font-weight:600;border:1px solid #ddd;">'+val+'</td></tr>';
+  }
+
+  document.getElementById('print-area').innerHTML = '<div style="width:210mm;margin:0 auto;padding:12mm;font-size:12px;font-family:Arial;direction:rtl;color:#000;">'
+    +'<div style="display:flex;align-items:center;gap:14px;border-bottom:3px double #1a3d2b;padding-bottom:10px;margin-bottom:10px;">'
+    +'<div style="font-size:36px;">🇸🇩</div>'
+    +'<div><div style="font-size:18px;font-weight:800;color:#1a3d2b;">الجالية السودانية بجازان</div>'
+    +'<div style="font-size:13px;color:#2e6b4f;">أمانة العضوية والتحول الرقمي</div>'
+    +'<div style="font-size:10px;color:#555;">'+d.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'</div></div>'
+    +'</div>'
+    +'<div style="background:#1a3d2b;color:#fff;padding:8px;text-align:center;border-radius:4px;margin-bottom:10px;">'
+    +'<div style="font-size:15px;font-weight:800;">استمارة طلب تسجيل عضوية</div>'
+    +'<div style="font-size:11px;opacity:.8;">رقم الطلب: '+a.id+' · الحالة: '+statusLbl+'</div></div>'
+    +'<table style="width:100%;border-collapse:collapse;margin-bottom:8px;">'
+    + row('الاسم الرباعي', a.name)
+    + row('تاريخ الميلاد', a.date_of_birth)
+    + row('الجنس', a.gender)
+    + row('الحالة الاجتماعية', a.marital_status)
+    + row('المهنة', a.job)
+    + row('جهة العمل', a.employer)
+    + row('الرقم الوطني', a.national_id)
+    + row('رقم الجواز', a.passport)
+    + row('انتهاء الجواز', a.passport_expiry)
+    + row('نوع وثيقة الإقامة', a.id_type)
+    + row('رقم الوثيقة', a.id_number)
+    + row('رقم الجوال', a.phone)
+    + row('واتساب', a.whatsapp)
+    + row('البريد الإلكتروني', a.email)
+    + row('المنطقة', a.region)
+    + row('عنوان السكن', a.address)
+    + row('عدد الأسرة', a.family_count)
+    + row('الولاية في السودان', a.sudan_state)
+    + row('عضو سابق', a.prev_member)
+    + row('المهارات', a.skills)
+    + row('ملاحظات', a.notes)
+    +'</table>'
+    +(a.review_note?'<div style="background:#fef5ec;border:1px solid #d35400;border-radius:4px;padding:8px;margin-bottom:8px;font-size:11px;"><strong>ملاحظة المراجع:</strong> '+a.review_note+'</div>':'')
+    +'<div style="display:flex;justify-content:space-between;margin-top:20px;">'
+    +'<div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:28px;padding-top:4px;font-size:10px;width:150px;">توقيع مقدم الطلب</div></div>'
+    +'<div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:28px;padding-top:4px;font-size:10px;width:150px;">أمين العضوية</div></div>'
+    +'<div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:28px;padding-top:4px;font-size:10px;width:150px;">ختم الجالية</div></div>'
+    +'</div>'
+    +'<div style="text-align:center;margin-top:14px;font-size:10px;color:#777;border-top:1px dashed #ccc;padding-top:6px;">'
+    +'الجالية السودانية بجازان · أمانة العضوية والتحول الرقمي · '+new Date().getFullYear()
+    +'</div></div>';
+  setTimeout(function(){ window.print(); }, 300);
+}
+
+
+/* ══ REPORTS ══ */
+var rpPeriod = 'today';
+var rpFrom = null, rpTo = null;
+
+function setRpPeriod(p){
+  rpPeriod = p;
+  document.querySelectorAll('.rp-btn').forEach(function(b){ b.classList.remove('active'); });
+  var btn = document.getElementById('rp-'+p);
+  if(btn) btn.classList.add('active');
+  var cdEl = document.getElementById('rp-custom-dates');
+  if(cdEl) cdEl.style.display = p==='custom' ? 'grid' : 'none';
+  if(p!=='custom') calcReports();
+}
+
+function getPeriodDates(){
+  var now = new Date();
+  var from, to;
+  to = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+
+  if(rpPeriod==='today'){
+    from = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+  } else if(rpPeriod==='week'){
+    var day = now.getDay();
+    var diff = day===0 ? -6 : 1-day; // Monday
+    from = new Date(now); from.setDate(now.getDate()+diff); from.setHours(0,0,0,0);
+  } else if(rpPeriod==='month'){
+    from = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+  } else if(rpPeriod==='quarter'){
+    var q = Math.floor(now.getMonth()/3);
+    from = new Date(now.getFullYear(), q*3, 1, 0, 0, 0);
+  } else if(rpPeriod==='year'){
+    from = new Date(now.getFullYear(), 0, 1, 0, 0, 0);
+  } else if(rpPeriod==='custom'){
+    var f = document.getElementById('rp-from').value;
+    var t = document.getElementById('rp-to').value;
+    if(!f||!t) return null;
+    from = new Date(f+'T00:00:00');
+    to   = new Date(t+'T23:59:59');
+  }
+  return {from:from, to:to};
+}
+
+function periodLabel(dates){
+  if(!dates) return '';
+  var opts = {year:'numeric',month:'long',day:'numeric'};
+  var f = dates.from.toLocaleDateString('ar-SA', opts);
+  var t = dates.to.toLocaleDateString('ar-SA', opts);
+  if(rpPeriod==='today') return 'اليوم — '+f;
+  if(rpPeriod==='week')  return 'الأسبوع: '+f+' — '+t;
+  if(rpPeriod==='month') return 'شهر '+dates.from.toLocaleDateString('ar-SA',{month:'long',year:'numeric'});
+  if(rpPeriod==='quarter'){
+    var q=Math.floor(dates.from.getMonth()/3)+1;
+    return 'الربع '+['الأول','الثاني','الثالث','الرابع'][q-1]+' '+dates.from.getFullYear();
+  }
+  if(rpPeriod==='year') return 'سنة '+dates.from.getFullYear();
+  return f+' — '+t;
+}
+
+function filterByPeriod(arr, dateKey){
+  var dates = getPeriodDates();
+  if(!dates) return [];
+  return arr.filter(function(r){
+    var d = new Date(r[dateKey]||r.time||r.created_at||Date.now());
+    return d >= dates.from && d <= dates.to;
+  });
+}
+
+function calcReports(){
+  var dates = getPeriodDates();
+  if(!dates){
+    document.getElementById('rp-period-label').textContent = 'اختر نطاقاً زمنياً';
+    return;
+  }
+  document.getElementById('rp-period-label').textContent = periodLabel(dates);
+
+  var recs = filterByPeriod(cachedReceipts, 'created_at');
+  var pmts = filterByPeriod(cachedPayments, 'created_at');
+  var mems = filterByPeriod(cachedMembers,  'created_at');
+
+  // Totals
+  var totalIn  = recs.reduce(function(s,r){ return s+(r.amount||0); }, 0);
+  var totalOut = pmts.filter(function(p){ return p.status==='paid'; }).reduce(function(s,p){ return s+(p.amount||0); }, 0);
+  var net      = totalIn - totalOut;
+
+  // Summary cards
+  document.getElementById('rp-summary').innerHTML =
+    mkCard('إجمالي الدخل',      totalIn.toLocaleString('ar-SA')+' ر.س',  'var(--gm)')  +
+    mkCard('إجمالي المنصرفات',  totalOut.toLocaleString('ar-SA')+' ر.س', 'var(--red)') +
+    mkCard('الصافي المتبقي',    net.toLocaleString('ar-SA')+' ر.س',      net>=0?'var(--gl)':'var(--red)') +
+    mkCard('الأعضاء الجدد',     mems.length+' عضو',                      'var(--blue)');
+
+  // Receipts breakdown
+  var byCollector = {};
+  recs.forEach(function(r){
+    byCollector[r.collector||'—'] = (byCollector[r.collector||'—']||0) + (r.amount||0);
+  });
+  var collRows = Object.entries(byCollector).map(function(e){
+    return '<div class="rp-stat-row"><span class="rp-stat-label">'+e[0]+'</span><span class="rp-stat-value green">'+e[1].toLocaleString('ar-SA')+' ر.س</span></div>';
+  }).join('');
+
+  document.getElementById('rp-receipts-stats').innerHTML =
+    '<div class="rp-stat-row"><span class="rp-stat-label">عدد السندات</span><span class="rp-stat-value">'+recs.length+'</span></div>'+
+    '<div class="rp-stat-row"><span class="rp-stat-label">إجمالي المبالغ</span><span class="rp-stat-value green">'+totalIn.toLocaleString('ar-SA')+' ر.س</span></div>'+
+    '<div class="rp-stat-row"><span class="rp-stat-label">متوسط السند</span><span class="rp-stat-value">'+(recs.length?Math.round(totalIn/recs.length).toLocaleString('ar-SA'):0)+' ر.س</span></div>'+
+    (collRows?'<div style="margin-top:8px;font-size:11px;color:var(--muted);font-weight:700;">حسب المحصّل</div>'+collRows:'');
+
+  // Payments breakdown
+  var pPending  = pmts.filter(function(p){ return p.status==='pending_finance'||p.status==='pending_president'; }).length;
+  var pApproved = pmts.filter(function(p){ return p.status==='approved'||p.status==='paid'; }).length;
+  var pRejected = pmts.filter(function(p){ return p.status==='rejected'; }).length;
+  var pPaid     = pmts.filter(function(p){ return p.status==='paid'; }).reduce(function(s,p){ return s+(p.amount||0); },0);
+
+  var byCat = {};
+  pmts.filter(function(p){ return p.status==='paid'; }).forEach(function(p){
+    byCat[p.category||'أخرى'] = (byCat[p.category||'أخرى']||0)+(p.amount||0);
+  });
+  var catRows = Object.entries(byCat).map(function(e){
+    return '<div class="rp-stat-row"><span class="rp-stat-label">'+e[0]+'</span><span class="rp-stat-value red">'+e[1].toLocaleString('ar-SA')+' ر.س</span></div>';
+  }).join('');
+
+  document.getElementById('rp-payments-stats').innerHTML =
+    '<div class="rp-stat-row"><span class="rp-stat-label">إجمالي الطلبات</span><span class="rp-stat-value">'+pmts.length+'</span></div>'+
+    '<div class="rp-stat-row"><span class="rp-stat-label">مصروف فعلياً</span><span class="rp-stat-value red">'+pPaid.toLocaleString('ar-SA')+' ر.س</span></div>'+
+    '<div class="rp-stat-row"><span class="rp-stat-label">معلق</span><span class="rp-stat-value gold">'+pPending+'</span></div>'+
+    '<div class="rp-stat-row"><span class="rp-stat-label">مكتمل / مرفوض</span><span class="rp-stat-value">'+pApproved+' / '+pRejected+'</span></div>'+
+    (catRows?'<div style="margin-top:8px;font-size:11px;color:var(--muted);font-weight:700;">حسب التصنيف</div>'+catRows:'');
+
+  // Members breakdown
+  var mActive = cachedMembers.filter(function(m){ return m.status==='active'; }).length;
+  var byRegion = {};
+  mems.forEach(function(m){ byRegion[m.region||'—']=(byRegion[m.region||'—']||0)+1; });
+  var regRows = Object.entries(byRegion).sort(function(a,b){return b[1]-a[1];}).slice(0,5).map(function(e){
+    return '<div class="rp-stat-row"><span class="rp-stat-label">'+e[0]+'</span><span class="rp-stat-value">'+e[1]+' عضو</span></div>';
+  }).join('');
+
+  document.getElementById('rp-members-stats').innerHTML =
+    '<div class="rp-stat-row"><span class="rp-stat-label">إجمالي الأعضاء</span><span class="rp-stat-value">'+cachedMembers.length+'</span></div>'+
+    '<div class="rp-stat-row"><span class="rp-stat-label">الأعضاء النشطون</span><span class="rp-stat-value green">'+mActive+'</span></div>'+
+    '<div class="rp-stat-row"><span class="rp-stat-label">مسجّل في الفترة</span><span class="rp-stat-value">'+mems.length+' عضو</span></div>'+
+    (regRows?'<div style="margin-top:8px;font-size:11px;color:var(--muted);font-weight:700;">حسب المنطقة</div>'+regRows:'');
+}
+
+function mkCard(lbl, val, color){
+  return '<div class="mcard"><div class="mval" style="color:'+color+';font-size:20px;">'+val+'</div><div class="mlbl">'+lbl+'</div></div>';
+}
+
+/* ── Print Helpers ── */
+function rpHeader(title, dates){
+  return '<div style="display:flex;align-items:center;gap:14px;border-bottom:3px double #1a3d2b;padding-bottom:10px;margin-bottom:10px;">'
+    +'<div style="font-size:36px;">🇸🇩</div>'
+    +'<div><div style="font-size:18px;font-weight:800;color:#1a3d2b;">الجالية السودانية بجازان</div>'
+    +'<div style="font-size:12px;color:#2e6b4f;">'+title+'</div>'
+    +'<div style="font-size:10px;color:#777;">'+periodLabel(dates)+'</div></div>'
+    +'<div style="margin-right:auto;text-align:left;font-size:10px;color:#777;">'
+    +'أُعدّ: '+new Date().toLocaleString('ar-SA',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'})+'<br/>'
+    +'بواسطة: '+curUser.name
+    +'</div></div>';
+}
+
+function rpStatsTable(rows){
+  return '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;">'
+    +'<tbody>'+rows.map(function(r){
+      return '<tr><td style="padding:5px 8px;border:1px solid #ddd;color:#666;width:40%;">'+r[0]+'</td>'
+        +'<td style="padding:5px 8px;border:1px solid #ddd;font-weight:700;text-align:left;">'+r[1]+'</td></tr>';
+    }).join('')+'</tbody></table>';
+}
+
+function rpSectionTitle(t){
+  return '<div style="background:#1a3d2b;color:#fff;padding:6px 10px;border-radius:4px;font-size:12px;font-weight:800;margin:10px 0 6px;">'+t+'</div>';
+}
+
+function printRpReceipts(){
+  var dates = getPeriodDates(); if(!dates){showToast('اختر النطاق الزمني','warn');return;}
+  var recs = filterByPeriod(cachedReceipts,'created_at');
+  var total = recs.reduce(function(s,r){return s+(r.amount||0);},0);
+
+  var byCol={};
+  recs.forEach(function(r){byCol[r.collector||'—']=(byCol[r.collector||'—']||0)+(r.amount||0);});
+
+  var rows = recs.map(function(r,i){
+    var d=new Date(r.created_at||Date.now());
+    return '<tr style="'+(i%2===0?'':'background:#f9f9f9')+'">'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;">'+(i+1)+'</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;font-weight:600;">'+r.name+'</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;">'+((r.description||'').slice(0,20))+'</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;font-weight:700;text-align:left;">'+(r.amount||0).toLocaleString('ar-SA')+' ر.س</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;">'+r.collector+'</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;font-size:9px;">'+d.toLocaleString('ar-SA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})+'</td>'
+      +'</tr>';
+  }).join('');
+
+  document.getElementById('print-area').innerHTML = '<div style="width:210mm;margin:0 auto;padding:12mm;font-size:12px;font-family:Arial;direction:rtl;color:#000;">'
+    + rpHeader('تقرير سندات القبض', dates)
+    + rpSectionTitle('ملخص التحصيل')
+    + rpStatsTable([
+        ['عدد السندات', recs.length],
+        ['إجمالي المبالغ', total.toLocaleString('ar-SA')+' ريال'],
+        ['متوسط السند', recs.length?Math.round(total/recs.length).toLocaleString('ar-SA')+' ريال':'—'],
+        ...Object.entries(byCol).map(function(e){return ['المحصّل: '+e[0], e[1].toLocaleString('ar-SA')+' ريال'];})
+      ])
+    + rpSectionTitle('تفاصيل السندات')
+    +'<table style="width:100%;border-collapse:collapse;font-size:10px;">'
+    +'<thead><tr style="background:#1a3d2b;color:#fff;">'
+    +'<th style="padding:5px 7px;text-align:right;">#</th>'
+    +'<th style="padding:5px 7px;text-align:right;">الاسم</th>'
+    +'<th style="padding:5px 7px;text-align:right;">الخدمة</th>'
+    +'<th style="padding:5px 7px;text-align:right;">المبلغ</th>'
+    +'<th style="padding:5px 7px;text-align:right;">المحصّل</th>'
+    +'<th style="padding:5px 7px;text-align:right;">الوقت</th>'
+    +'</tr></thead><tbody>'+rows
+    +'<tr style="background:#e8f5ee;font-weight:800;">'
+    +'<td colspan="3" style="padding:5px 7px;border:1px solid #ddd;text-align:center;">الإجمالي</td>'
+    +'<td style="padding:5px 7px;border:1px solid #ddd;text-align:left;">'+total.toLocaleString('ar-SA')+' ر.س</td>'
+    +'<td colspan="2" style="border:1px solid #ddd;"></td></tr>'
+    +'</tbody></table>'
+    + rpFooter();
+  setTimeout(function(){window.print();},400);
+}
+
+function printRpPayments(){
+  var dates = getPeriodDates(); if(!dates){showToast('اختر النطاق الزمني','warn');return;}
+  var pmts = filterByPeriod(cachedPayments,'created_at');
+  var paid = pmts.filter(function(p){return p.status==='paid';});
+  var totalPaid = paid.reduce(function(s,p){return s+(p.amount||0);},0);
+  var stMeta={pending_finance:'بانتظار المالية',pending_president:'بانتظار الرئيس',approved:'معتمد',paid:'مصروف',rejected:'مرفوض'};
+
+  var rows = pmts.map(function(p,i){
+    var d=new Date(p.created_at||Date.now());
+    return '<tr style="'+(i%2===0?'':'background:#f9f9f9')+'">'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;">'+(i+1)+'</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;font-weight:600;">'+p.beneficiary+'</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;">'+((p.description||'').slice(0,18))+'</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;">'+p.category+'</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;font-weight:700;text-align:left;">'+(p.amount||0).toLocaleString('ar-SA')+' ر.س</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;">'+(stMeta[p.status]||p.status)+'</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;font-size:9px;">'+d.toLocaleDateString('ar-SA',{month:'short',day:'numeric'})+'</td>'
+      +'</tr>';
+  }).join('');
+
+  document.getElementById('print-area').innerHTML = '<div style="width:210mm;margin:0 auto;padding:12mm;font-size:12px;font-family:Arial;direction:rtl;color:#000;">'
+    + rpHeader('تقرير سندات الصرف', dates)
+    + rpSectionTitle('ملخص المنصرفات')
+    + rpStatsTable([
+        ['إجمالي الطلبات', pmts.length],
+        ['المصروف فعلياً', totalPaid.toLocaleString('ar-SA')+' ريال'],
+        ['معلق بانتظار موافقة', pmts.filter(function(p){return p.status!=='paid'&&p.status!=='rejected';}).length],
+        ['مرفوض', pmts.filter(function(p){return p.status==='rejected';}).length],
+      ])
+    + rpSectionTitle('تفاصيل سندات الصرف')
+    +'<table style="width:100%;border-collapse:collapse;font-size:10px;">'
+    +'<thead><tr style="background:#1a3d2b;color:#fff;">'
+    +'<th style="padding:5px 7px;text-align:right;">#</th>'
+    +'<th style="padding:5px 7px;text-align:right;">المستفيد</th>'
+    +'<th style="padding:5px 7px;text-align:right;">البيان</th>'
+    +'<th style="padding:5px 7px;text-align:right;">التصنيف</th>'
+    +'<th style="padding:5px 7px;text-align:right;">المبلغ</th>'
+    +'<th style="padding:5px 7px;text-align:right;">الحالة</th>'
+    +'<th style="padding:5px 7px;text-align:right;">التاريخ</th>'
+    +'</tr></thead><tbody>'+rows
+    +'<tr style="background:#fdf0ee;font-weight:800;">'
+    +'<td colspan="4" style="padding:5px 7px;border:1px solid #ddd;text-align:center;">إجمالي المصروف</td>'
+    +'<td style="padding:5px 7px;border:1px solid #ddd;text-align:left;color:#c0392b;">'+totalPaid.toLocaleString('ar-SA')+' ر.س</td>'
+    +'<td colspan="2" style="border:1px solid #ddd;"></td></tr>'
+    +'</tbody></table>'
+    + rpFooter();
+  setTimeout(function(){window.print();},400);
+}
+
+function printRpMembers(){
+  var dates = getPeriodDates(); if(!dates){showToast('اختر النطاق الزمني','warn');return;}
+  var newMems = filterByPeriod(cachedMembers,'created_at');
+  var allActive = cachedMembers.filter(function(m){return m.status==='active';});
+
+  var byRegion={};
+  cachedMembers.forEach(function(m){byRegion[m.region||'—']=(byRegion[m.region||'—']||0)+1;});
+
+  var rows = newMems.map(function(m,i){
+    var d=new Date(m.created_at||Date.now());
+    return '<tr style="'+(i%2===0?'':'background:#f9f9f9')+'">'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;">'+(i+1)+'</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;font-weight:600;">'+m.name+'</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;direction:ltr;">'+m.passport+'</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;">'+m.region+'</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;">'+m.job+'</td>'
+      +'<td style="padding:4px 7px;border:1px solid #ddd;font-size:9px;">'+d.toLocaleDateString('ar-SA',{month:'short',day:'numeric',year:'numeric'})+'</td>'
+      +'</tr>';
+  }).join('');
+
+  document.getElementById('print-area').innerHTML = '<div style="width:210mm;margin:0 auto;padding:12mm;font-size:12px;font-family:Arial;direction:rtl;color:#000;">'
+    + rpHeader('تقرير العضوية', dates)
+    + rpSectionTitle('ملخص العضوية')
+    + rpStatsTable([
+        ['إجمالي الأعضاء', cachedMembers.length+' عضو'],
+        ['الأعضاء النشطون', allActive.length+' عضو'],
+        ['مسجّل في هذه الفترة', newMems.length+' عضو'],
+        ...Object.entries(byRegion).sort(function(a,b){return b[1]-a[1];}).slice(0,6).map(function(e){return [e[0], e[1]+' عضو'];})
+      ])
+    +(newMems.length?
+      rpSectionTitle('الأعضاء المسجّلون في الفترة')
+      +'<table style="width:100%;border-collapse:collapse;font-size:10px;">'
+      +'<thead><tr style="background:#1a3d2b;color:#fff;">'
+      +'<th style="padding:5px 7px;text-align:right;">#</th>'
+      +'<th style="padding:5px 7px;text-align:right;">الاسم</th>'
+      +'<th style="padding:5px 7px;text-align:right;">الجواز</th>'
+      +'<th style="padding:5px 7px;text-align:right;">المنطقة</th>'
+      +'<th style="padding:5px 7px;text-align:right;">المهنة</th>'
+      +'<th style="padding:5px 7px;text-align:right;">التاريخ</th>'
+      +'</tr></thead><tbody>'+rows+'</tbody></table>'
+      :'')
+    + rpFooter();
+  setTimeout(function(){window.print();},400);
+}
+
+function printFullReport(){
+  var dates = getPeriodDates(); if(!dates){showToast('اختر النطاق الزمني','warn');return;}
+  var recs = filterByPeriod(cachedReceipts,'created_at');
+  var pmts = filterByPeriod(cachedPayments,'created_at');
+  var mems = filterByPeriod(cachedMembers,'created_at');
+  var allMems = cachedMembers;
+
+  var totalIn   = recs.reduce(function(s,r){return s+(r.amount||0);},0);
+  var totalOut  = pmts.filter(function(p){return p.status==='paid';}).reduce(function(s,p){return s+(p.amount||0);},0);
+  var net       = totalIn - totalOut;
+  var pPending  = pmts.filter(function(p){return p.status!=='paid'&&p.status!=='rejected';}).length;
+
+  var byCol={};
+  recs.forEach(function(r){byCol[r.collector||'—']=(byCol[r.collector||'—']||0)+(r.amount||0);});
+  var byCat={};
+  pmts.filter(function(p){return p.status==='paid';}).forEach(function(p){byCat[p.category||'أخرى']=(byCat[p.category||'أخرى']||0)+(p.amount||0);});
+
+  document.getElementById('print-area').innerHTML =
+    '<div style="width:210mm;margin:0 auto;padding:12mm;font-size:12px;font-family:Arial;direction:rtl;color:#000;">'
+    // Cover
+    + rpHeader('التقرير المالي والإداري الشامل', dates)
+    // Summary boxes
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0;">'
+    + ['إجمالي الدخل|'+totalIn.toLocaleString('ar-SA')+' ر.س|#1a3d2b',
+       'إجمالي المنصرفات|'+totalOut.toLocaleString('ar-SA')+' ر.س|#c0392b',
+       'الصافي المتبقي|'+net.toLocaleString('ar-SA')+' ر.س|'+(net>=0?'#2e6b4f':'#c0392b'),
+       'سندات القبض|'+recs.length+' سند|#1a5fa8',
+       'الأعضاء الجدد|'+mems.length+' عضو|#6c3483',
+       'طلبات صرف معلقة|'+pPending+' طلب|#d35400'
+      ].map(function(s){
+        var p=s.split('|');
+        return '<div style="border:1px solid #ddd;border-radius:5px;padding:8px;text-align:center;">'
+          +'<div style="font-size:16px;font-weight:800;color:'+p[2]+';">'+p[1]+'</div>'
+          +'<div style="font-size:10px;color:#666;margin-top:2px;">'+p[0]+'</div></div>';
+      }).join('')
+    + '</div>'
+    // Financial summary
+    + rpSectionTitle('أولاً: ملخص التحصيل')
+    + rpStatsTable([
+        ['إجمالي سندات القبض', recs.length+' سند'],
+        ['إجمالي المبالغ المحصّلة', totalIn.toLocaleString('ar-SA')+' ريال'],
+        ...Object.entries(byCol).map(function(e){return ['المحصّل: '+e[0], e[1].toLocaleString('ar-SA')+' ريال'];})
+      ])
+    + rpSectionTitle('ثانياً: ملخص المنصرفات')
+    + rpStatsTable([
+        ['إجمالي سندات الصرف', pmts.length+' سند'],
+        ['المصروف فعلياً', totalOut.toLocaleString('ar-SA')+' ريال'],
+        ['معلق بانتظار موافقة', pPending+' سند'],
+        ...Object.entries(byCat).map(function(e){return [e[0], e[1].toLocaleString('ar-SA')+' ريال'];})
+      ])
+    + rpSectionTitle('ثالثاً: الميزانية والصافي')
+    + rpStatsTable([
+        ['إجمالي الدخل', totalIn.toLocaleString('ar-SA')+' ريال'],
+        ['إجمالي المصروفات', totalOut.toLocaleString('ar-SA')+' ريال'],
+        ['الصافي المتبقي', net.toLocaleString('ar-SA')+' ريال'],
+      ])
+    + rpSectionTitle('رابعاً: العضوية')
+    + rpStatsTable([
+        ['إجمالي الأعضاء المسجّلين', allMems.length+' عضو'],
+        ['الأعضاء النشطون', allMems.filter(function(m){return m.status==='active';}).length+' عضو'],
+        ['مسجّل في هذه الفترة', mems.length+' عضو'],
+      ])
+    // Signatures
+    + '<div style="display:flex;justify-content:space-between;margin-top:24px;">'
+    + ['الأمانة المالية','الأمين العام','رئيس الجالية'].map(function(n){
+        return '<div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:30px;padding-top:4px;font-size:10px;width:160px;">'+n+'</div></div>';
+      }).join('')
+    + '</div>'
+    + rpFooter()
+    + '</div>';
+  setTimeout(function(){window.print();},400);
+}
+
+function rpFooter(){
+  return '<div style="text-align:center;margin-top:14px;font-size:10px;color:#777;border-top:1px dashed #ccc;padding-top:6px;">'
+    +'الجالية السودانية بجازان · أُعدّ بتاريخ: '+new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'})
+    +' · بواسطة: '+curUser.name+'</div>';
+}
+
+
+/* ── Silent login (session restore) ── */
+async function doLoginSilent(user){
+  curUser = Object.assign({}, user);
+  LS.set('sj_session', {id:curUser.id, ts:Date.now()});
+  // Hide login, show app
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').classList.add('show');
+  document.getElementById('sync-bar').style.display='flex';
+  document.getElementById('ubadge').textContent=(ROLES[curUser.role]?.emoji||'')+' '+curUser.name;
+  document.getElementById('hsubt').textContent=ROLES[curUser.role]?.label||'';
+  document.getElementById('w-title').textContent='أهلاً، '+curUser.name;
+  document.getElementById('w-sub').textContent=new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('w-role').textContent=(ROLES[curUser.role]?.emoji||'')+' '+(ROLES[curUser.role]?.label||'');
+  document.getElementById('coll-bar').textContent='📋 المحصّل: '+curUser.name;
+  buildNav();
+  await loadAll();
+  buildServiceSelect();
+  await loadApps();
+  // Show subtle restored-session toast
+  showToast('مرحباً '+curUser.name.split(' ')[0]+' — تم استعادة جلستك','ok');
+}
+
+
+/* ══ COLLECTOR STATS ══ */
+function updateCollectorStats(){
+  var today=new Date().toDateString();
+  // My receipts today
+  var mine=cachedReceipts.filter(function(r){
+    return r.collector_id===curUser.id && new Date(r.created_at||r.time||Date.now()).toDateString()===today;
+  });
+  var mineTotal=mine.reduce(function(s,r){return s+(r.amount||0);},0);
+  // All today
+  var allToday=cachedReceipts.filter(function(r){
+    return new Date(r.created_at||r.time||Date.now()).toDateString()===today;
+  });
+  var myCountEl=document.getElementById('my-count');
+  var myTotalEl=document.getElementById('my-total');
+  var allCountEl=document.getElementById('all-today-count');
+  if(myCountEl) myCountEl.textContent=mine.length;
+  if(myTotalEl) myTotalEl.textContent=mineTotal.toLocaleString('ar-SA');
+  if(allCountEl) allCountEl.textContent=allToday.length;
+  // Update next seq
+  var nseq='R'+(parseInt(localStorage.getItem('sj_rctr')||'3000')+1).toString().padStart(5,'0');
+  var seqEl=document.getElementById('coll-seq-disp');
+  if(seqEl) seqEl.textContent=nseq;
+}
+
+/* ══ SERVICE SUGGESTIONS ══ */
+function showSvcSugg(q){
+  var sugg=document.getElementById('svc-sugg');
+  if(!sugg) return;
+  if(!q||q.length<1){ sugg.style.display='none'; return; }
+  var svs=getServices().filter(function(s){ return s.status==='active'&&s.name.includes(q); }).slice(0,7);
+  if(!svs.length){ sugg.style.display='none'; return; }
+  sugg.style.display='block';
+  sugg.innerHTML=svs.map(function(s){
+    return '<div style="padding:10px 13px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;" '
+      +'onclick="pickSvc(\'' +s.name.replace(/'/g,"\\'")+ '\','+ s.price +')">'
+      +'<span style="font-size:13px;font-weight:600;">'+s.name+'</span>'
+      +'<span style="font-size:13px;font-weight:800;color:var(--gd);">'+(s.price>0?s.price.toLocaleString('ar-SA')+' ر.س':'متغير')+'</span>'
+      +'</div>';
+  }).join('');
+}
+
+function pickSvc(name, price){
+  var d=document.getElementById('fdesc');
+  if(d) d.value=name;
+  var sugg=document.getElementById('svc-sugg');
+  if(sugg) sugg.style.display='none';
+  if(price>0){ colAmt=price; updAmt(); }
+}
+
+// Close suggestions when clicking outside
+document.addEventListener('click', function(e){
+  if(!e.target.closest || !e.target.closest('#fdesc,#svc-sugg')){
+    var sugg=document.getElementById('svc-sugg');
+    if(sugg) sugg.style.display='none';
+  }
+});
+
+window.addEventListener('load',function(){
+  localStorage.removeItem('sj_users');
+  initDB();
+  buildLoginUI();
+  // Auto-restore session (valid 12 hours)
+  var saved = LS.get('sj_session', null);
+  if(saved && saved.id){
+    var ageHours = (Date.now() - (saved.ts||0)) / 3600000;
+    if(ageHours < 12){
+      var found = getUsers().find(function(u){ return u.id===saved.id && u.status==='active'; });
+      if(found){ loginUser=found; doLoginSilent(found); return; }
+    }
+    LS.set('sj_session',null);
+  }
+});
+</script>
+
+<script>
+/* ══ PWA — Smart update check without SW errors ══ */
+var swReg = null;
+var APP_VERSION = '2.0';
+
+// Detect iOS
+var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+// Register SW only on non-iOS (iOS has restrictions on GitHub Pages)
+if('serviceWorker' in navigator && !isIOS){
+  navigator.serviceWorker.register('sw.js')
+    .then(function(reg){
+      swReg = reg;
+      reg.addEventListener('updatefound', function(){
+        var nw = reg.installing;
+        nw.addEventListener('statechange', function(){
+          if(nw.state==='installed' && navigator.serviceWorker.controller){
+            showUpdateBanner();
+          }
+        });
+      });
+      setInterval(function(){ reg.update(); }, 30*60*1000);
+    })
+    .catch(function(e){ console.log('SW skipped:', e.message); });
+
+  navigator.serviceWorker.addEventListener('controllerchange', function(){
+    window.location.reload();
+  });
+}
+
+// Version-based update check (works on ALL devices including iOS)
+(function checkVersion(){
+  var saved = localStorage.getItem('app_version');
+  if(saved && saved !== APP_VERSION){
+    showUpdateBanner();
+  }
+  localStorage.setItem('app_version', APP_VERSION);
+})();
+
+function showUpdateBanner(){
+  var b = document.getElementById('update-banner');
+  if(b){ b.style.display='flex'; }
+}
+function applyUpdate(){
+  if(swReg && swReg.waiting){
+    swReg.waiting.postMessage('SKIP_WAITING');
+  } else {
+    localStorage.setItem('app_version', APP_VERSION);
+    window.location.reload(true);
+  }
+}
+function dismissUpdate(){
+  var b = document.getElementById('update-banner');
+  if(b) b.style.display='none';
+}
+
+// PWA install prompt (Android Chrome)
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+});
+</script>
+
+</body>
+</html>

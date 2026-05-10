@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<link rel="manifest" href="portal-manifest.json"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="خدمات الجالية"/>
+<meta name="theme-color" content="#1a3d2b"/>
+<link rel="apple-touch-icon" href="citizen-icon-192.png"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>بوابة المواطن — الجالية السودانية بجازان</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{
+  --gd:#1a3d2b;--gm:#2e6b4f;--gl:#3a9e6f;--gp:#e8f5ee;--gpp:#c8e6d4;
+  --gold:#c9a84c;--gold-l:#f5e9c8;--gold-d:#8a6010;
+  --ink:#1c2a22;--muted:#6b7c74;--border:#d4e0d9;--surf:#f4f8f5;--white:#fff;
+  --red:#c0392b;--red-p:#fdf0ee;--blue:#1a5fa8;--blue-p:#e8f0fb;
+  --orange:#d35400;--orange-p:#fef5ec;
+  --r:14px;--r-sm:9px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:Arial,sans-serif;background:var(--surf);color:var(--ink);min-height:100vh;}
+button,input,select,textarea{font-family:Arial,sans-serif;}
+input,select{font-size:16px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);padding:12px 24px;border-radius:30px;font-size:14px;font-weight:700;opacity:0;transition:all .3s;z-index:9999;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.25);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.ok{background:var(--gm);color:#fff;}
+.toast.err{background:var(--red);color:#fff;}
+.toast.warn{background:var(--orange);color:#fff;}
+
+/* PAGES */
+.page{display:none;min-height:100vh;flex-direction:column;}
+.page.active{display:flex;}
+
+/* AUTH HERO */
+.auth-hero{background:linear-gradient(160deg,var(--gd),var(--gm));padding:36px 24px 28px;text-align:center;color:#fff;flex-shrink:0;}
+.auth-hero .flag{font-size:52px;margin-bottom:10px;line-height:1;}
+.auth-hero h1{font-size:20px;font-weight:800;margin-bottom:4px;}
+.auth-hero p{font-size:13px;opacity:.85;}
+.auth-tabs{display:flex;background:rgba(0,0,0,.15);border-radius:var(--r-sm);overflow:hidden;margin-top:16px;}
+.auth-tab{flex:1;padding:11px;text-align:center;color:rgba(255,255,255,.7);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.auth-tab.active{background:rgba(255,255,255,.2);color:#fff;}
+
+/* AUTH BOX */
+.auth-box{max-width:440px;margin:0 auto;padding:22px 18px 32px;width:100%;}
+.auth-section{display:none;}
+.auth-section.active{display:block;}
+
+/* FORM */
+.fl{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:5px;display:block;}
+.req{color:var(--red);}
+.finput,.fsel,.ftxt{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;font-size:16px;color:var(--ink);outline:none;background:var(--surf);appearance:none;transition:border-color .15s;margin-bottom:12px;}
+.finput:focus,.fsel:focus,.ftxt:focus{border-color:var(--gm);background:var(--white);}
+.finput.ltr{direction:ltr;text-align:left;}
+.ftxt{resize:none;min-height:70px;font-size:14px;line-height:1.6;}
+.pw-wrap{position:relative;margin-bottom:12px;}
+.pw-wrap .finput{margin-bottom:0;}
+.pw-eye{position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);}
+.fhint{font-size:11px;color:var(--muted);margin-top:-8px;margin-bottom:10px;}
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* BUTTONS */
+.btn-main{width:100%;padding:14px;background:linear-gradient(135deg,var(--gm),var(--gd));color:#fff;border:none;border-radius:var(--r-sm);font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 4px 15px rgba(46,107,79,.35);margin-top:4px;}
+.btn-main:active{transform:scale(.98);}
+.btn-main:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.btn-sec{width:100%;padding:11px;background:transparent;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:14px;color:var(--muted);cursor:pointer;margin-top:8px;}
+.btn-sec:hover{border-color:var(--gm);color:var(--gm);}
+
+/* ERROR */
+.err-box{background:var(--red-p);color:var(--red);border:1px solid #e8c5c1;border-radius:var(--r-sm);padding:9px 14px;font-size:13px;text-align:center;margin-bottom:12px;display:none;}
+.err-box.show{display:block;}
+
+/* STEP indicator */
+.steps{display:flex;gap:6px;margin-bottom:20px;}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border);}
+.step-dot.active{background:var(--gm);}
+.step-dot.done{background:var(--gl);}
+.step-label{font-size:13px;font-weight:700;color:var(--gd);margin-bottom:16px;}
+
+/* SECTION CARD */
+.s-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.s-title{font-size:13px;font-weight:700;color:var(--gd);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--gp);display:flex;align-items:center;gap:8px;}
+.s-num{width:24px;height:24px;background:var(--gm);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;}
+
+/* APP HEADER */
+.app-hdr{background:var(--gd);flex-shrink:0;}
+.app-hdr-inner{display:flex;align-items:center;gap:10px;padding:10px 14px;}
+.app-logo{width:38px;height:38px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--gd);flex-shrink:0;}
+.app-title{flex:1;min-width:0;}
+.app-title h1{color:#fff;font-size:14px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.app-title p{color:var(--gold);font-size:10px;}
+.u-badge{background:rgba(255,255,255,.15);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+.logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);color:#fff;padding:5px 10px;border-radius:var(--r-sm);font-size:12px;cursor:pointer;}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);display:flex;z-index:100;box-shadow:0 -2px 10px rgba(0,0,0,.08);}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;padding:7px 4px 5px;cursor:pointer;border:none;background:transparent;color:var(--muted);font-size:10px;font-weight:500;gap:3px;}
+.bni.active{color:var(--gm);}
+.bni .ico{font-size:20px;line-height:1;}
+
+/* SCREENS */
+.screens{flex:1;overflow-y:auto;padding-bottom:72px;}
+.screen{display:none;padding:14px;max-width:600px;margin:0 auto;}
+.screen.active{display:block;}
+
+/* WELCOME */
+.welcome-card{background:linear-gradient(135deg,var(--gd),var(--gm));border-radius:var(--r);padding:18px;margin-bottom:12px;color:#fff;}
+.wc-name{font-size:17px;font-weight:800;margin-bottom:2px;}
+.wc-sub{font-size:12px;opacity:.8;}
+.wc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;}
+.wc-stat{background:rgba(255,255,255,.15);border-radius:var(--r-sm);padding:10px;text-align:center;}
+.wc-stat-val{font-size:18px;font-weight:800;}
+.wc-stat-lbl{font-size:10px;opacity:.8;margin-top:2px;}
+
+/* NEWS */
+.news-item{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,.04);}
+.news-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;margin-bottom:6px;}
+.nb-green{background:var(--gp);color:var(--gd);}
+.nb-gold{background:var(--gold-l);color:var(--gold-d);}
+.nb-blue{background:var(--blue-p);color:var(--blue);}
+.news-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.news-body{font-size:13px;color:var(--muted);line-height:1.7;}
+.news-date{font-size:11px;color:var(--muted);margin-top:6px;}
+
+/* SERVICE GRID */
+.svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.svc-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;transition:all .15s;}
+.svc-card:hover{border-color:var(--gm);background:var(--gp);transform:translateY(-2px);}
+.svc-icon{font-size:28px;margin-bottom:6px;}
+.svc-name{font-size:13px;font-weight:700;}
+.svc-price{font-size:11px;color:var(--gm);font-weight:700;margin-top:3px;}
+
+/* REQUEST CARD */
+.req-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;}
+.req-head{display:flex;align-items:flex-start;gap:10px;}
+.req-icon{font-size:22px;flex-shrink:0;}
+.req-info{flex:1;}
+.req-title{font-size:14px;font-weight:700;}
+.req-meta{font-size:11px;color:var(--muted);margin-top:3px;}
+.st-badge{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;flex-shrink:0;}
+.st-pending{background:var(--gold-l);color:var(--gold-d);}
+.st-processing{background:var(--blue-p);color:var(--blue);}
+.st-ready{background:var(--gp);color:var(--gd);}
+.st-done{background:#e8f5e9;color:#2e7d32;}
+.st-rejected{background:var(--red-p);color:var(--red);}
+.prog-bar{height:5px;background:var(--surf);border-radius:3px;overflow:hidden;margin-top:10px;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gm),var(--gl));border-radius:3px;transition:width .5s;}
+
+/* UPLOAD */
+.upload-zone{border:2px dashed var(--border);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;transition:all .15s;position:relative;margin-bottom:8px;}
+.upload-zone:hover{border-color:var(--gm);background:var(--gp);}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.prev-item{position:relative;width:78px;height:78px;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--border);}
+.prev-item img{width:100%;height:100%;object-fit:cover;}
+.prev-rm{position:absolute;top:2px;left:2px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.prev-name{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);color:#fff;font-size:9px;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ID TYPE TABS */
+.id-tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:12px;}
+.id-tab{padding:9px 6px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--surf);font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);text-align:center;}
+.id-tab.active{border-color:var(--gm);background:var(--gp);color:var(--gd);}
+
+/* MEMBER COUNT */
+.cnt-wrap{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surf);border-radius:var(--r-sm);margin-bottom:12px;}
+.cnt-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.cnt-btn:hover{border-color:var(--gm);}
+.cnt-num{flex:1;text-align:center;font-size:22px;font-weight:800;color:var(--gd);}
+.member-row{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-sm);padding:13px;margin-bottom:10px;}
+
+/* PROFILE */
+.prof-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.prof-row:last-child{border-bottom:none;}
+.prof-label{color:var(--muted);font-weight:600;}
+.prof-val{font-weight:700;}
+
+/* SPINNER */
+.spin{display:inline-block;width:18px;height:18px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite;vertical-align:middle;margin-left:6px;}
+@keyframes sp{to{transform:rotate(360deg);}}
+
+/* PRIVACY */
+.privacy-box{background:linear-gradient(135deg,#0d2040,#1a3366);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;color:#fff;display:flex;gap:12px;}
+.privacy-icon{font-size:26px;flex-shrink:0;}
+.privacy-title{font-size:13px;font-weight:800;margin-bottom:4px;color:#a8d5ff;}
+.privacy-text{font-size:11px;line-height:1.8;opacity:.9;}
+
+/* PRINT */
+@media print{body>*:not(#print-area){display:none!important;}#print-area{display:block!important;}}
+#print-area{display:none;font-family:Arial;direction:rtl;}
+</style>
+</head>
+<body>
+
+<!-- UPDATE BANNER -->
+<div id="update-banner" style="display:none;position:fixed;bottom:72px;left:12px;right:12px;z-index:9000;background:linear-gradient(135deg,#1a3d2b,#2e6b4f);color:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 8px 24px rgba(0,0,0,.3);display:flex;align-items:center;gap:12px;">
+  <div style="font-size:22px;flex-shrink:0;">🔄</div>
+  <div style="flex:1;">
+    <div style="font-size:13px;font-weight:800;">يوجد تحديث جديد</div>
+    <div style="font-size:11px;opacity:.8;margin-top:2px;">اضغط لتطبيق التحديث فوراً</div>
+  </div>
+  <button onclick="applyUpdate()" style="background:#c9a84c;color:#1a1a1a;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:800;cursor:pointer;">تحديث</button>
+  <button onclick="document.getElementById('update-banner').style.display='none'" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;">✕</button>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="print-area"></div>
+
+<!-- ══════════════════════════════════
+     AUTH PAGE
+══════════════════════════════════ -->
+<div class="page active" id="page-auth">
+  <div class="auth-hero">
+    <div class="flag">🇸🇩</div>
+    <h1>بوابة المواطن السوداني</h1>
+    <p>الجالية السودانية بجازان — المملكة العربية السعودية</p>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="showAuth('login')">تسجيل الدخول</div>
+      <div class="auth-tab" onclick="showAuth('register')">حساب جديد</div>
+      <div class="auth-tab" onclick="showAuth('forgot')">نسيت كلمة المرور</div>
+    </div>
+  </div>
+
+  <div class="auth-box">
+
+    <!-- LOGIN -->
+    <div class="auth-section active" id="auth-login">
+      <br/>
+      <label class="fl">رقم الجوال أو رقم الجواز</label>
+      <input class="finput ltr" id="l-user" type="text" placeholder="05xxxxxxxx" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <label class="fl">كلمة المرور</label>
+      <div class="pw-wrap">
+        <input class="finput" id="l-pw" type="password" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+        <button class="pw-eye" onclick="togglePw('l-pw')" type="button">👁</button>
+      </div>
+      <div class="err-box" id="l-err">بيانات الدخول غير صحيحة</div>
+      <button class="btn-main" onclick="doLogin()">دخول</button>
+      <button class="btn-sec" onclick="showAuth('forgot')">نسيت كلمة المرور؟</button>
+      <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--muted);">
+        🔒 بياناتك محفوظة بسرية تامة · للجالية السودانية فقط
+      </div>
+      <div style="text-align:center;margin-top:10px;">
+        <a href="index.html" style="font-size:12px;color:var(--muted);text-decoration:none;">← النظام الداخلي للجالية</a>
+      </div>
+    </div>
+
+    <!-- REGISTER — STEP 1: Account -->
+    <div class="auth-section" id="auth-register">
+      <br/>
+      <div class="steps" id="reg-steps">
+        <div class="step-dot active" id="sd1"></div>
+        <div class="step-dot" id="sd2"></div>
+        <div class="step-dot" id="sd3"></div>
+      </div>
+      <div id="reg-step1">
+        <div class="step-label">الخطوة ١ من ٣ — بيانات الحساب</div>
+        <label class="fl">الاسم الرباعي كاملاً <span class="req">*</span></label>
+        <input class="finput" id="rg-name" type="text" placeholder="محمد إبراهيم خليل أحمد"/>
+        <div class="frow2" style="margin-bottom:0;">
+          <div>
+            <label class="fl">رقم الجوال <span class="req">*</span></label>
+            <input class="finput ltr" id="rg-phone" type="tel" placeholder="05xxxxxxxx"/>
+          </div>
+          <div>
+            <label class="fl">رقم الجواز <span class="req">*</span></label>
+            <input class="finput ltr" id="rg-passport" type="text" placeholder="A12345678"/>
+          </div>
+        </div>
+        <label class="fl">كلمة المرور <span class="req">*</span></label>
+        <div class="pw-wrap">
+          <input class="finput" id="rg-pw" type="password" placeholder="٦ أحرف على الأقل"/>
+          <button class="pw-eye" onclick="togglePw('rg-pw')" type="button">👁</button>
+        </div>
+        <label class="fl">تأكيد كلمة المرور <span class="req">*</span></label>
+        <input class="finput" id="rg-pw2" type="password" placeholder="أعد إدخال كلمة المرور"/>
+        <div class="err-box" id="rg-err1"></div>
+        <button class="btn-main" onclick="regStep1()">التالي ←</button>
+      </div>
+
+      <div id="reg-step2" style="display:none;">
+        <div class="step-label">الخطوة ٢ من ٣ — سؤال الأمان</div>
+        <div class="privacy-box">
+          <div class="privacy-icon">🔐</div>
+          <div>
+            <div class="privacy-title">لاسترداد كلمة المرور</div>
+            <div class="privacy-text">اختر سؤالاً تتذكر إجابته دائماً. ستحتاجه إذا نسيت كلمة مرورك.</div>
+          </div>
+        </div>
+        <label class="fl">اختر سؤال الأمان <span class="req">*</span></label>
+        <select class="fsel" id="rg-q">
+          <option value="">— اختر سؤالاً —</option>
+          <option value="q1">ما رقم لوحة سيارتك؟</option>
+          <option value="q2">ما تاريخ ميلاد أكبر أبنائك؟</option>
+          <option value="q3">ما اسم المدرسة الابتدائية التي درست فيها؟</option>
+          <option value="q4">ما اسم مدينتك التي وُلدت فيها؟</option>
+          <option value="q5">ما رقم هاتف والدك؟</option>
+          <option value="q6">ما اسم أفضل صديق في طفولتك؟</option>
+          <option value="q7">ما اسم الشارع الذي نشأت فيه؟</option>
+        </select>
+        <label class="fl">إجابة السؤال <span class="req">*</span></label>
+        <input class="finput" id="rg-ans" type="text" placeholder="الإجابة (تُحفظ بسرية تامة)"/>
+        <div class="fhint">الإجابة غير حساسة للأحرف الكبيرة والصغيرة</div>
+        <div class="err-box" id="rg-err2"></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sec" style="width:auto;padding:11px 20px;" onclick="regStep1Back()">→ رجوع</button>
+          <button class="btn-main" onclick="regStep2()">التالي ←</button>
+        </div>
+      </div>
+
+      <div id="reg-step3" style="display:none;">
+        <div class="step-label">الخطوة ٣ من ٣ — البيانات الشخصية</div>
+        <div class="frow2">
+          <div>
+            <label class="fl">تاريخ الميلاد <span class="req">*</span></label>
+            <input class="finput" id="rg-dob" type="date"/>
+          </div>
+          <div>
+            <label class="fl">الجنس</label>
+            <select class="fsel" id="rg-gender">
+              <option value="ذكر">ذكر</option>
+              <option value="أنثى">أنثى</option>
+            </select>
+          </div>
+        </div>
+        <label class="fl">الرقم الوطني السوداني</label>
+        <input class="finput ltr" id="rg-nid" type="text" placeholder="مثال: 1-23-456789-7"/>
+        <label class="fl">نوع وثيقة الإقامة <span class="req">*</span></label>
+        <div class="id-tabs">
+          <div class="id-tab active" onclick="selIdType(this,'هوية الإقامة')">هوية الإقامة</div>
+          <div class="id-tab" onclick="selIdType(this,'رقم الحدود')">رقم الحدود</div>
+          <div class="id-tab" onclick="selIdType(this,'تأشيرة زيارة')">تأشيرة زيارة</div>
+          <div class="id-tab" onclick="selIdType(this,'أخرى')">أخرى</div>
+        </div>
+        <input type="hidden" id="rg-idtype" value="هوية الإقامة"/>
+        <input class="finput ltr" id="rg-idnum" type="text" placeholder="رقم الوثيقة"/>
+        <label class="fl">المنطقة في جازان <span class="req">*</span></label>
+        <select class="fsel" id="rg-region">
+          <option value="">— اختر —</option>
+          <option>جازان</option><option>صبيا</option><option>أبو عريش</option>
+          <option>صامطة</option><option>الدرب</option><option>فيفا</option>
+          <option>أحد المسارحة</option><option>العارضة</option><option>بيش</option><option>أخرى</option>
+        </select>
+        <label class="fl">رقم الجوال الثاني / واتساب</label>
+        <input class="finput ltr" id="rg-wa" type="tel" placeholder="اختياري"/>
+        <label class="fl">المهنة</label>
+        <input class="finput" id="rg-job" type="text" placeholder="مهندس / معلم / تاجر ..."/>
+        <div class="err-box" id="rg-err3"></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sec" style="width:auto;padding:11px 20px;" onclick="regStep2Back()">→ رجوع</button>
+          <button class="btn-main" id="rg-submit" onclick="doRegister()">إنشاء الحساب</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORGOT PASSWORD -->
+    <div class="auth-section" id="auth-forgot">
+      <br/>
+      <div id="forgot-step1">
+        <div class="step-label">استرداد كلمة المرور — الخطوة ١</div>
+        <label class="fl">رقم الجوال أو رقم الجواز</label>
+        <input class="finput ltr" id="fg-user" type="text" placeholder="05xxxxxxxx أو رقم الجواز"/>
+        <div class="err-box" id="fg-err1"></div>
+        <button class="btn-main" onclick="forgotStep1()">بحث عن حسابي</button>
+        <button class="btn-sec" onclick="showAuth('login')">رجوع لتسجيل الدخول</button>
+      </div>
+      <div id="forgot-step2" style="display:none;">
+        <div class="step-label">استرداد كلمة المرور — الخطوة ٢</div>
+        <div style="background:var(--gp);border:1px solid var(--gpp);border-radius:var(--r-sm);padding:12px;margin-bottom:14px;font-size:13px;color:var(--gd);">
+          <div style="font-weight:700;margin-bottom:4px;">سؤال الأمان:</div>
+          <div id="fg-question" style="font-size:14px;"></div>
+        </div>
+        <label class="fl">إجابة سؤال الأمان <span class="req">*</span></label>
+        <input class="finput" id="fg-ans" type="text" placeholder="الإجابة..."/>
+        <div class="err-box" id="fg-err2"></div>
+        <button class="btn-main" onclick="forgotStep2()">تحقق من الإجابة</button>
+      </div>
+      <div id="forgot-step3" style="display:none;">
+        <div class="step-label">استرداد كلمة المرور — الخطوة ٣</div>
+        <div style="background:var(--gp);border-radius:var(--r-sm);padding:12px;margin-bottom:14px;text-align:center;color:var(--gd);font-weight:700;">
+          ✓ تم التحقق — أدخل كلمة مرور جديدة
+        </div>
+        <label class="fl">كلمة المرور الجديدة <span class="req">*</span></label>
+        <div class="pw-wrap">
+          <input class="finput" id="fg-pw1" type="password" placeholder="٦ أحرف على الأقل"/>
+          <button class="pw-eye" onclick="togglePw('fg-pw1')" type="button">👁</button>
+        </div>
+        <label class="fl">تأكيد كلمة المرور الجديدة <span class="req">*</span></label>
+        <input class="finput" id="fg-pw2" type="password" placeholder="أعد الإدخال"/>
+        <div class="err-box" id="fg-err3"></div>
+        <button class="btn-main" onclick="forgotStep3()">حفظ كلمة المرور الجديدة</button>
+      </div>
+    </div>
+
+  </div><!-- auth-box -->
+</div><!-- page-auth -->
+
+<!-- ══════════════════════════════════
+     APP PAGE
+══════════════════════════════════ -->
+<div class="page" id="page-app">
+  <div class="app-hdr">
+    <div class="app-hdr-inner">
+      <div class="app-logo">🇸🇩</div>
+      <div class="app-title">
+        <h1>بوابة المواطن السوداني</h1>
+        <p>الجالية السودانية بجازان</p>
+      </div>
+      <span class="u-badge" id="u-badge">—</span>
+      <button class="logout" onclick="doLogout()">خروج</button>
+    </div>
+  </div>
+  <div class="screens">
+    <!-- HOME -->
+    <div class="screen active" id="sc-home">
+      <div class="welcome-card">
+        <div class="wc-name" id="wc-name">أهلاً</div>
+        <div class="wc-sub" id="wc-sub"></div>
+        <div class="wc-stats">
+          <div class="wc-stat"><div class="wc-stat-val" id="wst-total">0</div><div class="wc-stat-lbl">طلباتي</div></div>
+          <div class="wc-stat"><div class="wc-stat-val" id="wst-pend">0</div><div class="wc-stat-lbl">قيد التنفيذ</div></div>
+          <div class="wc-stat"><div class="wc-stat-val" id="wst-done">0</div><div class="wc-stat-lbl">مكتملة</div></div>
+        </div>
+      </div>
+      <!-- News -->
+      <div style="font-size:14px;font-weight:800;color:var(--gd);margin-bottom:10px;">آخر الأخبار والإعلانات</div>
+      <div id="news-list"></div>
+      <!-- Quick services -->
+      <div style="font-size:14px;font-weight:800;color:var(--gd);margin:14px 0 10px;">الخدمات السريعة</div>
+      <div class="svc-grid" id="quick-svc"></div>
+    </div>
+    <!-- SERVICES -->
+    <div class="screen" id="sc-services">
+      <div id="svc-choose">
+        <div style="font-size:15px;font-weight:800;color:var(--gd);margin-bottom:12px;">اختر الخدمة</div>
+        <div class="svc-grid" id="all-svc"></div>
+      </div>
+      <div id="svc-form" style="display:none;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <button onclick="backToSvcList()" style="background:none;border:1.5px solid var(--border);padding:7px 13px;border-radius:var(--r-sm);cursor:pointer;font-size:13px;">→ رجوع</button>
+          <div style="font-size:15px;font-weight:800;color:var(--gd);" id="svc-form-title"></div>
+        </div>
+        <!-- Applicant -->
+        <div class="s-card">
+          <div class="s-title"><div class="s-num">١</div>بيانات مقدم الطلب</div>
+          <label class="fl">الاسم الكامل</label>
+          <input class="finput" id="ap-name" type="text" readonly style="background:#f0f0f0;"/>
+          <div class="frow2" style="margin-bottom:0;">
+            <div><label class="fl">رقم الجواز</label><input class="finput ltr" id="ap-pass" type="text"/></div>
+            <div><label class="fl">رقم الجوال</label><input class="finput ltr" id="ap-phone" type="tel"/></div>
+          </div>
+          <label class="fl">عنوان السكن في جازان</label>
+          <input class="finput" id="ap-addr" type="text" placeholder="الحي / المنطقة / الشارع"/>
+        </div>
+        <!-- Service fields -->
+        <div class="s-card" id="svc-fields-card"></div>
+        <!-- Family -->
+        <div class="s-card" id="family-card" style="display:none;">
+          <div class="s-title"><div class="s-num">٣</div>أفراد الأسرة المشمولون</div>
+          <div class="cnt-wrap">
+            <button class="cnt-btn" onclick="chgCnt(-1)">−</button>
+            <div class="cnt-num" id="cnt-disp">0</div>
+            <button class="cnt-btn" onclick="chgCnt(1)">+</button>
+          </div>
+          <div id="members-rows"></div>
+        </div>
+        <!-- Attachments -->
+        <div class="s-card">
+          <div class="s-title"><div class="s-num" id="att-num">٣</div>المرفقات والصور</div>
+          <div id="att-container"></div>
+          <div class="fhint" style="margin-top:4px;">صور واضحة للجواز والوثائق · JPG/PNG/PDF · حد أقصى 5MB لكل ملف</div>
+        </div>
+        <!-- Notes -->
+        <div class="s-card">
+          <label class="fl">ملاحظات إضافية</label>
+          <textarea class="ftxt" id="ap-notes" placeholder="أي معلومات إضافية..."></textarea>
+        </div>
+        <button class="btn-main" id="submit-svc-btn" onclick="submitSvc()">إرسال الطلب</button>
+        <div style="height:16px;"></div>
+      </div>
+    </div>
+    <!-- REQUESTS -->
+    <div class="screen" id="sc-requests">
+      <div style="padding:10px 0 12px;">
+        <select style="width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;font-size:14px;outline:none;background:var(--surf);" onchange="renderReqs(this.value)">
+          <option value="">كل الطلبات</option>
+          <option value="pending">قيد المراجعة</option>
+          <option value="processing">قيد التنفيذ</option>
+          <option value="ready">جاهز للاستلام</option>
+          <option value="done">مكتمل</option>
+        </select>
+      </div>
+      <div id="reqs-list"></div>
+    </div>
+    <!-- PROFILE -->
+    <div class="screen" id="sc-profile">
+      <div class="s-card">
+        <div class="s-title"><div class="s-num">👤</div>بياناتي</div>
+        <div id="prof-data"></div>
+      </div>
+      <div class="s-card">
+        <div class="s-title"><div class="s-num">🔒</div>تغيير كلمة المرور</div>
+        <label class="fl">كلمة المرور الحالية</label>
+        <input class="finput" id="cp-old" type="password" placeholder="••••••"/>
+        <label class="fl">كلمة المرور الجديدة</label>
+        <div class="pw-wrap">
+          <input class="finput" id="cp-new" type="password" placeholder="••••••"/>
+          <button class="pw-eye" onclick="togglePw('cp-new')" type="button">👁</button>
+        </div>
+        <button class="btn-main" onclick="changePw()" style="font-size:14px;padding:12px;">حفظ كلمة المرور الجديدة</button>
+      </div>
+      <div class="s-card">
+        <div class="s-title"><div class="s-num">❓</div>سؤال الأمان</div>
+        <div id="sec-q-display" style="font-size:13px;color:var(--muted);padding:8px;background:var(--surf);border-radius:var(--r-sm);"></div>
+        <div style="margin-top:10px;">
+          <label class="fl">تغيير الإجابة</label>
+          <input class="finput" id="new-ans" type="text" placeholder="إجابة جديدة"/>
+          <button class="btn-main" onclick="changeSecAns()" style="font-size:14px;padding:12px;">حفظ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bnav">
+    <button class="bni active" id="bn-home" onclick="switchTab('home')"><span class="ico">🏠</span>الرئيسية</button>
+    <button class="bni" id="bn-services" onclick="switchTab('services')"><span class="ico">📋</span>الخدمات</button>
+    <button class="bni" id="bn-requests" onclick="switchTab('requests')"><span class="ico">📁</span>طلباتي</button>
+    <button class="bni" id="bn-profile" onclick="switchTab('profile')"><span class="ico">👤</span>ملفي</button>
+  </div>
+</div>
+
+<script>
+/* ══ SUPABASE ══ */
+var SB_URL = 'https://ynjulkvlqajmqsabujzp.supabase.co';
+var SB_KEY = 'sb_publishable_sxoxcY4fmz5cc0RqlngNEA_XXul-wMu';
+var sb = null, useDB = false;
+
+/* ══ SERVICES CATALOG ══ */
+var SVCS = [
+  {id:'sv1',icon:'📘',name:'تجديد جواز السفر',price:200,cat:'جوازات',
+   desc:'تجديد جواز منتهي أو قارب الانتهاء',
+   fields:[{id:'curr_pass',label:'رقم الجواز الحالي',type:'text'},{id:'pass_exp',label:'تاريخ انتهاء الجواز',type:'date'},{id:'issue_place',label:'مكان الإصدار',type:'text'}],
+   atts:['صورة الجواز الحالي — صفحة البيانات','صورة شخصية حديثة على خلفية بيضاء'],family:true},
+  {id:'sv2',icon:'🆕',name:'إصدار جواز جديد',price:300,cat:'جوازات',
+   desc:'استخراج جواز لأول مرة',
+   fields:[{id:'nid',label:'الرقم الوطني',type:'text'},{id:'pob',label:'مكان الميلاد',type:'text'}],
+   atts:['صورة بطاقة الهوية الوطنية','صورة شخصية حديثة','شهادة الميلاد'],family:true},
+  {id:'sv3',icon:'🔍',name:'بدل فاقد',price:350,cat:'جوازات',
+   desc:'في حالة فقدان الجواز',
+   fields:[{id:'report_num',label:'رقم بلاغ الفقدان',type:'text'},{id:'nid',label:'الرقم الوطني',type:'text'}],
+   atts:['تقرير الفقدان من الجهات المختصة','صورة شخصية حديثة','صورة هوية الإقامة'],family:false},
+  {id:'sv4',icon:'🆘',name:'وثيقة سفر طارئة',price:150,cat:'جوازات',
+   desc:'للسفر العاجل في حالات الطوارئ',
+   fields:[{id:'travel_date',label:'تاريخ السفر',type:'date'},{id:'dest',label:'وجهة السفر',type:'text'},{id:'reason',label:'سبب الاستعجال',type:'area'}],
+   atts:['تذكرة الطيران أو ما يثبت الحاجة الطارئة'],family:false},
+  {id:'sv5',icon:'📜',name:'تصديق وثيقة',price:100,cat:'توثيق',
+   desc:'تصديق الوثائق الرسمية للقنصلية',
+   fields:[{id:'doc_type',label:'نوع الوثيقة',type:'text'},{id:'doc_desc',label:'وصف الوثيقة',type:'area'}],
+   atts:['الوثيقة المراد تصديقها — نسخة واضحة'],family:false},
+  {id:'sv6',icon:'🪪',name:'شهادة جنسية',price:100,cat:'توثيق',
+   desc:'إثبات الجنسية السودانية',
+   fields:[{id:'nid',label:'الرقم الوطني',type:'text'},{id:'pob',label:'مكان الميلاد',type:'text'}],
+   atts:['صورة بطاقة الهوية الوطنية','صورة الجواز السوداني'],family:false},
+  {id:'sv7',icon:'👥',name:'تسجيل عضوية',price:50,cat:'عضوية',
+   desc:'الانضمام لعضوية الجالية السودانية',
+   fields:[{id:'nid',label:'الرقم الوطني',type:'text'},{id:'iqama',label:'رقم الإقامة',type:'text'}],
+   atts:['صورة جواز السفر','صورة هوية الإقامة'],family:false},
+  {id:'sv8',icon:'🤝',name:'طلب مساعدة',price:0,cat:'اجتماعية',
+   desc:'المساعدة في الحالات الإنسانية الطارئة',
+   fields:[{id:'sup_type',label:'نوع المساعدة المطلوبة',type:'text'},{id:'sup_det',label:'تفاصيل الحالة',type:'area'}],
+   atts:[],family:false},
+];
+
+var ST_META = {
+  pending:   {lbl:'قيد المراجعة',  cls:'st-pending',    pct:20},
+  processing:{lbl:'قيد التنفيذ',   cls:'st-processing', pct:60},
+  ready:     {lbl:'جاهز للاستلام', cls:'st-ready',       pct:90},
+  done:      {lbl:'مكتمل',          cls:'st-done',         pct:100},
+  rejected:  {lbl:'مرفوض',         cls:'st-rejected',    pct:0},
+};
+
+var Q_LABELS = {
+  q1:'ما رقم لوحة سيارتك؟',
+  q2:'ما تاريخ ميلاد أكبر أبنائك؟',
+  q3:'ما اسم المدرسة الابتدائية التي درست فيها؟',
+  q4:'ما اسم مدينتك التي وُلدت فيها؟',
+  q5:'ما رقم هاتف والدك؟',
+  q6:'ما اسم أفضل صديق في طفولتك؟',
+  q7:'ما اسم الشارع الذي نشأت فيه؟',
+};
+
+/* ══ NEWS DATA (static) ══ */
+var NEWS = [
+  {badge:'nb-gold',btext:'إعلان',title:'جولة تجديد الجوازات',body:'تنظم الجالية جولة ميدانية لتجديد جوازات السفر بالتنسيق مع القنصلية السودانية. يرجى تسجيل طلبكم مبكراً.', date:'١٤٤٧/١/٢٠هـ'},
+  {badge:'nb-green',btext:'خدمة',title:'الاستمارة الإلكترونية متاحة الآن',body:'يمكنكم تقديم طلبات الجوازات والتوثيق عبر هذه البوابة بشكل كامل دون الحاجة للحضور الشخصي في المرحلة الأولى.', date:'١٤٤٧/١/١٥هـ'},
+  {badge:'nb-blue',btext:'تنبيه',title:'تجديد إقامة منتهية',body:'تذكير: تأكد من صلاحية إقامتك قبل تقديم طلب أي خدمة. في حالة الإقامة المنتهية يرجى التواصل مع الجالية فوراً.', date:'١٤٤٧/١/١٠هـ'},
+];
+
+/* ══ STATE ══ */
+var curUser = null, forgotUser = null;
+var selSvc = null, memCnt = 0, atts = {};
+var cachedReqs = [];
+var regData = {};
+
+/* ══ STORAGE ══ */
+var LS = {
+  get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},
+  set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+};
+
+/* ══ INIT ══ */
+window.addEventListener('load', function(){
+  try{
+    sb = window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}});
+    useDB = true;
+  }catch(e){ useDB=false; }
+  var saved = LS.get('portal_user', null);
+  if(saved && saved.id){ curUser=saved; showApp(); }
+  buildNewsHome();
+  buildSvcGrids();
+});
+
+/* ══ AUTH HELPERS ══ */
+function showAuth(sec){
+  document.querySelectorAll('.auth-tab').forEach(function(t,i){
+    t.classList.toggle('active', ['login','register','forgot'][i]===sec);
+  });
+  document.querySelectorAll('.auth-section').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById('auth-'+sec).classList.add('active');
+}
+
+function togglePw(id){
+  var el=document.getElementById(id);
+  if(el) el.type = el.type==='password'?'text':'password';
+}
+
+function selIdType(el, val){
+  document.querySelectorAll('.id-tab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('rg-idtype').value = val;
+}
+
+/* ══ LOGIN ══ */
+function doLogin(){
+  var u = document.getElementById('l-user').value.trim();
+  var pw = document.getElementById('l-pw').value;
+  var errEl = document.getElementById('l-err');
+  errEl.classList.remove('show');
+  if(!u||!pw){ errEl.textContent='أدخل بيانات الدخول'; errEl.classList.add('show'); return; }
+  var users = LS.get('portal_users', []);
+  var found = users.find(function(x){ return (x.phone===u||x.passport===u) && x.pw===pw; });
+  if(!found){ errEl.classList.add('show'); return; }
+  curUser = found;
+  LS.set('portal_user', found);
+  showApp();
+}
+
+/* ══ REGISTER — 3 STEPS ══ */
+function regStep1(){
+  var name=document.getElementById('rg-name').value.trim();
+  var phone=document.getElementById('rg-phone').value.trim();
+  var pass=document.getElementById('rg-passport').value.trim();
+  var pw=document.getElementById('rg-pw').value;
+  var pw2=document.getElementById('rg-pw2').value;
+  var err=document.getElementById('rg-err1');
+  err.classList.remove('show');
+  if(!name||!phone||!pass){ err.textContent='يرجى إكمال الحقول الإلزامية'; err.classList.add('show'); return; }
+  if(pw.length<6){ err.textContent='كلمة المرور يجب أن تكون 6 أحرف على الأقل'; err.classList.add('show'); return; }
+  if(pw!==pw2){ err.textContent='كلمتا المرور غير متطابقتين'; err.classList.add('show'); return; }
+  var users = LS.get('portal_users', []);
+  if(users.find(function(u){ return u.phone===phone||u.passport===pass; })){
+    err.textContent='هذا الجوال أو الجواز مسجّل مسبقاً'; err.classList.add('show'); return;
+  }
+  regData = {name:name, phone:phone, passport:pass, pw:pw};
+  document.getElementById('reg-step1').style.display='none';
+  document.getElementById('reg-step2').style.display='block';
+  document.getElementById('sd1').className='step-dot done';
+  document.getElementById('sd2').className='step-dot active';
+}
+function regStep1Back(){
+  document.getElementById('reg-step2').style.display='none';
+  document.getElementById('reg-step1').style.display='block';
+  document.getElementById('sd2').className='step-dot';
+  document.getElementById('sd1').className='step-dot active';
+}
+function regStep2(){
+  var q=document.getElementById('rg-q').value;
+  var ans=document.getElementById('rg-ans').value.trim();
+  var err=document.getElementById('rg-err2');
+  err.classList.remove('show');
+  if(!q){ err.textContent='اختر سؤال الأمان'; err.classList.add('show'); return; }
+  if(!ans){ err.textContent='أدخل الإجابة'; err.classList.add('show'); return; }
+  regData.secQ = q;
+  regData.secA = ans.toLowerCase().trim();
+  document.getElementById('reg-step2').style.display='none';
+  document.getElementById('reg-step3').style.display='block';
+  document.getElementById('sd2').className='step-dot done';
+  document.getElementById('sd3').className='step-dot active';
+}
+function regStep2Back(){
+  document.getElementById('reg-step3').style.display='none';
+  document.getElementById('reg-step2').style.display='block';
+  document.getElementById('sd3').className='step-dot';
+  document.getElementById('sd2').className='step-dot active';
+}
+async function doRegister(){
+  var dob=document.getElementById('rg-dob').value;
+  var region=document.getElementById('rg-region').value;
+  var err=document.getElementById('rg-err3');
+  err.classList.remove('show');
+  if(!dob||!region){ err.textContent='يرجى إكمال الحقول الإلزامية'; err.classList.add('show'); return; }
+  var newUser = {
+    id:'u'+Date.now(),
+    name:regData.name, phone:regData.phone, passport:regData.passport, pw:regData.pw,
+    secQ:regData.secQ, secA:regData.secA,
+    dob:dob, gender:document.getElementById('rg-gender').value,
+    national_id:document.getElementById('rg-nid').value.trim(),
+    id_type:document.getElementById('rg-idtype').value,
+    id_number:document.getElementById('rg-idnum').value.trim(),
+    region:region,
+    whatsapp:document.getElementById('rg-wa').value.trim(),
+    job:document.getElementById('rg-job').value.trim(),
+    created_at:new Date().toISOString()
+  };
+  var btn = document.getElementById('rg-submit');
+  btn.disabled=true; btn.innerHTML='جاري الإنشاء...<span class="spin"></span>';
+
+  // Save to Supabase membership_applications
+  try{
+    if(useDB){
+      var rec = {
+        id:'REG'+Date.now().toString().slice(-6),
+        name:newUser.name, phone:newUser.phone, passport:newUser.passport,
+        date_of_birth:newUser.dob, gender:newUser.gender,
+        national_id:newUser.national_id, id_type:newUser.id_type, id_number:newUser.id_number,
+        region:newUser.region, job:newUser.job, whatsapp:newUser.whatsapp,
+        status:'pending', source:'portal', created_at:newUser.created_at
+      };
+      await sb.from('membership_applications').insert(rec);
+    }
+  }catch(e){ /* continue even if Supabase fails */ }
+
+  // Save locally
+  var users = LS.get('portal_users', []);
+  users.push(newUser);
+  LS.set('portal_users', users);
+  curUser = newUser;
+  LS.set('portal_user', newUser);
+  btn.disabled=false; btn.innerHTML='إنشاء الحساب';
+  showApp();
+  showToast('مرحباً '+newUser.name.split(' ')[0]+' — تم إنشاء حسابك','ok');
+  // Auto-navigate to requests
+  setTimeout(function(){ switchTab('home'); }, 500);
+}
+
+/* ══ FORGOT PASSWORD ══ */
+function forgotStep1(){
+  var u = document.getElementById('fg-user').value.trim();
+  var err = document.getElementById('fg-err1');
+  err.classList.remove('show');
+  if(!u){ err.textContent='أدخل رقم الجوال أو رقم الجواز'; err.classList.add('show'); return; }
+  var users = LS.get('portal_users', []);
+  var found = users.find(function(x){ return x.phone===u||x.passport===u; });
+  if(!found){ err.textContent='لم يُعثر على حساب بهذه البيانات'; err.classList.add('show'); return; }
+  forgotUser = found;
+  document.getElementById('fg-question').textContent = Q_LABELS[found.secQ] || found.secQ;
+  document.getElementById('forgot-step1').style.display='none';
+  document.getElementById('forgot-step2').style.display='block';
+}
+function forgotStep2(){
+  var ans = document.getElementById('fg-ans').value.trim().toLowerCase();
+  var err = document.getElementById('fg-err2');
+  err.classList.remove('show');
+  if(!ans){ err.textContent='أدخل الإجابة'; err.classList.add('show'); return; }
+  if(ans !== forgotUser.secA){
+    err.textContent='الإجابة غير صحيحة. حاول مرة أخرى.'; err.classList.add('show'); return;
+  }
+  document.getElementById('forgot-step2').style.display='none';
+  document.getElementById('forgot-step3').style.display='block';
+}
+function forgotStep3(){
+  var pw1 = document.getElementById('fg-pw1').value;
+  var pw2 = document.getElementById('fg-pw2').value;
+  var err = document.getElementById('fg-err3');
+  err.classList.remove('show');
+  if(pw1.length<6){ err.textContent='كلمة المرور يجب أن تكون 6 أحرف على الأقل'; err.classList.add('show'); return; }
+  if(pw1!==pw2){ err.textContent='كلمتا المرور غير متطابقتين'; err.classList.add('show'); return; }
+  // Update password
+  var users = LS.get('portal_users', []);
+  var i = users.findIndex(function(u){ return u.id===forgotUser.id; });
+  if(i>=0){ users[i].pw=pw1; LS.set('portal_users',users); }
+  showToast('تم تغيير كلمة المرور بنجاح','ok');
+  // Reset forgot form
+  ['fg-user','fg-ans','fg-pw1','fg-pw2'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('forgot-step1').style.display='block';
+  document.getElementById('forgot-step2').style.display='none';
+  document.getElementById('forgot-step3').style.display='none';
+  showAuth('login');
+}
+
+/* ══ APP ══ */
+function showApp(){
+  document.getElementById('page-auth').classList.remove('active');
+  document.getElementById('page-app').classList.add('active');
+  document.getElementById('u-badge').textContent = '👤 '+curUser.name.split(' ')[0];
+  document.getElementById('wc-name').textContent = 'أهلاً، '+curUser.name.split(' ')[0];
+  document.getElementById('wc-sub').textContent = new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  loadReqs();
+  renderProfile();
+}
+function doLogout(){
+  if(!confirm('هل تريد الخروج؟')) return;
+  curUser=null; LS.set('portal_user',null);
+  document.getElementById('page-app').classList.remove('active');
+  document.getElementById('page-auth').classList.add('active');
+}
+function switchTab(t){
+  ['home','services','requests','profile'].forEach(function(s){
+    document.getElementById('sc-'+s).classList.toggle('active',s===t);
+    document.getElementById('bn-'+s).classList.toggle('active',s===t);
+  });
+  if(t==='requests') renderReqs();
+}
+
+/* ══ NEWS ══ */
+function buildNewsHome(){
+  var el=document.getElementById('news-list');
+  if(!el) return;
+  el.innerHTML = NEWS.map(function(n){
+    return '<div class="news-item">'
+      +'<span class="news-badge '+n.badge+'">'+n.btext+'</span>'
+      +'<div class="news-title">'+n.title+'</div>'
+      +'<div class="news-body">'+n.body+'</div>'
+      +'<div class="news-date">'+n.date+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+/* ══ SERVICES ══ */
+function buildSvcGrids(){
+  var qEl=document.getElementById('quick-svc');
+  var aEl=document.getElementById('all-svc');
+  var html=SVCS.map(function(s){
+    return '<div class="svc-card" onclick="selectSvc(\''+s.id+'\',\'services\')">'
+      +'<div class="svc-icon">'+s.icon+'</div>'
+      +'<div class="svc-name">'+s.name+'</div>'
+      +'<div class="svc-price">'+(s.price>0?s.price+' ر.س':'مجاني')+'</div>'
+      +'</div>';
+  }).join('');
+  if(qEl) qEl.innerHTML = html;
+  if(aEl) aEl.innerHTML = html;
+}
+function selectSvc(id, tab){
+  selSvc = SVCS.find(function(s){ return s.id===id; });
+  if(!selSvc) return;
+  if(tab) switchTab(tab);
+  memCnt=0; atts={};
+  document.getElementById('svc-choose').style.display='none';
+  document.getElementById('svc-form').style.display='block';
+  document.getElementById('svc-form-title').textContent = selSvc.icon+' '+selSvc.name;
+  document.getElementById('ap-name').value  = curUser.name||'';
+  document.getElementById('ap-pass').value  = curUser.passport||'';
+  document.getElementById('ap-phone').value = curUser.phone||'';
+  // Render service fields
+  var fc = document.getElementById('svc-fields-card');
+  fc.innerHTML = '<div class="s-title"><div class="s-num">٢</div>تفاصيل الطلب</div>';
+  selSvc.fields.forEach(function(f){
+    fc.innerHTML += '<div style="margin-bottom:12px;"><label class="fl">'+f.label+'</label>'
+      +(f.type==='area'
+        ?'<textarea class="ftxt" id="sf-'+f.id+'" placeholder="'+f.label+'..."></textarea>'
+        :'<input class="finput'+(f.type==='date'?'':' ltr')+'" id="sf-'+f.id+'" type="'+(f.type==='date'?'date':'text')+'" placeholder="'+f.label+'"/>')
+      +'</div>';
+  });
+  // Family
+  var fc2=document.getElementById('family-card');
+  fc2.style.display = selSvc.family?'block':'none';
+  document.getElementById('members-rows').innerHTML='';
+  document.getElementById('cnt-disp').textContent='0';
+  document.getElementById('att-num').textContent = selSvc.family?'٤':'٣';
+  // Attachments
+  buildAttSlots();
+}
+function backToSvcList(){
+  document.getElementById('svc-choose').style.display='block';
+  document.getElementById('svc-form').style.display='none';
+}
+
+/* ══ FAMILY ══ */
+function chgCnt(d){
+  var n=memCnt+d;
+  if(n<0||n>10) return;
+  memCnt=n;
+  document.getElementById('cnt-disp').textContent=n;
+  var el=document.getElementById('members-rows'); el.innerHTML='';
+  for(var i=1;i<=n;i++){
+    el.innerHTML+='<div class="member-row"><div style="font-size:13px;font-weight:700;color:var(--gm);margin-bottom:10px;">الفرد '+(i)+'</div>'
+      +'<label class="fl">الاسم</label><input class="finput" id="m'+i+'-name" type="text" placeholder="اسم الفرد"/>'
+      +'<div class="frow2"><div><label class="fl">رقم الجواز</label><input class="finput ltr" id="m'+i+'-pass" type="text"/></div>'
+      +'<div><label class="fl">الصلة</label><select class="fsel" id="m'+i+'-rel"><option>زوجة</option><option>ابن</option><option>ابنة</option><option>أخرى</option></select></div></div>'
+      +'<div class="frow2"><div><label class="fl">تاريخ الميلاد</label><input class="finput" id="m'+i+'-dob" type="date"/></div>'
+      +'<div><label class="fl">انتهاء الجواز</label><input class="finput" id="m'+i+'-exp" type="date"/></div></div>'
+      +'</div>';
+  }
+  buildAttSlots();
+}
+
+/* ══ ATTACHMENTS ══ */
+function buildAttSlots(){
+  var el=document.getElementById('att-container'); el.innerHTML='';
+  selSvc.atts.forEach(function(lbl,i){ el.innerHTML+=attSlot('a'+i, lbl, true); });
+  for(var j=1;j<=memCnt;j++){ el.innerHTML+=attSlot('m'+j, 'صورة جواز الفرد '+j, true); }
+  el.innerHTML+=attSlot('extra','مرفق إضافي اختياري',false);
+  el.querySelectorAll('input[type=file]').forEach(function(inp){
+    inp.addEventListener('change',function(e){ handleFile(e.target.dataset.slot, e.target.files); });
+  });
+}
+function attSlot(id,lbl,req){
+  return '<div style="margin-bottom:12px;">'
+    +'<label class="fl">'+lbl+(req?' <span class="req">*</span>':'')+'</label>'
+    +'<div class="upload-zone" id="uz-'+id+'"><input type="file" accept="image/*,application/pdf" data-slot="'+id+'"/>'
+    +'<div style="font-size:24px;margin-bottom:4px;">📎</div>'
+    +'<div style="font-size:13px;font-weight:700;">اضغط لرفع الملف أو الصورة</div>'
+    +'<div style="font-size:11px;color:var(--muted);">صورة / PDF</div></div>'
+    +'<div class="upload-preview" id="up-'+id+'"></div></div>';
+}
+function handleFile(slot, files){
+  if(!files||!files[0]) return;
+  var f=files[0];
+  if(f.size>5*1024*1024){ showToast('الملف كبير جداً — الحد 5MB','err'); return; }
+  var r=new FileReader();
+  r.onload=function(e){
+    atts[slot]={name:f.name,base64:e.target.result,type:f.type};
+    var isImg=f.type.startsWith('image/');
+    var prev=document.getElementById('up-'+slot);
+    if(prev) prev.innerHTML='<div class="prev-item">'
+      +(isImg?'<img src="'+e.target.result+'" alt=""/>':'<div style="width:100%;height:100%;background:var(--blue-p);display:flex;align-items:center;justify-content:center;font-size:24px;">📄</div>')
+      +'<button class="prev-rm" onclick="rmAtt(\''+slot+'\')">×</button>'
+      +'<div class="prev-name">'+f.name+'</div></div>';
+    var uz=document.getElementById('uz-'+slot);
+    if(uz) uz.style.background='var(--gp)';
+  };
+  r.readAsDataURL(f);
+}
+function rmAtt(slot){
+  delete atts[slot];
+  var p=document.getElementById('up-'+slot); if(p) p.innerHTML='';
+  var z=document.getElementById('uz-'+slot); if(z) z.style.background='';
+}
+
+/* ══ SUBMIT REQUEST ══ */
+async function submitSvc(){
+  var name=document.getElementById('ap-name').value.trim();
+  var pass=document.getElementById('ap-pass').value.trim();
+  var phone=document.getElementById('ap-phone').value.trim();
+  var addr=document.getElementById('ap-addr').value.trim();
+  var notes=document.getElementById('ap-notes').value.trim();
+  if(!pass||!phone){ showToast('أكمل بيانات مقدم الطلب','err'); return; }
+
+  var sfData={};
+  selSvc.fields.forEach(function(f){
+    var el=document.getElementById('sf-'+f.id); if(el) sfData[f.id]=el.value.trim();
+  });
+  var members=[];
+  for(var i=1;i<=memCnt;i++){
+    members.push({
+      name:(document.getElementById('m'+i+'-name')||{}).value||'',
+      passport:(document.getElementById('m'+i+'-pass')||{}).value||'',
+      relation:(document.getElementById('m'+i+'-rel')||{}).value||'',
+      dob:(document.getElementById('m'+i+'-dob')||{}).value||'',
+      expiry:(document.getElementById('m'+i+'-exp')||{}).value||'',
+    });
+  }
+
+  var refNum='SVC'+Date.now().toString().slice(-7);
+  var req={
+    id:refNum, user_id:curUser.id, user_name:name,
+    passport:pass, phone:phone, address:addr,
+    service_id:selSvc.id, service_name:selSvc.name, service_price:selSvc.price,
+    service_data:JSON.stringify(sfData), members:JSON.stringify(members),
+    notes:notes, status:'pending', created_at:new Date().toISOString(),
+  };
+
+  var btn=document.getElementById('submit-svc-btn');
+  btn.disabled=true; btn.innerHTML='إرسال...<span class="spin"></span>';
+
+  try{
+    if(useDB){
+      var res=await sb.from('service_requests').insert(req);
+      if(res.error) throw res.error;
+    }
+  }catch(e){}
+
+  // Always save locally too
+  var arr=LS.get('sj_svc_reqs_'+curUser.id,[]);
+  arr.unshift(req);
+  LS.set('sj_svc_reqs_'+curUser.id, arr);
+  if(Object.keys(atts).length) LS.set('att_'+refNum, atts);
+
+  cachedReqs.unshift(req);
+  updateStats();
+  printSvcReq(req, sfData, members);
+  showToast('تم إرسال طلبك — رقم '+refNum,'ok');
+  backToSvcList();
+  switchTab('requests');
+
+  btn.disabled=false; btn.innerHTML='إرسال الطلب';
+}
+
+/* ══ REQUESTS ══ */
+async function loadReqs(){
+  try{
+    if(useDB){
+      var res=await sb.from('service_requests').select('*').eq('user_id',curUser.id).order('created_at',{ascending:false});
+      if(!res.error) cachedReqs=res.data||[];
+    }
+  }catch(e){}
+  var local=LS.get('sj_svc_reqs_'+curUser.id,[]);
+  // Merge: add local items not in server
+  local.forEach(function(l){
+    if(!cachedReqs.find(function(r){ return r.id===l.id; })) cachedReqs.push(l);
+  });
+  cachedReqs.sort(function(a,b){ return new Date(b.created_at)-new Date(a.created_at); });
+  updateStats();
+  renderReqs();
+}
+function updateStats(){
+  document.getElementById('wst-total').textContent = cachedReqs.length;
+  document.getElementById('wst-pend').textContent  = cachedReqs.filter(function(r){ return r.status!=='done'&&r.status!=='rejected'; }).length;
+  document.getElementById('wst-done').textContent  = cachedReqs.filter(function(r){ return r.status==='done'; }).length;
+}
+function renderReqs(filter){
+  var arr = filter ? cachedReqs.filter(function(r){ return r.status===filter; }) : cachedReqs;
+  var el=document.getElementById('reqs-list');
+  if(!arr.length){ el.innerHTML='<div style="text-align:center;padding:32px;color:var(--muted);">لا توجد طلبات</div>'; return; }
+  el.innerHTML=arr.map(function(r){
+    var sm=ST_META[r.status]||{lbl:r.status,cls:'st-pending',pct:0};
+    var svc=SVCS.find(function(s){ return s.id===r.service_id; })||{icon:'📋'};
+    var d=new Date(r.created_at);
+    return '<div class="req-card">'
+      +'<div class="req-head">'
+      +'<div class="req-icon">'+svc.icon+'</div>'
+      +'<div class="req-info">'
+      +'<div class="req-title">'+r.service_name+'</div>'
+      +'<div class="req-meta">رقم الطلب: '+r.id+'</div>'
+      +'<div class="req-meta">'+d.toLocaleDateString('ar-SA',{month:'short',day:'numeric',year:'numeric'})+'</div>'
+      +(r.service_price>0?'<div class="req-meta" style="color:var(--gm);font-weight:700;">'+r.service_price+' ر.س</div>':'')
+      +'</div>'
+      +'<span class="st-badge '+sm.cls+'">'+sm.lbl+'</span>'
+      +'</div>'
+      +'<div class="prog-bar"><div class="prog-fill" style="width:'+sm.pct+'%"></div></div>'
+      +'<div style="display:flex;gap:6px;margin-top:10px;">'
+      +'<button style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:transparent;font-size:12px;cursor:pointer;color:var(--gm);" onclick="printReqById(\''+r.id+'\')">🖨️ طباعة</button>'
+      +'</div></div>';
+  }).join('');
+}
+
+/* ══ PROFILE ══ */
+function renderProfile(){
+  var el=document.getElementById('prof-data');
+  if(!el||!curUser) return;
+  var rows=[
+    ['الاسم الكامل', curUser.name],
+    ['رقم الجوال',   curUser.phone],
+    ['رقم الجواز',   curUser.passport],
+    ['المنطقة',      curUser.region||'—'],
+    ['المهنة',       curUser.job||'—'],
+    ['تاريخ التسجيل',new Date(curUser.created_at).toLocaleDateString('ar-SA')],
+  ];
+  el.innerHTML=rows.map(function(r){
+    return '<div class="prof-row"><span class="prof-label">'+r[0]+'</span><span class="prof-val">'+r[1]+'</span></div>';
+  }).join('');
+  var qEl=document.getElementById('sec-q-display');
+  if(qEl) qEl.textContent = Q_LABELS[curUser.secQ]||'لم يُحدَّد بعد';
+}
+function changePw(){
+  var old=document.getElementById('cp-old').value;
+  var nw=document.getElementById('cp-new').value;
+  if(old!==curUser.pw){ showToast('كلمة المرور الحالية غير صحيحة','err'); return; }
+  if(nw.length<6){ showToast('كلمة المرور الجديدة قصيرة جداً','warn'); return; }
+  var users=LS.get('portal_users',[]);
+  var i=users.findIndex(function(u){ return u.id===curUser.id; });
+  if(i>=0){ users[i].pw=nw; LS.set('portal_users',users); }
+  curUser.pw=nw; LS.set('portal_user',curUser);
+  document.getElementById('cp-old').value='';
+  document.getElementById('cp-new').value='';
+  showToast('تم تغيير كلمة المرور','ok');
+}
+function changeSecAns(){
+  var ans=document.getElementById('new-ans').value.trim();
+  if(!ans){ showToast('أدخل الإجابة','err'); return; }
+  var users=LS.get('portal_users',[]);
+  var i=users.findIndex(function(u){ return u.id===curUser.id; });
+  if(i>=0){ users[i].secA=ans.toLowerCase(); LS.set('portal_users',users); }
+  curUser.secA=ans.toLowerCase(); LS.set('portal_user',curUser);
+  document.getElementById('new-ans').value='';
+  showToast('تم تحديث الإجابة','ok');
+}
+
+/* ══ PRINT ══ */
+function printReqById(id){
+  var r=cachedReqs.find(function(x){ return x.id===id; });
+  if(!r) return;
+  var sd={},ms=[];
+  try{sd=JSON.parse(r.service_data||'{}');}catch(e){}
+  try{ms=JSON.parse(r.members||'[]');}catch(e){}
+  printSvcReq(r,sd,ms);
+}
+
+function printSvcReq(r, sfData, members){
+  var svc=SVCS.find(function(s){ return s.id===r.service_id; })||{icon:'📋',name:r.service_name};
+  var d=new Date(r.created_at||Date.now());
+  var stLbl=(ST_META[r.status]||{lbl:r.status}).lbl;
+  var savedAtts=LS.get('att_'+r.id,{});
+
+  var fRows=Object.entries(sfData).map(function(e){
+    var fDef=svc.fields&&svc.fields.find?svc.fields.find(function(f){return f.id===e[0];}):null;
+    return '<tr><td style="padding:5px 8px;color:#666;border:1px solid #ddd;width:35%;">'+(fDef?fDef.label:e[0])+'</td>'
+      +'<td style="padding:5px 8px;font-weight:600;border:1px solid #ddd;">'+e[1]+'</td></tr>';
+  }).join('');
+
+  var attHtml=Object.entries(savedAtts).filter(function(e){ return e[1].type&&e[1].type.startsWith('image/'); })
+    .map(function(e){
+      return '<div style="text-align:center;border:1px solid #ddd;border-radius:4px;overflow:hidden;">'
+        +'<img src="'+e[1].base64+'" style="width:120px;height:90px;object-fit:cover;display:block;"/>'
+        +'<div style="font-size:9px;padding:3px;color:#555;background:#f5f5f5;">'+e[1].name+'</div></div>';
+    }).join('');
+
+  var memHtml=members&&members.length
+    ?'<div style="font-size:12px;font-weight:700;color:#1a3d2b;margin:10px 0 5px;">أفراد الأسرة المشمولون</div>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:10px;">'
+    +'<thead><tr style="background:#1a3d2b;color:#fff;"><th style="padding:4px 7px;text-align:right;">#</th>'
+    +'<th style="padding:4px 7px;text-align:right;">الاسم</th><th style="padding:4px 7px;text-align:right;">الجواز</th>'
+    +'<th style="padding:4px 7px;text-align:right;">الصلة</th><th style="padding:4px 7px;text-align:right;">الميلاد</th></tr></thead><tbody>'
+    +members.map(function(m,i){
+      return '<tr style="'+(i%2===0?'':'background:#f9f9f9')+'">'
+        +'<td style="padding:4px 7px;border:1px solid #ddd;">'+(i+1)+'</td>'
+        +'<td style="padding:4px 7px;border:1px solid #ddd;font-weight:600;">'+m.name+'</td>'
+        +'<td style="padding:4px 7px;border:1px solid #ddd;">'+m.passport+'</td>'
+        +'<td style="padding:4px 7px;border:1px solid #ddd;">'+m.relation+'</td>'
+        +'<td style="padding:4px 7px;border:1px solid #ddd;">'+m.dob+'</td></tr>';
+    }).join('')+'</tbody></table>':'';
+
+  document.getElementById('print-area').innerHTML=
+    '<div style="width:210mm;margin:0 auto;padding:12mm;font-size:12px;font-family:Arial;direction:rtl;color:#000;">'
+    +'<div style="display:flex;align-items:center;gap:14px;border-bottom:3px double #1a3d2b;padding-bottom:10px;margin-bottom:10px;">'
+    +'<div style="font-size:36px;">🇸🇩</div>'
+    +'<div><div style="font-size:18px;font-weight:800;color:#1a3d2b;">الجالية السودانية بجازان</div>'
+    +'<div style="font-size:12px;color:#2e6b4f;">بوابة خدمات المواطن السوداني</div>'
+    +'<div style="font-size:10px;color:#555;">'+d.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'</div></div></div>'
+    +'<div style="background:#e8f5ee;border:1px solid #3a9e6f;border-radius:4px;padding:7px;text-align:center;margin-bottom:8px;font-size:11px;">'
+    +'رقم الطلب: <strong>'+r.id+'</strong> · الحالة: <strong>'+stLbl+'</strong></div>'
+    +'<div style="background:#1a3d2b;color:#fff;text-align:center;padding:8px;border-radius:4px;margin-bottom:10px;">'
+    +'<div style="font-size:15px;font-weight:800;">'+svc.icon+' طلب خدمة: '+r.service_name+'</div></div>'
+    +'<div style="font-size:12px;font-weight:700;color:#1a3d2b;margin-bottom:5px;">بيانات مقدم الطلب</div>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;">'
+    +'<tr><td style="padding:5px 8px;color:#666;border:1px solid #ddd;width:35%;">الاسم الكامل</td><td style="padding:5px 8px;font-weight:700;border:1px solid #ddd;">'+r.user_name+'</td></tr>'
+    +'<tr><td style="padding:5px 8px;color:#666;border:1px solid #ddd;">رقم الجواز</td><td style="padding:5px 8px;border:1px solid #ddd;direction:ltr;">'+r.passport+'</td></tr>'
+    +'<tr><td style="padding:5px 8px;color:#666;border:1px solid #ddd;">رقم الجوال</td><td style="padding:5px 8px;border:1px solid #ddd;direction:ltr;">'+r.phone+'</td></tr>'
+    +(r.address?'<tr><td style="padding:5px 8px;color:#666;border:1px solid #ddd;">العنوان</td><td style="padding:5px 8px;border:1px solid #ddd;">'+r.address+'</td></tr>':'')
+    +(r.service_price>0?'<tr style="background:#e8f5ee;"><td style="padding:5px 8px;font-weight:700;border:1px solid #ddd;">الرسوم</td><td style="padding:5px 8px;font-weight:700;border:1px solid #ddd;">'+r.service_price+' ريال سعودي</td></tr>':'')
+    +'</table>'
+    +(fRows?'<div style="font-size:12px;font-weight:700;color:#1a3d2b;margin:8px 0 5px;">تفاصيل الخدمة</div><table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;">'+fRows+'</table>':'')
+    + memHtml
+    +(attHtml?'<div style="font-size:12px;font-weight:700;color:#1a3d2b;margin:8px 0 5px;">المرفقات</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">'+attHtml+'</div>':'')
+    +(r.notes?'<div style="background:#f5f5f5;padding:8px;border-radius:4px;font-size:11px;margin-bottom:8px;"><strong>ملاحظات:</strong> '+r.notes+'</div>':'')
+    +'<div style="display:flex;justify-content:space-between;margin-top:20px;">'
+    +'<div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:28px;padding-top:4px;font-size:10px;width:150px;">توقيع مقدم الطلب<br/>'+r.user_name+'</div></div>'
+    +'<div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:28px;padding-top:4px;font-size:10px;width:150px;">أمين الخدمات<br/>الجالية السودانية بجازان</div></div>'
+    +'<div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:28px;padding-top:4px;font-size:10px;width:150px;">ختم الجالية</div></div>'
+    +'</div>'
+    +'<div style="text-align:center;margin-top:12px;font-size:10px;color:#777;border-top:1px dashed #ccc;padding-top:6px;">'
+    +'الجالية السودانية بجازان · بوابة خدمات المواطن · '+new Date().getFullYear()+'</div></div>';
+  setTimeout(function(){ window.print(); },400);
+}
+
+/* ══ TOAST ══ */
+function showToast(msg,type){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+(type||'ok')+' show';
+  setTimeout(function(){ t.classList.remove('show'); },3200);
+}
+</script>
+
+<script>
+/* ══ PWA — Smart update (iOS safe) ══ */
+var swReg = null;
+var APP_VERSION = '2.0';
+var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+if('serviceWorker' in navigator && !isIOS){
+  navigator.serviceWorker.register('portal-sw.js')
+    .then(function(reg){
+      swReg = reg;
+      reg.addEventListener('updatefound', function(){
+        var nw = reg.installing;
+        nw.addEventListener('statechange', function(){
+          if(nw.state==='installed' && navigator.serviceWorker.controller){
+            var b=document.getElementById('update-banner');
+            if(b) b.style.display='flex';
+          }
+        });
+      });
+      setInterval(function(){ reg.update(); }, 30*60*1000);
+    })
+    .catch(function(e){ console.log('SW skipped:', e.message); });
+
+  navigator.serviceWorker.addEventListener('controllerchange', function(){
+    window.location.reload();
+  });
+}
+
+// Version check for iOS
+(function(){
+  var saved = localStorage.getItem('portal_version');
+  if(saved && saved !== APP_VERSION){
+    var b=document.getElementById('update-banner');
+    if(b) b.style.display='flex';
+  }
+  localStorage.setItem('portal_version', APP_VERSION);
+})();
+
+function applyUpdate(){
+  localStorage.setItem('portal_version', APP_VERSION);
+  if(swReg&&swReg.waiting){ swReg.waiting.postMessage('SKIP_WAITING'); }
+  else { window.location.reload(true); }
+}
+</script>
+</body>
+</html>

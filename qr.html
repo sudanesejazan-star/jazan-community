@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>تحميل التطبيق</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+body{font-family:Arial,sans-serif;background:#f4f8f5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.box{background:#fff;border-radius:16px;padding:32px 24px;text-align:center;max-width:380px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.12);}
+.flag{font-size:48px;margin-bottom:10px;}
+h1{font-size:18px;font-weight:800;color:#1a3d2b;margin-bottom:6px;}
+p{font-size:13px;color:#6b7c74;margin-bottom:24px;line-height:1.7;}
+#qr{margin:0 auto 20px;width:220px;height:220px;}
+.steps{text-align:right;background:#e8f5ee;border-radius:10px;padding:14px 16px;margin-bottom:20px;}
+.step{font-size:13px;color:#1a3d2b;padding:4px 0;display:flex;align-items:center;gap:8px;}
+.step .n{background:#2e6b4f;color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;}
+.link{display:block;background:#1a3d2b;color:#fff;text-decoration:none;padding:13px;border-radius:10px;font-size:14px;font-weight:700;margin-top:10px;}
+.note{font-size:11px;color:#6b7c74;margin-top:14px;line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="flag">🇸🇩</div>
+  <h1>تطبيق الجالية السودانية بجازان</h1>
+  <p>امسح الباركود لفتح التطبيق وتثبيته على جوالك</p>
+  <canvas id="qr"></canvas>
+  <div class="steps">
+    <div class="step"><div class="n">١</div><span>افتح الكاميرا أو مسح QR</span></div>
+    <div class="step"><div class="n">٢</div><span>افتح الرابط في المتصفح</span></div>
+    <div class="step"><div class="n">٣</div>
+      <span><b>أندرويد:</b> اضغط "إضافة للشاشة الرئيسية"</span></div>
+    <div class="step"><div class="n">٤</div>
+      <span><b>آيفون:</b> اضغط مشاركة ← "إضافة للشاشة الرئيسية"</span></div>
+  </div>
+  <a class="link" href="https://sudanesejazan-star.github.io/jazan-community/" target="_blank">
+    فتح التطبيق مباشرةً
+  </a>
+  <div class="note">
+    لا يحتاج تنزيلاً من المتجر<br/>
+    يعمل على أندرويد وآيفون
+  </div>
+</div>
+<script>
+QRCode.toCanvas(document.getElementById('qr'),
+  'https://sudanesejazan-star.github.io/jazan-community/',
+  {width:220, color:{dark:'#1a3d2b', light:'#ffffff'}, errorCorrectionLevel:'H'},
+  function(e){ if(e) console.error(e); }
+);
+</script>
+</body>
+</html>

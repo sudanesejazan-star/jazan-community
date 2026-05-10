@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>تسجيل العضوية — الجالية السودانية بجازان</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{
+  --gd:#1a3d2b;--gm:#2e6b4f;--gl:#3a9e6f;--gp:#e8f5ee;--gpp:#c8e6d4;
+  --gold:#c9a84c;--gold-l:#f5e9c8;
+  --ink:#1c2a22;--muted:#6b7c74;--border:#d4e0d9;--surf:#f4f8f5;--white:#fff;
+  --red:#c0392b;--red-p:#fdf0ee;--blue:#1a5fa8;--blue-p:#e8f0fb;
+  --r:14px;--r-sm:9px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;background:var(--surf);color:var(--ink);min-height:100vh;}
+input,select,textarea,button{font-family:Arial,sans-serif;}
+
+/* HEADER */
+.page-header{background:linear-gradient(135deg,var(--gd),var(--gm));padding:28px 20px 24px;text-align:center;color:#fff;}
+.header-flag{font-size:48px;line-height:1;margin-bottom:10px;}
+.header-org{font-size:13px;opacity:.8;margin-bottom:4px;}
+.header-title{font-size:20px;font-weight:800;margin-bottom:4px;}
+.header-sub{font-size:13px;opacity:.85;}
+.header-ref{background:rgba(255,255,255,.15);display:inline-block;padding:4px 14px;border-radius:20px;font-size:11px;margin-top:8px;}
+
+/* CONTAINER */
+.container{max-width:580px;margin:0 auto;padding:20px 16px 40px;}
+
+/* PRIVACY NOTICE */
+.privacy-box{background:linear-gradient(135deg,#0d2040,#1a3366);border-radius:var(--r);padding:16px 18px;margin-bottom:20px;color:#fff;display:flex;gap:14px;align-items:flex-start;}
+.privacy-icon{font-size:28px;flex-shrink:0;margin-top:2px;}
+.privacy-title{font-size:14px;font-weight:800;margin-bottom:6px;color:#a8d5ff;}
+.privacy-text{font-size:12px;line-height:1.8;opacity:.9;}
+
+/* SECTION */
+.section{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.section-title{font-size:14px;font-weight:800;color:var(--gd);margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--gp);display:flex;align-items:center;gap:8px;}
+.section-title .num{width:26px;height:26px;background:var(--gm);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+
+/* FORM */
+.frow{margin-bottom:14px;}
+.frow-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.fl{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:6px;}
+.fl .req{color:var(--red);margin-right:3px;}
+.finput,.fsel,.ftxt{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;font-size:16px;color:var(--ink);background:var(--surf);outline:none;appearance:none;transition:border-color .15s;}
+.finput:focus,.fsel:focus,.ftxt:focus{border-color:var(--gm);background:var(--white);}
+.finput.ltr{direction:ltr;text-align:left;}
+.ftxt{resize:none;min-height:70px;font-size:14px;line-height:1.6;}
+.fhint{font-size:11px;color:var(--muted);margin-top:5px;}
+
+/* ID TYPE TABS */
+.id-tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:12px;}
+.id-tab{padding:9px 6px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--surf);font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);text-align:center;transition:all .15s;}
+.id-tab.active{border-color:var(--gm);background:var(--gp);color:var(--gd);}
+
+/* SUBMIT */
+.submit-btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--gm),var(--gd));color:#fff;border:none;border-radius:var(--r);font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(46,107,79,.4);transition:all .15s;margin-top:8px;}
+.submit-btn:active{transform:scale(.98);}
+.submit-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+/* SUCCESS */
+#success-screen{display:none;text-align:center;padding:40px 20px;}
+.success-icon{font-size:70px;margin-bottom:16px;}
+.success-title{font-size:22px;font-weight:800;color:var(--gd);margin-bottom:8px;}
+.success-sub{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:20px;}
+.success-num{background:var(--gp);border:2px solid var(--gpp);border-radius:var(--r);padding:16px;margin-bottom:20px;}
+.success-num .label{font-size:12px;color:var(--muted);margin-bottom:4px;}
+.success-num .value{font-size:28px;font-weight:800;color:var(--gd);}
+.new-reg-btn{padding:13px 28px;background:var(--gm);color:#fff;border:none;border-radius:var(--r-sm);font-size:15px;font-weight:700;cursor:pointer;}
+
+/* ERROR */
+.err-msg{background:var(--red-p);color:var(--red);border:1px solid #e8c5c1;border-radius:var(--r-sm);padding:10px 14px;font-size:13px;margin-bottom:14px;display:none;}
+.err-msg.show{display:block;}
+
+/* FOOTER */
+.page-footer{text-align:center;padding:24px 20px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:10px;line-height:2;}
+
+/* LOADING */
+.spinner{display:inline-block;width:20px;height:20px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-left:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* REQUIRED STAR */
+.req{color:var(--red);}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="page-header">
+  <div class="header-flag">🇸🇩</div>
+  <div class="header-org">جهاز تنظيم شؤون السودانيين بالخارج · SSWA</div>
+  <div class="header-title">الجالية السودانية بمنطقة جازان</div>
+  <div class="header-sub">استمارة تسجيل العضوية</div>
+  <div class="header-ref">The Sudanese Community — Jazan Region</div>
+</div>
+
+<div class="container">
+
+  <!-- FORM -->
+  <div id="form-screen">
+
+    <!-- PRIVACY NOTICE -->
+    <div class="privacy-box">
+      <div class="privacy-icon">🔒</div>
+      <div>
+        <div class="privacy-title">سرية تامة — بياناتك في أمان</div>
+        <div class="privacy-text">
+          جميع البيانات المدخلة في هذه الاستمارة تُحفظ بسرية تامة ولا تُشارك مع أي جهة خارجية.
+          تُستخدم حصراً لتسهيل إجراءات أبناء الجالية السودانية مع القنصلية السودانية العامة بجدة
+          ولتقديم الخدمات الجالياتية اللازمة. يحق لك طلب حذف بياناتك في أي وقت.
+        </div>
+      </div>
+    </div>
+
+    <div class="err-msg" id="err-msg">يرجى إكمال جميع الحقول الإلزامية المشار إليها بـ *</div>
+
+    <!-- SECTION 1: PERSONAL INFO -->
+    <div class="section">
+      <div class="section-title"><div class="num">١</div> البيانات الشخصية</div>
+
+      <div class="frow">
+        <div class="fl">الاسم الرباعي كاملاً <span class="req">*</span></div>
+        <input class="finput" id="f-name" type="text" placeholder="الاسم الأول / الأب / الجد / اللقب"/>
+        <div class="fhint">كما هو مدوّن في الجواز أو بطاقة الهوية</div>
+      </div>
+
+      <div class="frow-2">
+        <div>
+          <div class="fl">تاريخ الميلاد <span class="req">*</span></div>
+          <input class="finput" id="f-dob" type="date"/>
+        </div>
+        <div>
+          <div class="fl">الجنس <span class="req">*</span></div>
+          <select class="fsel" id="f-gender">
+            <option value="">— اختر —</option>
+            <option value="ذكر">ذكر</option>
+            <option value="أنثى">أنثى</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="frow">
+        <div class="fl">الحالة الاجتماعية</div>
+        <select class="fsel" id="f-marital">
+          <option value="">— اختر —</option>
+          <option value="أعزب">أعزب / عزباء</option>
+          <option value="متزوج">متزوج / متزوجة</option>
+          <option value="مطلق">مطلق / مطلقة</option>
+          <option value="أرمل">أرمل / أرملة</option>
+        </select>
+      </div>
+
+      <div class="frow">
+        <div class="fl">المهنة / المسمى الوظيفي</div>
+        <input class="finput" id="f-job" type="text" placeholder="مهندس / معلم / طبيب / ..."/>
+      </div>
+
+      <div class="frow">
+        <div class="fl">جهة العمل</div>
+        <input class="finput" id="f-employer" type="text" placeholder="اسم الشركة أو الجهة الحكومية"/>
+      </div>
+    </div>
+
+    <!-- SECTION 2: NATIONAL ID -->
+    <div class="section">
+      <div class="section-title"><div class="num">٢</div> الوثائق والأرقام الرسمية</div>
+
+      <div class="frow">
+        <div class="fl">الرقم الوطني السوداني <span class="req">*</span></div>
+        <input class="finput ltr" id="f-national-id" type="text" placeholder="مثال: 1-23-456789-7" maxlength="20"/>
+        <div class="fhint">الرقم الوطني المكوّن من أرقام بطاقة الهوية السودانية</div>
+      </div>
+
+      <div class="frow">
+        <div class="fl">رقم جواز السفر <span class="req">*</span></div>
+        <input class="finput ltr" id="f-passport" type="text" placeholder="مثال: A12345678" maxlength="15"/>
+        <div class="fhint">كما هو مدوّن في صفحة البيانات</div>
+      </div>
+
+      <div class="frow">
+        <div class="fl">تاريخ انتهاء الجواز <span class="req">*</span></div>
+        <input class="finput" id="f-passport-exp" type="date"/>
+      </div>
+
+      <div class="frow">
+        <div class="fl">نوع وثيقة الإقامة في المملكة <span class="req">*</span></div>
+        <div class="id-tabs">
+          <div class="id-tab active" onclick="selectIdType(this,'هوية_اقامة')" id="tab-iqama">هوية الإقامة</div>
+          <div class="id-tab" onclick="selectIdType(this,'حدود')" id="tab-hudud">رقم الحدود</div>
+          <div class="id-tab" onclick="selectIdType(this,'زيارة')" id="tab-visit">تأشيرة الزيارة</div>
+          <div class="id-tab" onclick="selectIdType(this,'اخرى')" id="tab-other">أخرى</div>
+        </div>
+        <input type="hidden" id="f-id-type" value="هوية_اقامة"/>
+        <input class="finput ltr" id="f-id-number" type="text" placeholder="رقم الوثيقة" maxlength="20"/>
+        <div class="fhint" id="id-hint">رقم هوية الإقامة (Iqama) المكوّن من 10 أرقام</div>
+      </div>
+
+      <div class="frow">
+        <div class="fl">تاريخ انتهاء الإقامة / الوثيقة</div>
+        <input class="finput" id="f-id-exp" type="date"/>
+      </div>
+    </div>
+
+    <!-- SECTION 3: CONTACT & RESIDENCE -->
+    <div class="section">
+      <div class="section-title"><div class="num">٣</div> بيانات الاتصال والسكن</div>
+
+      <div class="frow">
+        <div class="fl">رقم الجوال <span class="req">*</span></div>
+        <input class="finput ltr" id="f-phone" type="tel" placeholder="05xxxxxxxx" inputmode="tel" maxlength="15"/>
+        <div class="fhint">رقم الجوال السعودي أو الدولي مع رمز الدولة</div>
+      </div>
+
+      <div class="frow">
+        <div class="fl">رقم واتساب (إن اختلف)</div>
+        <input class="finput ltr" id="f-whatsapp" type="tel" placeholder="05xxxxxxxx أو +249..." maxlength="20"/>
+      </div>
+
+      <div class="frow">
+        <div class="fl">البريد الإلكتروني</div>
+        <input class="finput ltr" id="f-email" type="email" placeholder="example@email.com"/>
+      </div>
+
+      <div class="frow">
+        <div class="fl">منطقة / مدينة الإقامة في جازان <span class="req">*</span></div>
+        <select class="fsel" id="f-region">
+          <option value="">— اختر المنطقة —</option>
+          <option value="جازان">جازان — المدينة</option>
+          <option value="صبيا">صبيا</option>
+          <option value="أبو عريش">أبو عريش</option>
+          <option value="صامطة">صامطة</option>
+          <option value="الدرب">الدرب</option>
+          <option value="أحد المسارحة">أحد المسارحة</option>
+          <option value="فيفا">فيفا</option>
+          <option value="العارضة">العارضة</option>
+          <option value="بيش">بيش</option>
+          <option value="الريث">الريث</option>
+          <option value="الحرث">الحرث</option>
+          <option value="محافظة أخرى">محافظة أخرى</option>
+        </select>
+      </div>
+
+      <div class="frow">
+        <div class="fl">عنوان السكن التفصيلي <span class="req">*</span></div>
+        <textarea class="ftxt" id="f-address" placeholder="الحي / الشارع / رقم المبنى / أي تفاصيل تساعد في الوصول..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION 4: FAMILY -->
+    <div class="section">
+      <div class="section-title"><div class="num">٤</div> بيانات الأسرة (اختياري)</div>
+
+      <div class="frow">
+        <div class="fl">عدد أفراد الأسرة المرافقين</div>
+        <select class="fsel" id="f-family-count">
+          <option value="0">مقيم منفرداً</option>
+          <option value="1">١ فرد</option>
+          <option value="2">٢ فرد</option>
+          <option value="3">٣ أفراد</option>
+          <option value="4">٤ أفراد</option>
+          <option value="5">٥ أفراد</option>
+          <option value="6+">٦ فأكثر</option>
+        </select>
+      </div>
+
+      <div class="frow">
+        <div class="fl">اسم شخص للتواصل في حالات الطوارئ</div>
+        <input class="finput" id="f-emergency-name" type="text" placeholder="الاسم ورقم الجوال"/>
+      </div>
+    </div>
+
+    <!-- SECTION 5: ADDITIONAL -->
+    <div class="section">
+      <div class="section-title"><div class="num">٥</div> معلومات إضافية</div>
+
+      <div class="frow">
+        <div class="fl">الولاية / المحلية في السودان</div>
+        <input class="finput" id="f-sudan-state" type="text" placeholder="مثال: الخرطوم / الجزيرة / ..."/>
+      </div>
+
+      <div class="frow">
+        <div class="fl">هل سبق أن كنت عضواً في الجالية؟</div>
+        <select class="fsel" id="f-prev-member">
+          <option value="لا">لا — تسجيل جديد</option>
+          <option value="نعم">نعم — تجديد العضوية</option>
+        </select>
+      </div>
+
+      <div class="frow">
+        <div class="fl">هل لديك مهارات أو خبرات تودّ تقديمها للجالية؟</div>
+        <textarea class="ftxt" id="f-skills" placeholder="مثال: طبيب / محامي / مبرمج / خبرة في الشؤون القانونية..."></textarea>
+      </div>
+
+      <div class="frow">
+        <div class="fl">ملاحظات أو طلبات خاصة</div>
+        <textarea class="ftxt" id="f-notes" placeholder="أي معلومات إضافية أو طلبات تودّ إبلاغ الجالية بها..."></textarea>
+      </div>
+    </div>
+
+    <!-- CONSENT -->
+    <div class="section" style="background:var(--gp);border-color:var(--gpp);">
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <input type="checkbox" id="f-consent" style="width:22px;height:22px;margin-top:2px;accent-color:var(--gm);flex-shrink:0;cursor:pointer;"/>
+        <label for="f-consent" style="font-size:13px;color:var(--ink);line-height:1.7;cursor:pointer;">
+          أقرّ بأن جميع البيانات المدخلة صحيحة ودقيقة، وأوافق على حفظها في سجلات الجالية السودانية بجازان
+          واستخدامها لأغراض تقديم الخدمات الجالياتية والقنصلية فحسب، مع الحفاظ على سريتها التامة.
+        </label>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitForm()">
+      تسجيل العضوية
+    </button>
+
+    <!-- FOOTER NOTE -->
+    <div style="margin-top:16px;padding:12px;background:var(--blue-p);border-radius:var(--r-sm);font-size:12px;color:var(--blue);line-height:1.8;text-align:center;">
+      🔒 بياناتك محفوظة بتشفير آمن · لا تُشارك مع أطراف خارجية · يحق لك حذفها في أي وقت
+    </div>
+
+  </div><!-- end form-screen -->
+
+  <!-- SUCCESS SCREEN -->
+  <div id="success-screen">
+    <div class="success-icon">✅</div>
+    <div class="success-title">تم التسجيل بنجاح!</div>
+    <div class="success-sub">
+      شكراً لك على تسجيل عضويتك في الجالية السودانية بجازان.<br/>
+      سيتواصل معك فريق أمانة العضوية قريباً لإتمام الإجراءات.
+    </div>
+    <div class="success-num">
+      <div class="label">رقم طلب التسجيل</div>
+      <div class="value" id="success-ref">—</div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.8;">
+      احتفظ بهذا الرقم للرجوع إليه عند التواصل مع الجالية
+    </div>
+    <button class="new-reg-btn" onclick="resetForm()">تسجيل عضو آخر</button>
+  </div>
+
+</div><!-- end container -->
+
+<!-- FOOTER -->
+<div class="page-footer">
+  <div>🇸🇩 الجالية السودانية بمنطقة جازان — المملكة العربية السعودية</div>
+  <div>جهاز تنظيم شؤون السودانيين بالخارج · SSWA</div>
+  <div>جميع البيانات سرية ومحمية · © <span id="year"></span></div>
+  <div style="margin-top:8px;">
+    <a href="index.html" style="color:var(--gm);text-decoration:none;font-size:12px;">← العودة للنظام الرئيسي</a>
+  </div>
+</div>
+
+<script>
+/* ══ SUPABASE — نفس قاعدة البيانات ══ */
+const SB_URL = 'https://ynjulkvlqajmqsabujzp.supabase.co';
+const SB_KEY = 'sb_publishable_sxoxcY4fmz5cc0RqlngNEA_XXul-wMu';
+
+var sb = null;
+var useDB = false;
+
+document.getElementById('year').textContent = new Date().getFullYear();
+
+window.addEventListener('load', function(){
+  try{
+    sb = window.supabase.createClient(SB_URL, SB_KEY, {auth:{persistSession:false}});
+    useDB = true;
+  } catch(e){
+    useDB = false;
+  }
+});
+
+/* ══ ID TYPE TABS ══ */
+var idHints = {
+  'هوية_اقامة': 'رقم هوية الإقامة (Iqama) — 10 أرقام',
+  'حدود':       'رقم الحدود الصادر عند دخول المملكة',
+  'زيارة':      'رقم تأشيرة الزيارة',
+  'اخرى':       'رقم الوثيقة الأخرى'
+};
+var idPlaceholders = {
+  'هوية_اقامة': '2xxxxxxxxx',
+  'حدود':       'رقم الحدود',
+  'زيارة':      'رقم التأشيرة',
+  'اخرى':       'رقم الوثيقة'
+};
+function selectIdType(el, type){
+  document.querySelectorAll('.id-tab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('f-id-type').value = type;
+  document.getElementById('id-hint').textContent = idHints[type]||'';
+  document.getElementById('f-id-number').placeholder = idPlaceholders[type]||'';
+}
+
+/* ══ SUBMIT ══ */
+function submitForm(){
+  // Validate required fields
+  var required = [
+    {id:'f-name',       label:'الاسم الرباعي'},
+    {id:'f-dob',        label:'تاريخ الميلاد'},
+    {id:'f-gender',     label:'الجنس'},
+    {id:'f-national-id',label:'الرقم الوطني'},
+    {id:'f-passport',   label:'رقم جواز السفر'},
+    {id:'f-passport-exp',label:'تاريخ انتهاء الجواز'},
+    {id:'f-id-number',  label:'رقم وثيقة الإقامة'},
+    {id:'f-phone',      label:'رقم الجوال'},
+    {id:'f-region',     label:'منطقة الإقامة'},
+    {id:'f-address',    label:'عنوان السكن'},
+  ];
+
+  var missing = [];
+  required.forEach(function(r){
+    var el = document.getElementById(r.id);
+    if(el && !el.value.trim()) missing.push(r.label);
+  });
+
+  var consent = document.getElementById('f-consent');
+  if(!consent.checked) missing.push('الموافقة على شروط الحفظ');
+
+  var errEl = document.getElementById('err-msg');
+  if(missing.length > 0){
+    errEl.textContent = 'يرجى إكمال الحقول الإلزامية التالية: ' + missing.join(' · ');
+    errEl.classList.add('show');
+    errEl.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  errEl.classList.remove('show');
+
+  // Disable button
+  var btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = 'جاري التسجيل... <span class="spinner"></span>';
+
+  // Build record
+  var refNum = 'REG' + Date.now().toString().slice(-6);
+  var record = {
+    id:              refNum,
+    name:            document.getElementById('f-name').value.trim(),
+    date_of_birth:   document.getElementById('f-dob').value,
+    gender:          document.getElementById('f-gender').value,
+    marital_status:  document.getElementById('f-marital').value,
+    job:             document.getElementById('f-job').value.trim(),
+    employer:        document.getElementById('f-employer').value.trim(),
+    national_id:     document.getElementById('f-national-id').value.trim(),
+    passport:        document.getElementById('f-passport').value.trim(),
+    passport_expiry: document.getElementById('f-passport-exp').value,
+    id_type:         document.getElementById('f-id-type').value,
+    id_number:       document.getElementById('f-id-number').value.trim(),
+    id_expiry:       document.getElementById('f-id-exp').value,
+    phone:           document.getElementById('f-phone').value.trim(),
+    whatsapp:        document.getElementById('f-whatsapp').value.trim(),
+    email:           document.getElementById('f-email').value.trim(),
+    region:          document.getElementById('f-region').value,
+    address:         document.getElementById('f-address').value.trim(),
+    family_count:    document.getElementById('f-family-count').value,
+    emergency_contact: document.getElementById('f-emergency-name').value.trim(),
+    sudan_state:     document.getElementById('f-sudan-state').value.trim(),
+    prev_member:     document.getElementById('f-prev-member').value,
+    skills:          document.getElementById('f-skills').value.trim(),
+    notes:           document.getElementById('f-notes').value.trim(),
+    status:          'pending',
+    created_at:      new Date().toISOString(),
+    source:          'online_form'
+  };
+
+  saveRecord(record, refNum);
+}
+
+async function saveRecord(record, refNum){
+  var success = false;
+  var btn = document.getElementById('submit-btn');
+
+  try{
+    if(useDB){
+      var res = await sb.from('membership_applications').insert(record);
+      if(res.error) throw res.error;
+      success = true;
+    } else {
+      // Fallback: localStorage
+      var arr = [];
+      try{ arr = JSON.parse(localStorage.getItem('sj_reg_apps')||'[]'); }catch(e){}
+      arr.push(record);
+      localStorage.setItem('sj_reg_apps', JSON.stringify(arr));
+      success = true;
+    }
+  } catch(e){
+    // Fallback to localStorage on error
+    try{
+      var arr2 = [];
+      try{ arr2 = JSON.parse(localStorage.getItem('sj_reg_apps')||'[]'); }catch(ex){}
+      arr2.push(record);
+      localStorage.setItem('sj_reg_apps', JSON.stringify(arr2));
+      success = true;
+    }catch(e2){ success = false; }
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'تسجيل العضوية';
+
+  if(success){
+    document.getElementById('success-ref').textContent = refNum;
+    document.getElementById('form-screen').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'block';
+    window.scrollTo({top:0, behavior:'smooth'});
+  } else {
+    var errEl = document.getElementById('err-msg');
+    errEl.textContent = 'حدث خطأ أثناء الحفظ. يرجى المحاولة مرة أخرى.';
+    errEl.classList.add('show');
+  }
+}
+
+function resetForm(){
+  document.getElementById('form-screen').style.display = 'block';
+  document.getElementById('success-screen').style.display = 'none';
+  document.getElementById('form-screen').querySelectorAll('input,select,textarea').forEach(function(el){
+    el.value = '';
+  });
+  document.getElementById('f-id-type').value = 'هوية_اقامة';
+  document.getElementById('f-consent').checked = false;
+  document.querySelectorAll('.id-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('tab-iqama').classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+</script>
+</body>
+</html>

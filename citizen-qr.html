@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>تطبيق خدمات الجالية السودانية</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;background:linear-gradient(160deg,#0a1f13,#1a3d2b);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.box{background:#fff;border-radius:20px;padding:0;max-width:420px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.box-header{background:linear-gradient(135deg,#1a3d2b,#2e6b4f);padding:28px 24px 22px;text-align:center;color:#fff;}
+.flag{font-size:52px;margin-bottom:10px;line-height:1;}
+.box-header h1{font-size:18px;font-weight:800;margin-bottom:4px;}
+.box-header p{font-size:12px;opacity:.85;}
+.box-body{padding:24px;}
+.qr-wrap{background:#f4f8f5;border-radius:14px;padding:16px;text-align:center;margin-bottom:20px;border:2px solid #c8e6d4;}
+#qr{margin:0 auto;}
+.qr-label{font-size:12px;color:#6b7c74;margin-top:10px;font-weight:600;}
+.steps{background:#e8f5ee;border-radius:12px;padding:16px;margin-bottom:16px;}
+.steps-title{font-size:13px;font-weight:800;color:#1a3d2b;margin-bottom:12px;}
+.step{display:flex;align-items:flex-start;gap:10px;padding:6px 0;}
+.step-num{width:24px;height:24px;background:#2e6b4f;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:1px;}
+.step-text{font-size:13px;color:#1c2a22;line-height:1.5;}
+.step-text b{color:#1a3d2b;}
+.divider{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.divider-line{flex:1;height:1px;background:#d4e0d9;}
+.divider-text{font-size:11px;color:#6b7c74;white-space:nowrap;}
+.btn-open{display:block;background:linear-gradient(135deg,#2e6b4f,#1a3d2b);color:#fff;text-decoration:none;padding:14px;border-radius:12px;font-size:15px;font-weight:800;text-align:center;box-shadow:0 4px 15px rgba(46,107,79,.4);}
+.services-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;justify-content:center;}
+.svc-chip{background:#e8f5ee;color:#1a3d2b;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid #c8e6d4;}
+.footer{text-align:center;padding:16px;background:#f4f8f5;border-top:1px solid #d4e0d9;}
+.footer p{font-size:11px;color:#6b7c74;line-height:1.8;}
+
+/* PRINT */
+@media print{
+  body{background:#fff;padding:0;}
+  .box{max-width:100%;box-shadow:none;border-radius:0;}
+  .btn-open{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="box-header">
+    <div class="flag">🇸🇩</div>
+    <h1>بوابة خدمات الجالية السودانية</h1>
+    <p>منطقة جازان · المملكة العربية السعودية</p>
+  </div>
+  <div class="box-body">
+    <div class="qr-wrap">
+      <canvas id="qr"></canvas>
+      <div class="qr-label">📱 صوّر الباركود لفتح التطبيق</div>
+    </div>
+
+    <div class="steps">
+      <div class="steps-title">كيف تثبّت التطبيق؟</div>
+      <div class="step">
+        <div class="step-num">١</div>
+        <div class="step-text">صوّر الباركود بكاميرا جوالك أو افتح الرابط أدناه</div>
+      </div>
+      <div class="step">
+        <div class="step-num">٢</div>
+        <div class="step-text">
+          <b>أندرويد Chrome:</b> اضغط ⋮ ← "إضافة إلى الشاشة الرئيسية"
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">٣</div>
+        <div class="step-text">
+          <b>آيفون Safari:</b> اضغط ⬆️ ← "إضافة إلى الشاشة الرئيسية"
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">٤</div>
+        <div class="step-text">سجّل حساباً بمعلوماتك واطلب الخدمة مباشرةً</div>
+      </div>
+    </div>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <div class="divider-text">أو افتح مباشرةً</div>
+      <div class="divider-line"></div>
+    </div>
+
+    <a class="btn-open" href="https://sudanesejazan-star.github.io/jazan-community/portal.html" target="_blank">
+      🚀 فتح بوابة الخدمات
+    </a>
+
+    <div class="services-row">
+      <span class="svc-chip">📘 تجديد جواز</span>
+      <span class="svc-chip">🆕 إصدار جديد</span>
+      <span class="svc-chip">📜 تصديق وثيقة</span>
+      <span class="svc-chip">🪪 تسجيل عضوية</span>
+      <span class="svc-chip">🤝 طلب مساعدة</span>
+    </div>
+  </div>
+  <div class="footer">
+    <p>
+      🔒 بياناتك محفوظة بسرية تامة<br/>
+      لا يحتاج تنزيلاً من Google Play أو App Store<br/>
+      يعمل على جميع الأجهزة الذكية
+    </p>
+  </div>
+</div>
+
+<script>
+QRCode.toCanvas(
+  document.getElementById('qr'),
+  'https://sudanesejazan-star.github.io/jazan-community/portal.html',
+  {
+    width: 220,
+    margin: 2,
+    color: { dark: '#1a3d2b', light: '#f4f8f5' },
+    errorCorrectionLevel: 'H'
+  },
+  function(e){ if(e) console.error(e); }
+);
+</script>
+</body>
+</html>

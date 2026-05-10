@@ -1,0 +1,22 @@
+{
+  "name": "الجالية السودانية بجازان",
+  "short_name": "جالية جازان",
+  "description": "بوابة خدمات الجالية السودانية بمنطقة جازان",
+  "start_url": "/jazan-community/",
+  "scope": "/jazan-community/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a3d2b",
+  "theme_color": "#1a3d2b",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "تحصيل", "url": "/jazan-community/#collect", "description": "سند قبض جديد" },
+    { "name": "الطلبات", "url": "/jazan-community/#apps",    "description": "طلبات التسجيل" }
+  ]
+}

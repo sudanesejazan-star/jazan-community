@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>أمانة الشؤون الصحية — الجالية السودانية بجازان</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{
+  --bd:#1a3366;--bm:#2453a0;--bl:#3a7bd5;--bp:#e8f0fb;--bpp:#c5d5e8;
+  --green:#1a7a4a;--green-p:#e8f5ee;--green-l:#3a9e6f;
+  --red:#c0392b;--red-p:#fdf0ee;
+  --gold:#c9a84c;--gold-l:#f5e9c8;--gold-d:#8a6010;
+  --orange:#d35400;--orange-p:#fef5ec;
+  --purple:#6c3483;--purple-p:#f5eef8;
+  --teal:#0e7490;--teal-p:#e0f7fa;
+  --ink:#1c2535;--muted:#6b7a9c;--border:#d0d9ee;--surf:#f4f7fb;--white:#fff;
+  --r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Arial',sans-serif;background:var(--surf);color:var(--ink);min-height:100vh;font-size:15px;}
+button,input,select,textarea{font-family:'Arial',sans-serif;}
+input,select,textarea{font-size:16px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(30px);padding:12px 24px;border-radius:30px;font-size:14px;font-weight:700;opacity:0;transition:all .3s;z-index:9999;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.2);white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.ok{background:var(--green);color:#fff;}
+.toast.err{background:var(--red);color:#fff;}
+.toast.warn{background:var(--orange);color:#fff;}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:800;display:none;align-items:flex-end;justify-content:center;}
+.modal-bg.show{display:flex;}
+@media(min-width:600px){.modal-bg{align-items:center;padding:16px;}}
+.modal{background:var(--white);border-radius:20px 20px 0 0;padding:20px 18px 32px;width:100%;max-height:92vh;overflow-y:auto;}
+@media(min-width:600px){.modal{border-radius:20px;max-width:500px;}}
+.mhandle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px;}
+.modal h3{font-size:17px;font-weight:700;margin-bottom:16px;color:var(--bd);}
+.mactions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.mbtn{flex:1;min-width:90px;padding:12px;border-radius:var(--r-sm);border:1.5px solid;font-size:14px;font-weight:700;cursor:pointer;}
+.mbtn.save{background:var(--bm);color:#fff;border-color:var(--bm);}
+.mbtn.green{background:var(--green);color:#fff;border-color:var(--green);}
+.mbtn.cancel{background:var(--white);color:var(--muted);border-color:var(--border);}
+.mbtn.danger{background:var(--red);color:#fff;border-color:var(--red);}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#0a1525,#1a3366,#0d2040);padding:20px;}
+.lbox{background:var(--white);border-radius:24px;padding:30px 22px 26px;width:100%;max-width:370px;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.llogo{text-align:center;margin-bottom:10px;}
+.llogo .icon{font-size:48px;line-height:1;}
+.llogo h1{font-size:16px;font-weight:800;color:var(--bd);margin-top:8px;line-height:1.4;}
+.llogo p{font-size:12px;color:var(--muted);margin-top:3px;}
+.ldiv{border:none;border-top:1px solid var(--border);margin:16px 0;}
+.fl{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:5px;}
+.linput{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;font-size:16px;color:var(--ink);outline:none;margin-bottom:12px;background:var(--surf);letter-spacing:2px;text-align:center;}
+.linput:focus{border-color:var(--bm);background:var(--white);}
+.linput::placeholder{letter-spacing:0;font-size:14px;}
+.lbtn{width:100%;padding:14px;background:linear-gradient(135deg,var(--bm),var(--bd));color:#fff;border:none;border-radius:var(--r-sm);font-size:17px;font-weight:800;cursor:pointer;}
+.lerr{background:var(--red-p);color:var(--red);border:1px solid #e8c5c1;border-radius:var(--r-sm);padding:9px 14px;font-size:13px;text-align:center;margin-bottom:12px;display:none;}
+.lerr.show{display:block;}
+.pw-wrap{position:relative;margin-bottom:12px;}
+.pw-wrap .linput{margin-bottom:0;}
+.pw-toggle{position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);}
+.usel{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;font-size:15px;color:var(--ink);outline:none;margin-bottom:12px;background:var(--surf);appearance:none;}
+
+/* APP */
+#app-screen{display:none;min-height:100vh;flex-direction:column;}
+#app-screen.show{display:flex;}
+.hdr{background:linear-gradient(135deg,var(--bd),var(--bm));flex-shrink:0;box-shadow:0 2px 12px rgba(0,0,0,.3);}
+.hdr-inner{display:flex;align-items:center;gap:10px;padding:10px 14px;}
+.hlogo{width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.htext{flex:1;min-width:0;}
+.htext h1{color:#fff;font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.htext p{color:rgba(255,255,255,.75);font-size:10px;}
+.hright{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.ubadge{background:rgba(255,255,255,.2);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+.lout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);color:#fff;padding:5px 10px;border-radius:var(--r-sm);font-size:12px;cursor:pointer;}
+#sync-bar{background:rgba(0,0,0,.2);color:rgba(255,255,255,.8);font-size:11px;padding:4px 14px;display:flex;align-items:center;gap:6px;}
+.sdot{width:7px;height:7px;border-radius:50%;background:#4caf50;flex-shrink:0;animation:pulse 2s infinite;}
+.sdot.off{background:#f44336;animation:none;}.sdot.sync{background:var(--gold);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 10px rgba(0,0,0,.08);}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;padding:7px 4px 5px;cursor:pointer;border:none;background:transparent;color:var(--muted);font-size:10px;font-weight:500;gap:3px;}
+.bni.active{color:var(--bm);}
+.bni .ico{font-size:20px;line-height:1;}
+
+/* SCREENS */
+.screens{flex:1;overflow-y:auto;padding-bottom:72px;}
+.screen{display:none;padding:14px;max-width:640px;margin:0 auto;}
+.screen.active{display:block;}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.ctitle{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.ctitle::before{content:'';display:inline-block;width:3px;height:14px;background:var(--bm);border-radius:2px;}
+
+/* FORM */
+.frow{margin-bottom:12px;}
+.fl2{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:5px;}
+.finput,.fsel,.ftxt{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:11px 13px;font-size:15px;color:var(--ink);background:var(--surf);outline:none;appearance:none;}
+.finput:focus,.fsel:focus,.ftxt:focus{border-color:var(--bm);background:var(--white);}
+.ftxt{resize:vertical;min-height:80px;font-size:14px;line-height:1.6;}
+.frow-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+
+/* METRICS */
+.mgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px;}
+.mgrid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.mcard{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;}
+.mval{font-size:26px;font-weight:800;line-height:1.2;}
+.mlbl{font-size:11px;color:var(--muted);margin-top:3px;font-weight:500;}
+
+/* PATIENT CARD */
+.patient-card{background:linear-gradient(135deg,var(--bd),var(--bm));border-radius:var(--r);padding:16px;margin-bottom:12px;color:#fff;position:relative;overflow:hidden;}
+.patient-card::before{content:'🏥';position:absolute;left:-5px;top:-5px;font-size:60px;opacity:.1;}
+.pc-id{font-size:11px;opacity:.7;margin-bottom:3px;}
+.pc-name{font-size:18px;font-weight:800;margin-bottom:2px;}
+.pc-info{font-size:12px;opacity:.85;}
+.pc-status{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-top:8px;}
+.pc-status.active{background:rgba(76,175,80,.3);color:#a5d6a7;}
+.pc-status.closed{background:rgba(255,255,255,.2);color:#fff;}
+
+/* STATUS BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;}
+.b-blue{background:var(--bp);color:var(--bd);}
+.b-green{background:var(--green-p);color:var(--green);}
+.b-red{background:var(--red-p);color:var(--red);}
+.b-gold{background:var(--gold-l);color:var(--gold-d);}
+.b-orange{background:var(--orange-p);color:var(--orange);}
+.b-purple{background:var(--purple-p);color:var(--purple);}
+.b-teal{background:var(--teal-p);color:var(--teal);}
+
+/* TABLE */
+.twrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:460px;}
+.tbl th{padding:9px 10px;background:var(--surf);color:var(--muted);font-weight:700;text-align:right;border-bottom:1px solid var(--border);font-size:11px;}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:#f0f5ff;}
+.ibtn{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;font-size:11px;cursor:pointer;margin:0 2px;min-height:28px;}
+.ibtn.p{color:var(--bm);border-color:var(--bpp);}
+.ibtn.g{color:var(--green);border-color:#c8e6d4;}
+.ibtn.r{color:var(--red);border-color:#e8c5c1;}
+.empty{text-align:center;padding:28px;color:var(--muted);font-size:13px;}
+.tbl-foot{padding:8px 12px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);}
+.fbar{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:7px;}
+.sbox{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;font-size:14px;outline:none;background:var(--surf);flex:1;min-width:120px;color:var(--ink);}
+.fsel2{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;font-size:13px;outline:none;background:var(--surf);color:var(--ink);appearance:none;}
+
+/* ACTBTNS */
+.actbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.abtn{padding:11px 10px;border-radius:var(--r-sm);border:1.5px solid;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;justify-content:center;}
+.abtn:active{transform:scale(.97);}
+.abtn.blue{border-color:var(--bm);color:var(--bm);background:var(--bp);}
+.abtn.green{border-color:var(--green);color:var(--green);background:var(--green-p);}
+.abtn.gold{border-color:var(--gold);color:var(--gold-d);background:var(--gold-l);}
+.abtn.red{border-color:var(--red);color:var(--red);background:var(--red-p);}
+
+/* URGENCY INDICATOR */
+.urg-1{color:#4caf50;font-weight:700;}
+.urg-2{color:var(--gold-d);font-weight:700;}
+.urg-3{color:var(--orange);font-weight:700;}
+.urg-4{color:var(--red);font-weight:700;}
+
+/* STATS BAR */
+.stat-bar{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.stat-bar:last-child{border-bottom:none;}
+.stat-label{flex:1;font-size:13px;}
+.stat-count{font-size:14px;font-weight:800;min-width:30px;text-align:left;}
+.stat-bg{flex:2;height:7px;background:var(--surf);border-radius:3px;overflow:hidden;}
+.stat-fill{height:100%;border-radius:3px;}
+
+/* REFERRAL STEPS */
+.ref-step{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:var(--surf);margin-bottom:8px;}
+.ref-step.done{border-color:var(--green-l);background:var(--green-p);}
+.ref-step.cur{border-color:var(--gold);background:var(--gold-l);}
+.ref-icon{font-size:20px;flex-shrink:0;}
+.ref-info{flex:1;}
+.ref-name{font-size:13px;font-weight:600;}
+.ref-sub{font-size:11px;color:var(--muted);}
+
+/* PRINT */
+@media print{body>*:not(#print-area){display:none!important;}#print-area{display:block!important;}}
+#print-area{display:none;font-family:Arial;direction:rtl;}
+.prpt{width:210mm;margin:0 auto;padding:12mm;font-size:12px;color:#000;}
+.prph{text-align:center;border-bottom:3px double #1a3366;padding-bottom:8px;margin-bottom:8px;}
+.prph h1{font-size:17px;font-weight:800;color:#1a3366;}
+.prph h2{font-size:13px;color:#2453a0;}
+.prph p{font-size:10px;color:#555;}
+.prtit{background:#1a3366;color:#fff;text-align:center;padding:8px;border-radius:4px;margin:8px 0;}
+.prtit h3{font-size:15px;font-weight:800;}
+.prtbl{width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;}
+.prtbl td{padding:5px 8px;border:1px solid #ddd;}
+.prtbl td:first-child{color:#666;width:30%;}
+.prtbl tr.hl td{background:#e8f0fb;font-weight:700;}
+.prfooter{text-align:center;margin-top:12px;font-size:10px;color:#777;border-top:1px dashed #ccc;padding-top:6px;}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+<div id="print-area"></div>
+
+<!-- ══ MODALS ══ -->
+
+<!-- New Patient -->
+<div class="modal-bg" id="m-patient">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3>🏥 تسجيل حالة جديدة</h3>
+    <div class="frow"><div class="fl2">الاسم الكامل *</div><input class="finput" id="pt-name" type="text" placeholder="محمد إبراهيم خليل"/></div>
+    <div class="frow-2">
+      <div><div class="fl2">رقم الجواز</div><input class="finput" id="pt-pass" type="text" dir="ltr" placeholder="A12345678"/></div>
+      <div><div class="fl2">العمر</div><input class="finput" id="pt-age" type="number" inputmode="numeric" placeholder="35"/></div>
+    </div>
+    <div class="frow-2">
+      <div><div class="fl2">الجنس</div>
+        <select class="fsel" id="pt-gender"><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select>
+      </div>
+      <div><div class="fl2">رقم الهاتف</div><input class="finput" id="pt-phone" type="tel" placeholder="05xxxxxxxx"/></div>
+    </div>
+    <div class="frow"><div class="fl2">فصيلة الدم</div>
+      <select class="fsel" id="pt-blood">
+        <option value="">غير معروف</option><option>A+</option><option>A-</option>
+        <option>B+</option><option>B-</option><option>O+</option><option>O-</option>
+        <option>AB+</option><option>AB-</option>
+      </select>
+    </div>
+    <div class="frow"><div class="fl2">المنطقة / الفرعية</div>
+      <select class="fsel" id="pt-region">
+        <option>جازان</option><option>صبيا</option><option>أبو عريش</option>
+        <option>صامطة</option><option>الدرب</option><option>فيفا</option><option>أخرى</option>
+      </select>
+    </div>
+    <div class="frow"><div class="fl2">الأمراض المزمنة / الحساسية</div>
+      <textarea class="ftxt" id="pt-chronic" placeholder="مثال: سكري، ضغط، حساسية دواء..."></textarea>
+    </div>
+    <div class="mactions">
+      <button class="mbtn save" onclick="savePatient()">💾 تسجيل</button>
+      <button class="mbtn cancel" onclick="closeModal('m-patient')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Visit -->
+<div class="modal-bg" id="m-visit">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3>🩺 تسجيل زيارة طبية</h3>
+    <div class="frow">
+      <div class="fl2">المريض *</div>
+      <input class="finput" id="vt-patient-name" type="text" placeholder="ابحث عن المريض..." oninput="searchPatient(this.value)"/>
+      <input type="hidden" id="vt-patient-id"/>
+      <div id="pt-sugg" style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);margin-top:4px;display:none;max-height:140px;overflow-y:auto;"></div>
+    </div>
+    <div class="frow">
+      <div class="fl2">نوع الزيارة</div>
+      <select class="fsel" id="vt-type">
+        <option value="كشف">كشف عام</option>
+        <option value="متابعة">متابعة</option>
+        <option value="طوارئ">طوارئ</option>
+        <option value="تحاليل">تحاليل</option>
+        <option value="أشعة">أشعة</option>
+        <option value="استشارة">استشارة</option>
+      </select>
+    </div>
+    <div class="frow">
+      <div class="fl2">درجة الإلحاح</div>
+      <select class="fsel" id="vt-urgency">
+        <option value="1">🟢 عادي</option>
+        <option value="2">🟡 متوسط</option>
+        <option value="3">🟠 عاجل</option>
+        <option value="4">🔴 حرج</option>
+      </select>
+    </div>
+    <div class="frow"><div class="fl2">الشكوى الرئيسية *</div>
+      <textarea class="ftxt" id="vt-complaint" placeholder="صف الحالة والأعراض..."></textarea>
+    </div>
+    <div class="frow"><div class="fl2">التشخيص</div>
+      <input class="finput" id="vt-diagnosis" type="text" placeholder="اختياري..."/>
+    </div>
+    <div class="frow"><div class="fl2">العلاج / التوصية</div>
+      <textarea class="ftxt" id="vt-treatment" placeholder="الأدوية والتوصيات..."></textarea>
+    </div>
+    <div class="frow">
+      <div class="fl2">المستشفى / الجهة</div>
+      <input class="finput" id="vt-hospital" type="text" placeholder="مستشفى جازان / عيادة خاصة..."/>
+    </div>
+    <div class="frow">
+      <div class="fl2">التكلفة المدفوعة (ريال)</div>
+      <input class="finput" id="vt-cost" type="number" inputmode="numeric" placeholder="0"/>
+    </div>
+    <div class="frow">
+      <div class="fl2">هل تحتاج دعم مالي من الجالية؟</div>
+      <select class="fsel" id="vt-support">
+        <option value="0">لا</option>
+        <option value="1">نعم — تحتاج مراجعة</option>
+      </select>
+    </div>
+    <div class="mactions">
+      <button class="mbtn green" onclick="saveVisit()">💾 حفظ الزيارة</button>
+      <button class="mbtn cancel" onclick="closeModal('m-visit')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Awareness Campaign -->
+<div class="modal-bg" id="m-campaign">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3>📢 تسجيل حملة توعوية</h3>
+    <div class="frow"><div class="fl2">عنوان الحملة *</div><input class="finput" id="cp-title" type="text" placeholder="حملة الكشف عن السكري"/></div>
+    <div class="frow">
+      <div class="fl2">نوع الحملة</div>
+      <select class="fsel" id="cp-type">
+        <option>ندوة توعوية</option><option>كشف مجاني</option>
+        <option>تطعيم</option><option>توزيع أدوية</option>
+        <option>فحوصات دورية</option><option>أخرى</option>
+      </select>
+    </div>
+    <div class="frow-2">
+      <div><div class="fl2">تاريخ الحملة</div><input class="finput" id="cp-date" type="date"/></div>
+      <div><div class="fl2">المكان</div><input class="finput" id="cp-location" type="text" placeholder="جازان / صبيا..."/></div>
+    </div>
+    <div class="frow"><div class="fl2">الوصف والتفاصيل</div>
+      <textarea class="ftxt" id="cp-desc" placeholder="تفاصيل الحملة وأهدافها..."></textarea>
+    </div>
+    <div class="frow-2">
+      <div><div class="fl2">عدد المستفيدين</div><input class="finput" id="cp-count" type="number" inputmode="numeric" placeholder="0"/></div>
+      <div><div class="fl2">التكلفة (ريال)</div><input class="finput" id="cp-cost" type="number" inputmode="numeric" placeholder="0"/></div>
+    </div>
+    <div class="frow">
+      <div class="fl2">الحالة</div>
+      <select class="fsel" id="cp-status">
+        <option value="planned">مخططة</option>
+        <option value="active">جارية</option>
+        <option value="done">منتهية</option>
+      </select>
+    </div>
+    <div class="mactions">
+      <button class="mbtn blue" onclick="saveCampaign()">💾 حفظ الحملة</button>
+      <button class="mbtn cancel" onclick="closeModal('m-campaign')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Patient -->
+<div class="modal-bg" id="m-viewpt">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3 id="vpt-title">ملف المريض</h3>
+    <div id="vpt-body"></div>
+    <div class="mactions">
+      <button class="mbtn green" onclick="openVisitForPatient()">🩺 إضافة زيارة</button>
+      <button class="mbtn blue" onclick="printPatientFile()">🖨️ طباعة الملف</button>
+      <button class="mbtn cancel" onclick="closeModal('m-viewpt')">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- Support Request -->
+<div class="modal-bg" id="m-support">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h3>🤝 طلب دعم مالي</h3>
+    <div class="frow">
+      <div class="fl2">المريض *</div>
+      <input class="finput" id="sp-pt-name" type="text" placeholder="ابحث عن المريض..." oninput="searchPatientSupport(this.value)"/>
+      <input type="hidden" id="sp-pt-id"/>
+      <div id="sp-sugg" style="background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);margin-top:4px;display:none;max-height:140px;overflow-y:auto;"></div>
+    </div>
+    <div class="frow"><div class="fl2">المبلغ المطلوب (ريال) *</div><input class="finput" id="sp-amount" type="number" inputmode="numeric" placeholder="0"/></div>
+    <div class="frow"><div class="fl2">الغرض *</div><input class="finput" id="sp-purpose" type="text" placeholder="تكلفة عملية / أدوية / إقامة..."/></div>
+    <div class="frow"><div class="fl2">المستشفى / الجهة</div><input class="finput" id="sp-hospital" type="text" placeholder="اسم المستشفى"/></div>
+    <div class="frow"><div class="fl2">التفاصيل</div>
+      <textarea class="ftxt" id="sp-details" placeholder="شرح مفصّل للحالة والاحتياج..."></textarea>
+    </div>
+    <div class="mactions">
+      <button class="mbtn green" onclick="saveSupport()">📤 رفع الطلب</button>
+      <button class="mbtn cancel" onclick="closeModal('m-support')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <div class="lbox">
+    <div class="llogo">
+      <div class="icon">🏥</div>
+      <h1>أمانة الشؤون الصحية والطب</h1>
+      <p>الجالية السودانية بجازان</p>
+    </div>
+    <hr class="ldiv"/>
+    <div class="fl">المستخدم</div>
+    <select class="usel" id="login-user" onchange="onUserSel(this.value)">
+      <option value="">— اختر المستخدم —</option>
+    </select>
+    <div class="fl">كلمة المرور</div>
+    <div class="pw-wrap">
+      <input class="linput" id="lpw" type="password" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <button class="pw-toggle" onclick="togglePw()" type="button">👁</button>
+    </div>
+    <div class="lerr" id="lerr">❌ كلمة المرور غير صحيحة</div>
+    <button class="lbtn" onclick="doLogin()">دخول</button>
+    <div id="db-status" style="margin-top:12px;font-size:11px;color:var(--muted);text-align:center;padding:8px;background:var(--surf);border-radius:var(--r-sm);"></div>
+    <div style="margin-top:10px;text-align:center;">
+      <a href="index.html" style="font-size:12px;color:var(--muted);text-decoration:none;">← العودة للنظام الرئيسي</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app-screen">
+  <div class="hdr">
+    <div id="sync-bar" style="display:none;"><div class="sdot sync" id="sdot"></div><span id="stxt">جاري الاتصال...</span><span style="margin-right:auto;font-size:10px;opacity:.6;" id="scnt"></span></div>
+    <div class="hdr-inner">
+      <div class="hlogo">🏥</div>
+      <div class="htext"><h1>أمانة الشؤون الصحية والطب</h1><p>الجالية السودانية بجازان</p></div>
+      <div class="hright">
+        <span class="ubadge" id="ubadge">—</span>
+        <button class="lout" onclick="doLogout()">خروج</button>
+      </div>
+    </div>
+  </div>
+  <div class="screens">
+
+    <!-- DASHBOARD -->
+    <div class="screen" id="screen-dash">
+      <div class="card" style="background:linear-gradient(135deg,var(--bd),var(--bm));color:#fff;padding:18px;">
+        <div style="font-size:17px;font-weight:800;margin-bottom:3px;" id="w-title">أهلاً</div>
+        <div style="font-size:12px;opacity:.8;" id="w-sub"></div>
+        <div style="display:inline-block;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-top:8px;" id="w-role">—</div>
+      </div>
+      <div class="mgrid-3" id="dash-metrics"></div>
+      <div class="card" id="dash-alerts" style="display:none;">
+        <div class="ctitle" style="color:var(--red);">🚨 حالات تحتاج متابعة</div>
+        <div id="alerts-list"></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">📊 توزيع الحالات حسب النوع</div>
+        <div id="visit-stats"></div>
+      </div>
+    </div>
+
+    <!-- PATIENTS -->
+    <div class="screen" id="screen-patients">
+      <div class="actbtns">
+        <button class="abtn green" onclick="openModal('m-patient')">➕ تسجيل حالة</button>
+        <button class="abtn blue" onclick="exportPatientsCSV()">📥 تصدير</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="fbar">
+          <input class="sbox" id="pt-srch" type="search" placeholder="🔍 بحث بالاسم أو الجواز..." oninput="renderPatients()"/>
+          <select class="fsel2" id="pt-filter-region" onchange="renderPatients()">
+            <option value="">كل المناطق</option>
+            <option>جازان</option><option>صبيا</option><option>أبو عريش</option>
+            <option>صامطة</option><option>الدرب</option><option>فيفا</option><option>أخرى</option>
+          </select>
+        </div>
+        <div class="twrap"><table class="tbl">
+          <thead><tr><th>#</th><th>الاسم</th><th>العمر/الجنس</th><th>المنطقة</th><th>الدم</th><th>الزيارات</th><th></th></tr></thead>
+          <tbody id="pt-tbody"></tbody>
+        </table></div>
+        <div class="tbl-foot" id="pt-foot"></div>
+      </div>
+    </div>
+
+    <!-- VISITS -->
+    <div class="screen" id="screen-visits">
+      <div class="actbtns">
+        <button class="abtn green" onclick="openModal('m-visit')">➕ زيارة جديدة</button>
+        <button class="abtn blue" onclick="printVisitsReport()">🖨️ تقرير</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="fbar">
+          <input class="sbox" id="vt-srch" type="search" placeholder="🔍 بحث..." oninput="renderVisits()"/>
+          <select class="fsel2" id="vt-filter-type" onchange="renderVisits()">
+            <option value="">كل الأنواع</option>
+            <option>كشف</option><option>متابعة</option><option>طوارئ</option>
+            <option>تحاليل</option><option>أشعة</option><option>استشارة</option>
+          </select>
+          <select class="fsel2" id="vt-filter-urg" onchange="renderVisits()">
+            <option value="">كل الدرجات</option>
+            <option value="4">🔴 حرج</option><option value="3">🟠 عاجل</option>
+            <option value="2">🟡 متوسط</option><option value="1">🟢 عادي</option>
+          </select>
+        </div>
+        <div class="twrap"><table class="tbl">
+          <thead><tr><th>#</th><th>المريض</th><th>النوع</th><th>الشكوى</th><th>الإلحاح</th><th>التاريخ</th><th></th></tr></thead>
+          <tbody id="vt-tbody"></tbody>
+        </table></div>
+        <div class="tbl-foot" id="vt-foot"></div>
+      </div>
+    </div>
+
+    <!-- SUPPORT -->
+    <div class="screen" id="screen-support">
+      <div class="actbtns">
+        <button class="abtn green" onclick="openModal('m-support')">➕ طلب دعم</button>
+        <button class="abtn blue" onclick="printSupportReport()">🖨️ تقرير</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="fbar">
+          <select class="fsel2" id="sp-filter" onchange="renderSupport()" style="flex:1;">
+            <option value="">كل الحالات</option>
+            <option value="pending">بانتظار المراجعة</option>
+            <option value="approved">معتمدة</option>
+            <option value="paid">مصروفة</option>
+            <option value="rejected">مرفوضة</option>
+          </select>
+        </div>
+        <div id="support-list"></div>
+        <div class="tbl-foot" id="sp-foot"></div>
+      </div>
+    </div>
+
+    <!-- CAMPAIGNS -->
+    <div class="screen" id="screen-campaigns">
+      <div class="actbtns">
+        <button class="abtn blue" onclick="openModal('m-campaign')">➕ حملة جديدة</button>
+        <button class="abtn gold" onclick="printCampaignsReport()">🖨️ تقرير</button>
+      </div>
+      <div id="campaigns-list"></div>
+    </div>
+
+  </div>
+  <div class="bnav" id="bnav"></div>
+</div>
+
+<script>
+/* ══════════════════════════════════
+   SUPABASE — نفس قاعدة بيانات النظام الرئيسي
+══════════════════════════════════ */
+const SB_URL = 'https://ynjulkvlqajmqsabujzp.supabase.co';
+const SB_KEY = 'sb_publishable_sxoxcY4fmz5cc0RqlngNEA_XXul-wMu';
+
+/* ══════════════════════════════════
+   HEALTH USERS
+══════════════════════════════════ */
+const HEALTH_USERS = [
+  { id:'h1', username:'health_admin', name:'أمين الشؤون الصحية', role:'health_admin', pw:'health2026' },
+  { id:'h2', username:'doctor1',      name:'د. محمد علي',         role:'doctor',       pw:'doc2026'    },
+  { id:'h3', username:'nurse1',       name:'أ. فاطمة أحمد',       role:'nurse',        pw:'nurse2026'  },
+  { id:'h4', username:'admin',        name:'مدير النظام',          role:'super_admin',  pw:'admin2026'  },
+];
+
+const ROLES = {
+  health_admin: { label:'أمين الصحة',   emoji:'🏥', perms:['*'] },
+  doctor:       { label:'طبيب',         emoji:'👨‍⚕️', perms:['dash','patients','visits','campaigns'] },
+  nurse:        { label:'ممرضة/مسجل',   emoji:'👩‍⚕️', perms:['dash','patients','visits'] },
+  super_admin:  { label:'مدير النظام',  emoji:'🛡️', perms:['*'] },
+};
+
+/* ══════════════════════════════════
+   STATE
+══════════════════════════════════ */
+let sb=null, useDB=false, curUser=null;
+let cachedPatients=[], cachedVisits=[], cachedSupport=[], cachedCampaigns=[];
+let currentPatient=null;
+
+/* ══════════════════════════════════
+   LOCAL STORAGE
+══════════════════════════════════ */
+const LS={
+  get:(k,d=[])=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+};
+function nextId(k,d){ const v=(parseInt(localStorage.getItem(k)||d))+1; localStorage.setItem(k,v); return v; }
+
+/* ══════════════════════════════════
+   SUPABASE INIT
+══════════════════════════════════ */
+function initDB(){
+  const el=document.getElementById('db-status');
+  try{
+    sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}});
+    useDB=true;
+    el.textContent='🟢 متصل بقاعدة بيانات الجالية السودانية';
+    el.style.color='var(--green)';
+  }catch(e){
+    el.textContent='🟡 يعمل محلياً';
+    useDB=false;
+  }
+}
+
+/* ══════════════════════════════════
+   DB HELPERS
+══════════════════════════════════ */
+async function dbInsert(table,row){
+  if(useDB){const{data,error}=await sb.from(table).insert(row).select().single();if(error)throw error;return data;}
+  const arr=LS.get('h_'+table,[]); arr.push(row); LS.set('h_'+table,arr); return row;
+}
+async function dbUpdate(table,id,data){
+  if(useDB){const{error}=await sb.from(table).update(data).eq('id',id);if(error)throw error;}
+  else{const arr=LS.get('h_'+table,[]); const i=arr.findIndex(x=>x.id===id); if(i>=0){Object.assign(arr[i],data);LS.set('h_'+table,arr);}}
+}
+async function dbFetch(table,filters={}){
+  if(useDB){
+    let q=sb.from(table).select('*').order('created_at',{ascending:false});
+    Object.entries(filters).forEach(([k,v])=>q=q.eq(k,v));
+    const{data,error}=await q; if(error)throw error; return data||[];
+  }
+  let arr=LS.get('h_'+table,[]);
+  Object.entries(filters).forEach(([k,v])=>{arr=arr.filter(x=>x[k]===v);});
+  return arr.slice().reverse();
+}
+async function loadAll(){
+  setSyncStatus('sync','جاري تحميل البيانات...');
+  try{
+    cachedPatients=await dbFetch('health_patients');
+    cachedVisits=await dbFetch('health_visits');
+    cachedSupport=await dbFetch('health_support');
+    cachedCampaigns=await dbFetch('health_campaigns');
+    setSyncStatus('on','متصل — محدّث');
+    document.getElementById('scnt').textContent=cachedPatients.length+' مريض · '+cachedVisits.length+' زيارة';
+  }catch(e){
+    setSyncStatus('off','يعمل محلياً');
+    cachedPatients=LS.get('h_health_patients',[]);
+    cachedVisits=LS.get('h_health_visits',[]);
+    cachedSupport=LS.get('h_health_support',[]);
+    cachedCampaigns=LS.get('h_health_campaigns',[]);
+  }
+}
+
+function setSyncStatus(st,txt){
+  const bar=document.getElementById('sync-bar');
+  const dot=document.getElementById('sdot');
+  if(bar) bar.style.display='flex';
+  if(dot) dot.className='sdot'+(st==='on'?'':st==='off'?' off':' sync');
+  const el=document.getElementById('stxt'); if(el) el.textContent=txt;
+}
+
+/* ══════════════════════════════════
+   LOGIN
+══════════════════════════════════ */
+function buildLoginUI(){
+  const sel=document.getElementById('login-user');
+  if(!sel)return;
+  while(sel.options.length>1) sel.remove(1);
+  // Get custom health users from localStorage
+  const customUsers=LS.get('h_users',[]);
+  const allUsers=[...HEALTH_USERS,...customUsers];
+  allUsers.filter(u=>u.status!=='inactive').forEach(u=>{
+    const o=document.createElement('option');
+    o.value=u.id; o.textContent=u.name+' — '+(ROLES[u.role]?.label||u.role);
+    sel.appendChild(o);
+  });
+}
+let loginUser=null;
+function onUserSel(id){
+  const customUsers=LS.get('h_users',[]);
+  const all=[...HEALTH_USERS,...customUsers];
+  loginUser=all.find(u=>u.id===id)||null;
+  document.getElementById('lerr').classList.remove('show');
+}
+function togglePw(){ const i=document.getElementById('lpw'); i.type=i.type==='password'?'text':'password'; }
+async function doLogin(){
+  if(!loginUser){showToast('اختر المستخدم','warn');return;}
+  const pw=document.getElementById('lpw').value;
+  if(pw!==loginUser.pw){document.getElementById('lerr').classList.add('show');return;}
+  curUser={...loginUser};
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').classList.add('show');
+  document.getElementById('sync-bar').style.display='flex';
+  document.getElementById('ubadge').textContent=(ROLES[curUser.role]?.emoji||'👤')+' '+curUser.name;
+  document.getElementById('w-title').textContent='أهلاً، '+curUser.name;
+  document.getElementById('w-sub').textContent=new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('w-role').textContent=(ROLES[curUser.role]?.emoji||'')+' '+(ROLES[curUser.role]?.label||'');
+  document.getElementById('lpw').value='';
+  buildNav();
+  await loadAll();
+}
+function doLogout(){
+  if(!confirm('هل تريد الخروج؟'))return;
+  curUser=null;
+  document.getElementById('app-screen').classList.remove('show');
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('sync-bar').style.display='none';
+  buildLoginUI();
+}
+function hasPerm(p){ if(!curUser)return false; const ps=ROLES[curUser.role]?.perms||[]; return ps.includes('*')||ps.includes(p); }
+
+/* ══════════════════════════════════
+   NAV
+══════════════════════════════════ */
+const NAV=[
+  {id:'dash',      ico:'📊',lbl:'الرئيسية',perm:'dash'},
+  {id:'patients',  ico:'🏥',lbl:'المرضى',  perm:'patients'},
+  {id:'visits',    ico:'🩺',lbl:'الزيارات',perm:'visits'},
+  {id:'support',   ico:'🤝',lbl:'الدعم',   perm:'*'},
+  {id:'campaigns', ico:'📢',lbl:'الحملات', perm:'campaigns'},
+];
+function buildNav(){
+  const vis=NAV.filter(n=>hasPerm(n.perm));
+  document.getElementById('bnav').innerHTML=vis.map(n=>`
+    <button class="bni" id="bni-${n.id}" onclick="switchTab('${n.id}')">
+      <span class="ico">${n.ico}</span>${n.lbl}
+    </button>`).join('');
+  if(vis.length) switchTab(vis[0].id);
+}
+function switchTab(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.bni').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+id)?.classList.add('active');
+  document.getElementById('bni-'+id)?.classList.add('active');
+  document.getElementById('screens').scrollTop=0;
+  if(id==='dash') renderDash();
+  if(id==='patients') renderPatients();
+  if(id==='visits') renderVisits();
+  if(id==='support') renderSupport();
+  if(id==='campaigns') renderCampaigns();
+}
+
+/* ══════════════════════════════════
+   DASHBOARD
+══════════════════════════════════ */
+function renderDash(){
+  const totalPt=cachedPatients.length;
+  const totalVt=cachedVisits.length;
+  const urgent=cachedVisits.filter(v=>v.urgency>=3).length;
+  const campaigns=cachedCampaigns.length;
+  const supportPending=cachedSupport.filter(s=>s.status==='pending').length;
+  const totalBenef=cachedCampaigns.reduce((s,c)=>s+(c.beneficiaries_count||0),0);
+  document.getElementById('dash-metrics').innerHTML=`
+    <div class="mcard"><div class="mval" style="color:var(--bm)">${totalPt}</div><div class="mlbl">المرضى المسجلون</div></div>
+    <div class="mcard"><div class="mval" style="color:var(--green)">${totalVt}</div><div class="mlbl">إجمالي الزيارات</div></div>
+    <div class="mcard"><div class="mval" style="color:var(--red)">${urgent}</div><div class="mlbl">حالات عاجلة/حرجة</div></div>
+    <div class="mcard"><div class="mval" style="color:var(--gold-d)">${supportPending}</div><div class="mlbl">طلبات دعم معلقة</div></div>
+    <div class="mcard"><div class="mval" style="color:var(--purple)">${campaigns}</div><div class="mlbl">الحملات التوعوية</div></div>
+    <div class="mcard"><div class="mval" style="color:var(--teal)">${totalBenef.toLocaleString('ar-SA')}</div><div class="mlbl">إجمالي المستفيدين</div></div>`;
+  // Alerts
+  const urgentCases=cachedVisits.filter(v=>v.urgency>=3).slice(0,5);
+  const alertEl=document.getElementById('dash-alerts');
+  const alertList=document.getElementById('alerts-list');
+  if(urgentCases.length){
+    alertEl.style.display='block';
+    alertList.innerHTML=urgentCases.map(v=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:16px;">${v.urgency>=4?'🔴':'🟠'}</span>
+        <div style="flex:1;"><div style="font-size:13px;font-weight:700;">${v.patient_name||'—'}</div>
+          <div style="font-size:11px;color:var(--muted);">${v.complaint||''}</div></div>
+        <span style="font-size:11px;color:var(--muted);">${new Date(v.created_at||Date.now()).toLocaleDateString('ar-SA',{month:'short',day:'numeric'})}</span>
+      </div>`).join('');
+  } else { alertEl.style.display='none'; }
+  // Visit type stats
+  const types=['كشف','متابعة','طوارئ','تحاليل','أشعة','استشارة'];
+  const colors=['#2453a0','#1a7a4a','#c0392b','#c9a84c','#6c3483','#0e7490'];
+  const max=Math.max(...types.map(t=>cachedVisits.filter(v=>v.visit_type===t).length),1);
+  document.getElementById('visit-stats').innerHTML=types.map((t,i)=>{
+    const cnt=cachedVisits.filter(v=>v.visit_type===t).length;
+    return`<div class="stat-bar">
+      <span class="stat-label">${t}</span>
+      <div class="stat-bg"><div class="stat-fill" style="width:${(cnt/max*100).toFixed(0)}%;background:${colors[i]};"></div></div>
+      <span class="stat-count" style="color:${colors[i]}">${cnt}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════
+   PATIENTS
+══════════════════════════════════ */
+async function savePatient(){
+  const name=document.getElementById('pt-name').value.trim();
+  const pass=document.getElementById('pt-pass').value.trim();
+  const age=document.getElementById('pt-age').value;
+  if(!name){showToast('أدخل اسم المريض','err');return;}
+  const id='PT'+nextId('h_ptctr',1000).toString().padStart(4,'0');
+  const row={id,name,passport:pass,age:parseInt(age)||0,
+    gender:document.getElementById('pt-gender').value,
+    phone:document.getElementById('pt-phone').value.trim(),
+    blood_type:document.getElementById('pt-blood').value,
+    region:document.getElementById('pt-region').value,
+    chronic_conditions:document.getElementById('pt-chronic').value.trim(),
+    status:'active',created_at:new Date().toISOString()};
+  try{
+    await dbInsert('health_patients',row);
+    cachedPatients.unshift(row);
+    closeModal('m-patient');
+    ['pt-name','pt-pass','pt-age','pt-phone','pt-chronic'].forEach(i=>document.getElementById(i).value='');
+    showToast('✓ تم تسجيل '+name,'ok');
+    renderPatients();
+    renderDash();
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+function renderPatients(){
+  const q=(document.getElementById('pt-srch')||{}).value||'';
+  const reg=(document.getElementById('pt-filter-region')||{}).value||'';
+  let pts=[...cachedPatients].filter(p=>
+    ((p.name||'').includes(q)||(p.passport||'').includes(q))&&(!reg||p.region===reg)
+  );
+  document.getElementById('pt-foot').textContent=pts.length+' مريض';
+  const tb=document.getElementById('pt-tbody');
+  if(!pts.length){tb.innerHTML='<tr><td colspan="7"><div class="empty">لا يوجد مرضى مسجلون</div></td></tr>';return;}
+  tb.innerHTML=pts.map(p=>{
+    const visits=cachedVisits.filter(v=>v.patient_id===p.id).length;
+    return`<tr>
+      <td style="color:var(--muted);font-size:10px;">${p.id}</td>
+      <td style="font-weight:700;font-size:12px;">${p.name}</td>
+      <td style="font-size:11px;color:var(--muted);">${p.age||'—'} / ${p.gender||'—'}</td>
+      <td style="font-size:11px;">${p.region||'—'}</td>
+      <td><span class="badge b-blue">${p.blood_type||'—'}</span></td>
+      <td style="font-size:12px;font-weight:700;color:var(--bm);">${visits}</td>
+      <td>
+        <button class="ibtn p" onclick='viewPatient(${JSON.stringify(p)})'>ملف</button>
+        <button class="ibtn g" onclick='openVisitForPatientDirect(${JSON.stringify(p)})'>🩺</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function searchPatient(q){
+  buildSugg(q,'pt-sugg','fillPatient');
+}
+function searchPatientSupport(q){
+  buildSugg(q,'sp-sugg','fillPatientSupport');
+}
+function buildSugg(q,elId,fn){
+  const el=document.getElementById(elId);
+  if(!q||q.length<2){el.style.display='none';return;}
+  const res=cachedPatients.filter(p=>(p.name||'').includes(q)||(p.passport||'').includes(q)).slice(0,5);
+  if(!res.length){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML=res.map(p=>`<div style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onclick="${fn}('${p.id}','${p.name.replace(/'/g,"\\'")}')">
+    ${p.name} <span style="color:var(--muted);font-size:11px;">— ${p.passport||''} — ${p.region||''}</span>
+  </div>`).join('');
+}
+function fillPatient(id,name){
+  document.getElementById('vt-patient-id').value=id;
+  document.getElementById('vt-patient-name').value=name;
+  document.getElementById('pt-sugg').style.display='none';
+}
+function fillPatientSupport(id,name){
+  document.getElementById('sp-pt-id').value=id;
+  document.getElementById('sp-pt-name').value=name;
+  document.getElementById('sp-sugg').style.display='none';
+}
+
+function viewPatient(p){
+  currentPatient=p;
+  document.getElementById('vpt-title').textContent='ملف المريض — '+p.name;
+  const visits=cachedVisits.filter(v=>v.patient_id===p.id).slice(0,10);
+  document.getElementById('vpt-body').innerHTML=`
+    <div class="patient-card" style="padding:14px;margin-bottom:12px;">
+      <div class="pc-id">رقم الملف: ${p.id}</div>
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-info">${p.age||'—'} سنة · ${p.gender||'—'} · فصيلة: ${p.blood_type||'غير معروف'}</div>
+      <div class="pc-info" style="margin-top:4px;">📞 ${p.phone||'—'} · 📍 ${p.region||'—'}</div>
+      ${p.chronic_conditions?`<div class="pc-info" style="margin-top:4px;opacity:.9;">⚠️ ${p.chronic_conditions}</div>`:''}
+      <span class="pc-status active">نشط</span>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px;">آخر الزيارات (${visits.length})</div>
+    ${visits.length?visits.map(v=>`
+      <div style="padding:10px;border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:8px;background:var(--surf);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span class="badge b-blue">${v.visit_type}</span>
+          <span class="${urgClass(v.urgency)}" style="font-size:11px;">${urgLabel(v.urgency)}</span>
+          <span style="margin-right:auto;font-size:11px;color:var(--muted);">${new Date(v.created_at||Date.now()).toLocaleDateString('ar-SA',{month:'short',day:'numeric',year:'numeric'})}</span>
+        </div>
+        <div style="font-size:12px;font-weight:600;">${v.complaint||'—'}</div>
+        ${v.diagnosis?`<div style="font-size:11px;color:var(--muted);margin-top:2px;">التشخيص: ${v.diagnosis}</div>`:''}
+        ${v.treatment?`<div style="font-size:11px;color:var(--green);margin-top:2px;">العلاج: ${v.treatment}</div>`:''}
+      </div>`).join(''):'<div class="empty" style="padding:16px;">لا توجد زيارات مسجلة</div>'}`;
+  openModal('m-viewpt');
+}
+
+function openVisitForPatient(){
+  closeModal('m-viewpt');
+  if(currentPatient){
+    document.getElementById('vt-patient-id').value=currentPatient.id;
+    document.getElementById('vt-patient-name').value=currentPatient.name;
+  }
+  openModal('m-visit');
+}
+function openVisitForPatientDirect(p){
+  currentPatient=p;
+  document.getElementById('vt-patient-id').value=p.id;
+  document.getElementById('vt-patient-name').value=p.name;
+  openModal('m-visit');
+}
+
+/* ══════════════════════════════════
+   VISITS
+══════════════════════════════════ */
+async function saveVisit(){
+  const ptId=document.getElementById('vt-patient-id').value;
+  const ptName=document.getElementById('vt-patient-name').value.trim();
+  const complaint=document.getElementById('vt-complaint').value.trim();
+  if(!ptName){showToast('حدد المريض','err');return;}
+  if(!complaint){showToast('أدخل الشكوى','err');return;}
+  const id='VT'+nextId('h_vtctr',1000).toString().padStart(5,'0');
+  const row={id,patient_id:ptId||null,patient_name:ptName,
+    visit_type:document.getElementById('vt-type').value,
+    urgency:parseInt(document.getElementById('vt-urgency').value)||1,
+    complaint,
+    diagnosis:document.getElementById('vt-diagnosis').value.trim(),
+    treatment:document.getElementById('vt-treatment').value.trim(),
+    hospital:document.getElementById('vt-hospital').value.trim(),
+    cost:parseFloat(document.getElementById('vt-cost').value)||0,
+    needs_support:document.getElementById('vt-support').value==='1',
+    recorded_by:curUser.name,
+    created_at:new Date().toISOString()};
+  try{
+    await dbInsert('health_visits',row);
+    cachedVisits.unshift(row);
+    closeModal('m-visit');
+    ['vt-patient-id','vt-patient-name','vt-complaint','vt-diagnosis','vt-treatment','vt-hospital','vt-cost'].forEach(i=>{
+      const el=document.getElementById(i); if(el) el.value='';
+    });
+    showToast('✓ تم تسجيل الزيارة','ok');
+    renderVisits();
+    renderDash();
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+function urgLabel(u){ return u>=4?'🔴 حرج':u>=3?'🟠 عاجل':u>=2?'🟡 متوسط':'🟢 عادي'; }
+function urgClass(u){ return u>=4?'urg-4':u>=3?'urg-3':u>=2?'urg-2':'urg-1'; }
+
+function renderVisits(){
+  const q=(document.getElementById('vt-srch')||{}).value||'';
+  const type=(document.getElementById('vt-filter-type')||{}).value||'';
+  const urg=(document.getElementById('vt-filter-urg')||{}).value||'';
+  let vts=[...cachedVisits].filter(v=>
+    ((v.patient_name||'').includes(q)||(v.complaint||'').includes(q))&&
+    (!type||v.visit_type===type)&&(!urg||String(v.urgency)===urg)
+  );
+  document.getElementById('vt-foot').textContent=vts.length+' زيارة';
+  const tb=document.getElementById('vt-tbody');
+  if(!vts.length){tb.innerHTML='<tr><td colspan="7"><div class="empty">لا توجد زيارات</div></td></tr>';return;}
+  tb.innerHTML=vts.map(v=>{
+    const d=new Date(v.created_at||Date.now());
+    return`<tr>
+      <td style="color:var(--muted);font-size:10px;">${v.id}</td>
+      <td style="font-weight:700;font-size:12px;">${v.patient_name}</td>
+      <td><span class="badge b-blue">${v.visit_type}</span></td>
+      <td style="font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${v.complaint||'—'}</td>
+      <td><span class="${urgClass(v.urgency)}" style="font-size:11px;">${urgLabel(v.urgency)}</span></td>
+      <td style="font-size:10px;color:var(--muted);">${d.toLocaleDateString('ar-SA',{month:'short',day:'numeric'})}</td>
+      <td><button class="ibtn p" onclick='printVisit(${JSON.stringify(v)})'>🖨️</button></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════
+   SUPPORT
+══════════════════════════════════ */
+async function saveSupport(){
+  const ptId=document.getElementById('sp-pt-id').value;
+  const ptName=document.getElementById('sp-pt-name').value.trim();
+  const amount=parseFloat(document.getElementById('sp-amount').value)||0;
+  const purpose=document.getElementById('sp-purpose').value.trim();
+  if(!ptName){showToast('حدد المريض','err');return;}
+  if(amount<=0){showToast('أدخل المبلغ','err');return;}
+  if(!purpose){showToast('أدخل الغرض','err');return;}
+  const id='SP'+nextId('h_spctr',1000).toString().padStart(4,'0');
+  const row={id,patient_id:ptId||null,patient_name:ptName,
+    amount,purpose,
+    hospital:document.getElementById('sp-hospital').value.trim(),
+    details:document.getElementById('sp-details').value.trim(),
+    status:'pending',requested_by:curUser.name,
+    created_at:new Date().toISOString()};
+  try{
+    await dbInsert('health_support',row);
+    cachedSupport.unshift(row);
+    closeModal('m-support');
+    ['sp-pt-id','sp-pt-name','sp-amount','sp-purpose','sp-hospital','sp-details'].forEach(i=>{
+      const el=document.getElementById(i); if(el) el.value='';
+    });
+    showToast('✓ تم رفع طلب الدعم','ok');
+    renderSupport();
+    renderDash();
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+const SP_STA={
+  pending: {lbl:'بانتظار المراجعة',cls:'b-gold'},
+  approved:{lbl:'معتمد',           cls:'b-green'},
+  paid:    {lbl:'مصروف',           cls:'b-green'},
+  rejected:{lbl:'مرفوض',          cls:'b-red'},
+};
+
+function renderSupport(){
+  const f=(document.getElementById('sp-filter')||{}).value||'';
+  let sps=[...cachedSupport].filter(s=>!f||s.status===f);
+  document.getElementById('sp-foot').textContent=sps.length+' طلب — إجمالي: '+sps.reduce((s,p)=>s+(p.amount||0),0).toLocaleString('ar-SA')+' ر.س';
+  const el=document.getElementById('support-list');
+  if(!sps.length){el.innerHTML='<div class="empty">لا توجد طلبات دعم</div>';return;}
+  el.innerHTML=sps.map(s=>`
+    <div style="padding:13px 14px;border-bottom:1px solid var(--border);background:var(--white);">
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;">${s.patient_name}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${s.purpose}</div>
+          ${s.hospital?`<div style="font-size:11px;color:var(--muted);">🏥 ${s.hospital}</div>`:''}
+          <div style="font-size:11px;color:var(--muted);">طلب بواسطة: ${s.requested_by} · ${new Date(s.created_at||Date.now()).toLocaleDateString('ar-SA',{month:'short',day:'numeric'})}</div>
+        </div>
+        <div style="text-align:left;">
+          <div style="font-size:18px;font-weight:800;color:var(--red);">${(s.amount||0).toLocaleString('ar-SA')} <span style="font-size:11px;">ر.س</span></div>
+          <span class="badge ${SP_STA[s.status]?.cls||'b-blue'}">${SP_STA[s.status]?.lbl||s.status}</span>
+        </div>
+      </div>
+      ${s.details?`<div style="font-size:12px;color:var(--muted);margin-top:6px;padding:8px;background:var(--surf);border-radius:6px;">${s.details}</div>`:''}
+      ${s.status==='pending'&&hasPerm('*')?`
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button class="ibtn g" onclick="updateSupport('${s.id}','approved')">✓ اعتماد</button>
+        <button class="ibtn r" onclick="updateSupport('${s.id}','rejected')">✗ رفض</button>
+        <button class="ibtn p" onclick="updateSupport('${s.id}','paid')">✅ مصروف</button>
+        <button class="ibtn p" onclick='printSupportDoc(${JSON.stringify(s)})'>🖨️</button>
+      </div>`:`<button class="ibtn p" style="margin-top:8px;" onclick='printSupportDoc(${JSON.stringify(s)})'>🖨️ طباعة</button>`}
+    </div>`).join('');
+}
+
+async function updateSupport(id,status){
+  try{
+    await dbUpdate('health_support',id,{status,updated_at:new Date().toISOString(),updated_by:curUser.name});
+    const i=cachedSupport.findIndex(s=>s.id===id);
+    if(i>=0) cachedSupport[i].status=status;
+    renderSupport(); renderDash();
+    showToast('✓ تم تحديث حالة الطلب','ok');
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+/* ══════════════════════════════════
+   CAMPAIGNS
+══════════════════════════════════ */
+async function saveCampaign(){
+  const title=document.getElementById('cp-title').value.trim();
+  if(!title){showToast('أدخل عنوان الحملة','err');return;}
+  const id='CP'+nextId('h_cpctr',100).toString().padStart(3,'0');
+  const row={id,title,
+    campaign_type:document.getElementById('cp-type').value,
+    campaign_date:document.getElementById('cp-date').value,
+    location:document.getElementById('cp-location').value.trim(),
+    description:document.getElementById('cp-desc').value.trim(),
+    beneficiaries_count:parseInt(document.getElementById('cp-count').value)||0,
+    cost:parseFloat(document.getElementById('cp-cost').value)||0,
+    status:document.getElementById('cp-status').value,
+    created_by:curUser.name,
+    created_at:new Date().toISOString()};
+  try{
+    await dbInsert('health_campaigns',row);
+    cachedCampaigns.unshift(row);
+    closeModal('m-campaign');
+    ['cp-title','cp-date','cp-location','cp-desc','cp-count','cp-cost'].forEach(i=>document.getElementById(i).value='');
+    showToast('✓ تم حفظ الحملة','ok');
+    renderCampaigns(); renderDash();
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+const CP_STA={
+  planned:{lbl:'مخططة',cls:'b-gold'},
+  active: {lbl:'جارية', cls:'b-blue'},
+  done:   {lbl:'منتهية',cls:'b-green'},
+};
+
+function renderCampaigns(){
+  const el=document.getElementById('campaigns-list');
+  if(!cachedCampaigns.length){el.innerHTML='<div class="empty" style="padding:28px;text-align:center;color:var(--muted);">لا توجد حملات مسجلة</div>';return;}
+  el.innerHTML=cachedCampaigns.map(c=>`
+    <div class="card">
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <div style="font-size:24px;">📢</div>
+        <div style="flex:1;">
+          <div style="font-size:15px;font-weight:800;color:var(--bd);margin-bottom:3px;">${c.title}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+            <span class="badge b-purple">${c.campaign_type}</span>
+            <span class="badge ${CP_STA[c.status]?.cls||'b-blue'}">${CP_STA[c.status]?.lbl||c.status}</span>
+          </div>
+          ${c.campaign_date?`<div style="font-size:12px;color:var(--muted);">📅 ${new Date(c.campaign_date).toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>`:''}
+          ${c.location?`<div style="font-size:12px;color:var(--muted);">📍 ${c.location}</div>`:''}
+          ${c.description?`<div style="font-size:12px;color:var(--ink);margin-top:6px;line-height:1.6;">${c.description}</div>`:''}
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;">
+            <div style="text-align:center;background:var(--bp);border-radius:8px;padding:8px;">
+              <div style="font-size:16px;font-weight:800;color:var(--bm);">${(c.beneficiaries_count||0).toLocaleString('ar-SA')}</div>
+              <div style="font-size:10px;color:var(--muted);">المستفيدون</div>
+            </div>
+            <div style="text-align:center;background:var(--red-p);border-radius:8px;padding:8px;">
+              <div style="font-size:16px;font-weight:800;color:var(--red);">${(c.cost||0).toLocaleString('ar-SA')}</div>
+              <div style="font-size:10px;color:var(--muted);">التكلفة ر.س</div>
+            </div>
+            <div style="text-align:center;background:var(--surf);border-radius:8px;padding:8px;">
+              <div style="font-size:11px;font-weight:600;color:var(--muted);">${c.created_by||'—'}</div>
+              <div style="font-size:10px;color:var(--muted);">منسق الحملة</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      ${hasPerm('*')?`<div style="display:flex;gap:6px;margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
+        ${c.status==='planned'?`<button class="ibtn g" onclick="updateCampaign('${c.id}','active')">▶ تفعيل</button>`:''}
+        ${c.status==='active'?`<button class="ibtn p" onclick="updateCampaign('${c.id}','done')">✓ إنهاء</button>`:''}
+        <button class="ibtn p" onclick='printCampaign(${JSON.stringify(c)})'>🖨️ تقرير الحملة</button>
+      </div>`:''}
+    </div>`).join('');
+}
+
+async function updateCampaign(id,status){
+  try{
+    await dbUpdate('health_campaigns',id,{status});
+    const i=cachedCampaigns.findIndex(c=>c.id===id);
+    if(i>=0) cachedCampaigns[i].status=status;
+    renderCampaigns();
+    showToast('✓ تم تحديث الحملة','ok');
+  }catch(e){showToast('خطأ: '+e.message,'err');}
+}
+
+/* ══════════════════════════════════
+   PRINT
+══════════════════════════════════ */
+function printVisit(v){
+  const d=new Date(v.created_at||Date.now());
+  document.getElementById('print-area').innerHTML=`
+    <div class="prpt">
+      <div class="prph">
+        <div style="font-size:24px;">🏥</div>
+        <h1>أمانة الشؤون الصحية والطب</h1>
+        <h2>الجالية السودانية بجازان</h2>
+        <p>${d.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
+      </div>
+      <div class="prtit"><h3>تقرير زيارة طبية — رقم ${v.id}</h3></div>
+      <table class="prtbl">
+        <tr><td>المريض</td><td><strong>${v.patient_name}</strong></td></tr>
+        <tr><td>نوع الزيارة</td><td>${v.visit_type}</td></tr>
+        <tr><td>درجة الإلحاح</td><td class="${urgClass(v.urgency)}">${urgLabel(v.urgency)}</td></tr>
+        <tr class="hl"><td>الشكوى الرئيسية</td><td>${v.complaint||'—'}</td></tr>
+        ${v.diagnosis?`<tr><td>التشخيص</td><td>${v.diagnosis}</td></tr>`:''}
+        ${v.treatment?`<tr><td>العلاج</td><td>${v.treatment}</td></tr>`:''}
+        ${v.hospital?`<tr><td>المستشفى</td><td>${v.hospital}</td></tr>`:''}
+        ${v.cost?`<tr><td>التكلفة</td><td>${v.cost.toLocaleString('ar-SA')} ريال</td></tr>`:''}
+        <tr><td>سجّل بواسطة</td><td>${v.recorded_by||'—'}</td></tr>
+        <tr><td>التاريخ</td><td>${d.toLocaleString('ar-SA')}</td></tr>
+      </table>
+      <div style="display:flex;justify-content:space-between;margin-top:20px;">
+        <div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:30px;padding-top:4px;font-size:10px;width:140px;">أمين الشؤون الصحية</div></div>
+        <div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:30px;padding-top:4px;font-size:10px;width:140px;">الطبيب المعالج</div></div>
+      </div>
+      <div class="prfooter">أمانة الشؤون الصحية والطب · الجالية السودانية بجازان · ${new Date().getFullYear()}</div>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+
+function printPatientFile(){
+  const p=currentPatient;
+  if(!p)return;
+  const visits=cachedVisits.filter(v=>v.patient_id===p.id);
+  document.getElementById('print-area').innerHTML=`
+    <div class="prpt">
+      <div class="prph">
+        <div style="font-size:24px;">🏥</div>
+        <h1>أمانة الشؤون الصحية والطب</h1>
+        <h2>الجالية السودانية بجازان</h2>
+      </div>
+      <div class="prtit"><h3>الملف الطبي — ${p.name}</h3></div>
+      <table class="prtbl">
+        <tr><td>رقم الملف</td><td>${p.id}</td></tr>
+        <tr><td>الاسم</td><td><strong>${p.name}</strong></td></tr>
+        <tr><td>الجواز</td><td>${p.passport||'—'}</td></tr>
+        <tr><td>العمر / الجنس</td><td>${p.age||'—'} / ${p.gender||'—'}</td></tr>
+        <tr><td>فصيلة الدم</td><td>${p.blood_type||'غير معروف'}</td></tr>
+        <tr><td>الهاتف</td><td>${p.phone||'—'}</td></tr>
+        <tr><td>المنطقة</td><td>${p.region||'—'}</td></tr>
+        ${p.chronic_conditions?`<tr class="hl"><td>أمراض مزمنة / حساسية</td><td>${p.chronic_conditions}</td></tr>`:''}
+        <tr><td>عدد الزيارات</td><td>${visits.length}</td></tr>
+      </table>
+      ${visits.length?`<div style="margin-top:12px;font-size:13px;font-weight:700;color:#1a3366;">سجل الزيارات</div>
+      <table class="prtbl" style="margin-top:6px;">
+        <thead><tr style="background:#1a3366;color:#fff;"><th style="padding:5px 8px;text-align:right;">النوع</th><th style="padding:5px 8px;text-align:right;">الشكوى</th><th style="padding:5px 8px;text-align:right;">التشخيص</th><th style="padding:5px 8px;text-align:right;">التاريخ</th></tr></thead>
+        <tbody>${visits.map(v=>`<tr><td style="padding:5px 8px;">${v.visit_type}</td><td style="padding:5px 8px;">${v.complaint||'—'}</td><td style="padding:5px 8px;">${v.diagnosis||'—'}</td><td style="padding:5px 8px;">${new Date(v.created_at).toLocaleDateString('ar-SA')}</td></tr>`).join('')}</tbody>
+      </table>`:''}
+      <div class="prfooter">أمانة الشؤون الصحية والطب · الجالية السودانية بجازان · ${new Date().getFullYear()}</div>
+    </div>`;
+  closeModal('m-viewpt');
+  setTimeout(()=>window.print(),300);
+}
+
+function printSupportDoc(s){
+  const d=new Date(s.created_at||Date.now());
+  document.getElementById('print-area').innerHTML=`
+    <div class="prpt">
+      <div class="prph">
+        <div style="font-size:24px;">🏥</div>
+        <h1>أمانة الشؤون الصحية والطب</h1>
+        <h2>الجالية السودانية بجازان</h2>
+      </div>
+      <div class="prtit"><h3>طلب دعم طبي — رقم ${s.id}</h3></div>
+      <table class="prtbl">
+        <tr><td>المريض</td><td><strong>${s.patient_name}</strong></td></tr>
+        <tr class="hl"><td>المبلغ المطلوب</td><td><strong style="font-size:16px;">${(s.amount||0).toLocaleString('ar-SA')} ريال سعودي</strong></td></tr>
+        <tr><td>الغرض</td><td>${s.purpose}</td></tr>
+        ${s.hospital?`<tr><td>المستشفى</td><td>${s.hospital}</td></tr>`:''}
+        ${s.details?`<tr><td>التفاصيل</td><td>${s.details}</td></tr>`:''}
+        <tr><td>الحالة</td><td><strong>${SP_STA[s.status]?.lbl||s.status}</strong></td></tr>
+        <tr><td>طلب بواسطة</td><td>${s.requested_by}</td></tr>
+        <tr><td>التاريخ</td><td>${d.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</td></tr>
+      </table>
+      <div style="display:flex;justify-content:space-between;margin-top:20px;">
+        <div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:30px;padding-top:4px;font-size:10px;width:140px;">أمين الشؤون الصحية</div></div>
+        <div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:30px;padding-top:4px;font-size:10px;width:140px;">أمين المالية</div></div>
+        <div style="text-align:center;"><div style="border-top:1px solid #333;margin-top:30px;padding-top:4px;font-size:10px;width:140px;">رئيس الجالية</div></div>
+      </div>
+      <div class="prfooter">أمانة الشؤون الصحية والطب · الجالية السودانية بجازان · ${new Date().getFullYear()}</div>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+
+function printVisitsReport(){
+  const vts=cachedVisits;
+  const today=new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('print-area').innerHTML=`
+    <div class="prpt">
+      <div class="prph">
+        <div style="font-size:24px;">🏥</div>
+        <h1>أمانة الشؤون الصحية والطب</h1>
+        <h2>تقرير الزيارات الطبية</h2>
+        <p>${today}</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0;">
+        <div style="border:1px solid #ccc;border-radius:5px;padding:7px;text-align:center;"><div style="font-size:18px;font-weight:800;color:#1a3366;">${vts.length}</div><div style="font-size:10px;">إجمالي الزيارات</div></div>
+        <div style="border:1px solid #ccc;border-radius:5px;padding:7px;text-align:center;"><div style="font-size:18px;font-weight:800;color:#c0392b;">${vts.filter(v=>v.urgency>=3).length}</div><div style="font-size:10px;">حالات عاجلة/حرجة</div></div>
+        <div style="border:1px solid #ccc;border-radius:5px;padding:7px;text-align:center;"><div style="font-size:18px;font-weight:800;color:#1a7a4a;">${cachedPatients.length}</div><div style="font-size:10px;">المرضى المسجلون</div></div>
+        <div style="border:1px solid #ccc;border-radius:5px;padding:7px;text-align:center;"><div style="font-size:18px;font-weight:800;color:#c9a84c;">${cachedSupport.filter(s=>s.status==='pending').length}</div><div style="font-size:10px;">طلبات دعم معلقة</div></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead><tr style="background:#1a3366;color:#fff;">
+          <th style="padding:5px 7px;text-align:right;">#</th>
+          <th style="padding:5px 7px;text-align:right;">المريض</th>
+          <th style="padding:5px 7px;text-align:right;">النوع</th>
+          <th style="padding:5px 7px;text-align:right;">الشكوى</th>
+          <th style="padding:5px 7px;text-align:right;">الإلحاح</th>
+          <th style="padding:5px 7px;text-align:right;">التاريخ</th>
+        </tr></thead>
+        <tbody>${vts.map((v,i)=>`<tr style="${i%2===0?'':'background:#f5f5f5'}">
+          <td style="padding:4px 7px;">${i+1}</td>
+          <td style="padding:4px 7px;font-weight:600;">${v.patient_name}</td>
+          <td style="padding:4px 7px;">${v.visit_type}</td>
+          <td style="padding:4px 7px;">${(v.complaint||'').slice(0,30)}</td>
+          <td style="padding:4px 7px;">${urgLabel(v.urgency)}</td>
+          <td style="padding:4px 7px;">${new Date(v.created_at||Date.now()).toLocaleDateString('ar-SA')}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+      <div class="prfooter">أمانة الشؤون الصحية والطب · الجالية السودانية بجازان · ${new Date().getFullYear()}</div>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+
+function printSupportReport(){
+  const sps=cachedSupport;
+  const today=new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const totReq=sps.reduce((s,p)=>s+(p.amount||0),0);
+  const totPaid=sps.filter(s=>s.status==='paid').reduce((s,p)=>s+(p.amount||0),0);
+  document.getElementById('print-area').innerHTML=`
+    <div class="prpt">
+      <div class="prph"><div style="font-size:24px;">🏥</div><h1>أمانة الشؤون الصحية والطب</h1><h2>تقرير طلبات الدعم الطبي</h2><p>${today}</p></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0;">
+        <div style="border:1px solid #ccc;border-radius:5px;padding:7px;text-align:center;"><div style="font-size:18px;font-weight:800;">${sps.length}</div><div style="font-size:10px;">إجمالي الطلبات</div></div>
+        <div style="border:1px solid #ccc;border-radius:5px;padding:7px;text-align:center;"><div style="font-size:18px;font-weight:800;color:#c0392b;">${totReq.toLocaleString('ar-SA')}</div><div style="font-size:10px;">إجمالي المبالغ المطلوبة ر.س</div></div>
+        <div style="border:1px solid #ccc;border-radius:5px;padding:7px;text-align:center;"><div style="font-size:18px;font-weight:800;color:#1a7a4a;">${totPaid.toLocaleString('ar-SA')}</div><div style="font-size:10px;">المبالغ المصروفة ر.س</div></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead><tr style="background:#1a3366;color:#fff;"><th style="padding:5px 7px;text-align:right;">#</th><th style="padding:5px 7px;text-align:right;">المريض</th><th style="padding:5px 7px;text-align:right;">الغرض</th><th style="padding:5px 7px;text-align:right;">المبلغ</th><th style="padding:5px 7px;text-align:right;">الحالة</th></tr></thead>
+        <tbody>${sps.map((s,i)=>`<tr style="${i%2===0?'':'background:#f5f5f5'}"><td style="padding:4px 7px;">${i+1}</td><td style="padding:4px 7px;font-weight:600;">${s.patient_name}</td><td style="padding:4px 7px;">${s.purpose}</td><td style="padding:4px 7px;font-weight:700;">${(s.amount||0).toLocaleString('ar-SA')} ر.س</td><td style="padding:4px 7px;">${SP_STA[s.status]?.lbl||s.status}</td></tr>`).join('')}</tbody>
+      </table>
+      <div class="prfooter">أمانة الشؤون الصحية والطب · الجالية السودانية بجازان · ${new Date().getFullYear()}</div>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+
+function printCampaign(c){
+  document.getElementById('print-area').innerHTML=`
+    <div class="prpt">
+      <div class="prph"><div style="font-size:24px;">🏥</div><h1>أمانة الشؤون الصحية والطب</h1><h2>الجالية السودانية بجازان</h2></div>
+      <div class="prtit"><h3>تقرير الحملة التوعوية — ${c.title}</h3></div>
+      <table class="prtbl">
+        <tr><td>نوع الحملة</td><td>${c.campaign_type}</td></tr>
+        ${c.campaign_date?`<tr><td>التاريخ</td><td>${new Date(c.campaign_date).toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</td></tr>`:''}
+        ${c.location?`<tr><td>المكان</td><td>${c.location}</td></tr>`:''}
+        ${c.description?`<tr><td>الوصف</td><td>${c.description}</td></tr>`:''}
+        <tr class="hl"><td>عدد المستفيدين</td><td><strong>${(c.beneficiaries_count||0).toLocaleString('ar-SA')} مستفيد</strong></td></tr>
+        <tr><td>التكلفة</td><td>${(c.cost||0).toLocaleString('ar-SA')} ريال سعودي</td></tr>
+        <tr><td>الحالة</td><td>${CP_STA[c.status]?.lbl||c.status}</td></tr>
+        <tr><td>منسق الحملة</td><td>${c.created_by}</td></tr>
+      </table>
+      <div class="prfooter">أمانة الشؤون الصحية والطب · الجالية السودانية بجازان · ${new Date().getFullYear()}</div>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+
+function printCampaignsReport(){
+  const cps=cachedCampaigns;
+  const totBen=cps.reduce((s,c)=>s+(c.beneficiaries_count||0),0);
+  const totCost=cps.reduce((s,c)=>s+(c.cost||0),0);
+  const today=new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('print-area').innerHTML=`
+    <div class="prpt">
+      <div class="prph"><div style="font-size:24px;">🏥</div><h1>أمانة الشؤون الصحية والطب</h1><h2>تقرير الحملات التوعوية</h2><p>${today}</p></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0;">
+        <div style="border:1px solid #ccc;border-radius:5px;padding:7px;text-align:center;"><div style="font-size:18px;font-weight:800;">${cps.length}</div><div style="font-size:10px;">عدد الحملات</div></div>
+        <div style="border:1px solid #ccc;border-radius:5px;padding:7px;text-align:center;"><div style="font-size:18px;font-weight:800;color:#1a7a4a;">${totBen.toLocaleString('ar-SA')}</div><div style="font-size:10px;">إجمالي المستفيدين</div></div>
+        <div style="border:1px solid #ccc;border-radius:5px;padding:7px;text-align:center;"><div style="font-size:18px;font-weight:800;color:#c0392b;">${totCost.toLocaleString('ar-SA')}</div><div style="font-size:10px;">إجمالي التكاليف ر.س</div></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead><tr style="background:#1a3366;color:#fff;"><th style="padding:5px 7px;text-align:right;">#</th><th style="padding:5px 7px;text-align:right;">الحملة</th><th style="padding:5px 7px;text-align:right;">النوع</th><th style="padding:5px 7px;text-align:right;">التاريخ</th><th style="padding:5px 7px;text-align:right;">المستفيدون</th><th style="padding:5px 7px;text-align:right;">الحالة</th></tr></thead>
+        <tbody>${cps.map((c,i)=>`<tr style="${i%2===0?'':'background:#f5f5f5'}"><td style="padding:4px 7px;">${i+1}</td><td style="padding:4px 7px;font-weight:600;">${c.title}</td><td style="padding:4px 7px;">${c.campaign_type}</td><td style="padding:4px 7px;">${c.campaign_date?new Date(c.campaign_date).toLocaleDateString('ar-SA'):'—'}</td><td style="padding:4px 7px;font-weight:700;">${(c.beneficiaries_count||0).toLocaleString('ar-SA')}</td><td style="padding:4px 7px;">${CP_STA[c.status]?.lbl||c.status}</td></tr>`).join('')}</tbody>
+      </table>
+      <div class="prfooter">أمانة الشؤون الصحية والطب · الجالية السودانية بجازان · ${new Date().getFullYear()}</div>
+    </div>`;
+  setTimeout(()=>window.print(),300);
+}
+
+function exportPatientsCSV(){
+  if(!cachedPatients.length){showToast('لا توجد بيانات','err');return;}
+  const h=['رقم الملف','الاسم','الجواز','العمر','الجنس','فصيلة الدم','الهاتف','المنطقة','أمراض مزمنة','عدد الزيارات'];
+  const rows=cachedPatients.map(p=>[p.id,p.name,p.passport||'',p.age||'',p.gender||'',p.blood_type||'',p.phone||'',p.region||'',p.chronic_conditions||'',cachedVisits.filter(v=>v.patient_id===p.id).length].map(v=>`"${v}"`).join(','));
+  const csv='\uFEFF'+h.join(',')+'\n'+rows.join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download='المرضى_'+new Date().toLocaleDateString('ar-SA').replace(/\//g,'-')+'.csv';
+  a.click();
+  showToast('✓ تم التصدير','ok');
+}
+
+/* ══════════════════════════════════
+   TOAST / MODAL
+══════════════════════════════════ */
+function showToast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';setTimeout(()=>t.classList.remove('show'),3000);}
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+document.querySelectorAll('.modal-bg').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('show');}));
+
+/* ══ START ══ */
+window.addEventListener('load',function(){
+  initDB();
+  buildLoginUI();
+});
+</script>
+</body>
+</html>

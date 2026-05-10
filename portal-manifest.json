@@ -1,0 +1,25 @@
+{
+  "name": "خدمات الجالية السودانية",
+  "short_name": "خدمات الجالية",
+  "description": "بوابة خدمات المواطن السوداني في جازان — تجديد جوازات، تصديق وثائق، تسجيل عضوية",
+  "start_url": "/jazan-community/portal.html",
+  "scope": "/jazan-community/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a3d2b",
+  "theme_color": "#1a3d2b",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["government", "utilities"],
+  "icons": [
+    { "src": "citizen-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "citizen-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "تجديد جواز", "url": "/jazan-community/portal.html", "description": "طلب تجديد جواز السفر" },
+    { "name": "طلباتي",     "url": "/jazan-community/portal.html", "description": "متابعة طلباتي" }
+  ],
+  "screenshots": [],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
